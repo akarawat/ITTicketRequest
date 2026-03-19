@@ -69,3 +69,4 @@ C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\refint\ITTick
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\ITTicketRequest.pdb
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\ITTicketRequest.genruntimeconfig.cache
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\ref\ITTicketRequest.dll
+C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\bin\Debug\net8.0\ITTicketRequest.staticwebassets.runtime.json
