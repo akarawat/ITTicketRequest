@@ -1,0 +1,390 @@
+@{ ViewData["Title"] = "Ticket Detail"; }
+@{
+    var sessionJson = Context.Session.GetString("UserSession");
+    ITTicketRequest.Models.UserSessionModel? user = null;
+    if (!string.IsNullOrEmpty(sessionJson))
+        user = System.Text.Json.JsonSerializer.Deserialize<ITTicketRequest.Models.UserSessionModel>(sessionJson);
+}
+
+@section Styles {
+<style>
+    .detail-card { background:#fff; border:1px solid #e0d6d6; border-radius:12px; padding:24px 28px; margin-bottom:20px; }
+    .section-label { font-weight:700; font-size:11px; letter-spacing:.8px; text-transform:uppercase; color:#ed1c24; border-bottom:2px solid #fef0f0; padding-bottom:6px; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+    .info-row { display:flex; gap:0; margin-bottom:8px; font-size:13.5px; }
+    .info-label { color:#90a4ae; min-width:140px; flex-shrink:0; }
+    .info-val { color:#231f20; font-weight:500; }
+    .req-tag  { font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; margin-right:4px; }
+    .tag-computer { background:#e3f2fd; color:#0d47a1; }
+    .tag-email    { background:#fce4ec; color:#c62828; }
+    .tag-network  { background:#e8f5e9; color:#2e7d32; }
+    .tag-programs { background:#fff8e1; color:#e65100; }
+    .tag-vpn      { background:#fef0f0; color:#ed1c24; }
+
+    /* Workflow Timeline */
+    .workflow-steps { display:flex; flex-direction:column; gap:0; }
+    .wf-step { display:flex; gap:16px; position:relative; }
+    .wf-step:not(:last-child)::before {
+        content:''; position:absolute; left:15px; top:32px;
+        width:2px; height:calc(100% - 8px); background:#f0f2f5; z-index:0;
+    }
+    .wf-dot {
+        width:32px; height:32px; border-radius:50%; flex-shrink:0;
+        display:flex; align-items:center; justify-content:center;
+        font-size:14px; position:relative; z-index:1;
+    }
+    .wf-dot.done     { background:#e8f5e9; color:#2e7d32; border:2px solid #2e7d32; }
+    .wf-dot.current  { background:#fff8e1; color:#e65100; border:2px solid #e65100; animation:pulse-dot 1.5s infinite; }
+    .wf-dot.waiting  { background:#f4f6fa; color:#cfd8dc; border:2px solid #e0d6d6; }
+    .wf-dot.rejected { background:#ffebee; color:#b71c1c; border:2px solid #b71c1c; }
+    @@keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 0 rgba(230,81,0,.3)} 50%{box-shadow:0 0 0 6px rgba(230,81,0,0)} }
+    .wf-body { flex:1; padding:0 0 20px 0; }
+    .wf-role { font-weight:700; font-size:13px; color:#231f20; }
+    .wf-name { font-size:12px; color:#607080; margin-top:2px; }
+    .wf-time { font-size:11.5px; color:#90a4ae; margin-top:2px; }
+    .wf-action-done     { font-size:11px; font-weight:700; color:#2e7d32; background:#e8f5e9; padding:2px 8px; border-radius:20px; display:inline-block; margin-top:4px; }
+    .wf-action-rejected { font-size:11px; font-weight:700; color:#b71c1c; background:#ffebee; padding:2px 8px; border-radius:20px; display:inline-block; margin-top:4px; }
+    .wf-action-current  { font-size:11px; font-weight:700; color:#e65100; background:#fff8e1; padding:2px 8px; border-radius:20px; display:inline-block; margin-top:4px; }
+    .wf-remark { font-size:12px; color:#607080; background:#f9f6f6; border-radius:6px; padding:6px 10px; margin-top:6px; }
+
+    /* Action buttons */
+    .btn-approve-lg { background:#2e7d32; color:#fff; border:none; padding:10px 28px; border-radius:8px; font-weight:700; font-size:13.5px; }
+    .btn-reject-lg  { background:#fff; color:#b71c1c; border:1.5px solid #ef9a9a; padding:10px 28px; border-radius:8px; font-size:13.5px; }
+    .btn-assign-lg  { background:#231f20; color:#fff; border:none; padding:10px 28px; border-radius:8px; font-weight:700; font-size:13.5px; }
+    .btn-close-lg   { background:#ed1c24; color:#fff; border:none; padding:10px 28px; border-radius:8px; font-weight:700; font-size:13.5px; }
+</style>
+}
+
+<div id="loading-state" class="text-center py-5">
+    <div class="spinner-border" style="color:#ed1c24"></div>
+    <div style="color:#90a4ae;font-size:13px;margin-top:12px">Loading details...</div>
+</div>
+
+<div id="detail-content" style="display:none">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <a href="/Ticket/MyTickets" style="font-size:13px;color:#607080;text-decoration:none">
+                <i class="bi bi-arrow-left me-1"></i>Back
+            </a>
+            <h4 id="hdr-docnum" style="font-weight:700;margin:8px 0 0;color:#231f20"></h4>
+        </div>
+        <span id="hdr-status" class="badge" style="font-size:13px;padding:8px 16px"></span>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left column -->
+        <div class="col-lg-7">
+            <!-- Requester Info -->
+            <div class="detail-card">
+                <div class="section-label"><i class="bi bi-person-badge"></i>Requester Information</div>
+                <div class="info-row"><span class="info-label">Name</span><span class="info-val" id="d-name"></span></div>
+                <div class="info-row"><span class="info-label">Department</span><span class="info-val" id="d-dept"></span></div>
+                <div class="info-row"><span class="info-label">Email</span><span class="info-val" id="d-email"></span></div>
+                <div class="info-row"><span class="info-label">Reason</span><span class="info-val" id="d-reason"></span></div>
+                <div class="info-row"><span class="info-label">Submitted</span><span class="info-val" id="d-date"></span></div>
+            </div>
+            <!-- Request Items -->
+            <div class="detail-card">
+                <div class="section-label"><i class="bi bi-list-check"></i>Requested Items</div>
+                <div id="d-items"></div>
+            </div>
+        </div>
+
+        <!-- Right column — Workflow Timeline -->
+        <div class="col-lg-5">
+            <div class="detail-card">
+                <div class="section-label"><i class="bi bi-diagram-3"></i>Approval Workflow</div>
+                <div class="workflow-steps" id="workflow-steps"></div>
+            </div>
+
+            <!-- Action Panel (visible to approver) -->
+            <div id="action-panel" class="detail-card" style="display:none">
+                <div class="section-label"><i class="bi bi-pencil-square"></i>Action</div>
+                <div id="action-buttons" class="d-flex gap-2 flex-wrap"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Modal -->
+<div class="modal fade" id="actionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:12px;overflow:hidden">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h6 class="fw-bold" id="modal-title">Confirm</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <div id="modal-desc" style="font-size:13.5px;color:#607080;margin-bottom:14px"></div>
+                <label class="form-label fw-bold" style="font-size:13px">Remark (optional)</label>
+                <textarea id="modal-remark" class="form-control" rows="3" placeholder="Enter reason / comments..."></textarea>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="modal-confirm" class="btn btn-sm" style="border-radius:8px;font-weight:700;padding:8px 24px">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign PIC Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:12px;overflow:hidden">
+            <div style="background:#231f20;padding:20px 24px">
+                <div style="color:#fff;font-weight:700;font-size:15px"><i class="bi bi-person-badge me-2"></i>Assign IT Person Incharge</div>
+            </div>
+            <div class="modal-body p-4">
+                <label class="form-label fw-bold" style="font-size:13px">Select IT PIC <span class="text-danger">*</span></label>
+                <select id="sel-itpic" class="form-select mb-3" style="font-size:13px">
+                    <option value="">— Loading... —</option>
+                </select>
+                <label class="form-label fw-bold" style="font-size:13px">Remark (optional)</label>
+                <textarea id="assign-remark" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="assign-confirm"
+                    style="background:#231f20;color:#fff;border:none;border-radius:8px;padding:8px 24px;font-size:13px;font-weight:700;cursor:pointer">
+                    <i class="bi bi-person-check me-2"></i>Assign & Proceed
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const TICKET_ID   = '@ViewBag.TicketId';
+const actionModal = new bootstrap.Modal(document.getElementById('actionModal'));
+const assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
+let   pendingAction = null;
+
+const STATUS_COLOR = {
+    PendingDeptMgr:'#e65100', PendingManagingDir:'#6a1b9a',
+    PendingITMgr:'#0d47a1',  PendingITAdminAssign:'#00695c',
+    PendingITPIC:'#2e7d32',  PendingITAdminClose:'#37474f',
+    Completed:'#2e7d32',     Rejected:'#b71c1c'
+};
+const STATUS_LABEL = {
+    PendingDeptMgr:'Pending Dept Manager', PendingManagingDir:'Pending Managing Director',
+    PendingITMgr:'Pending IT Manager', PendingITAdminAssign:'Pending IT Admin (Assign PIC)',
+    PendingITPIC:'In Progress — IT PIC', PendingITAdminClose:'Pending IT Admin (Close)',
+    Completed:'Completed', Rejected:'Rejected'
+};
+
+// Workflow steps definition
+const FLOW_STEPS = (reqVPN, status) => {
+    const steps = [
+        { status:'PendingDeptMgr',       role:'Department Manager',        funCode:8 },
+    ];
+    if (reqVPN) steps.push(
+        { status:'PendingManagingDir',   role:'Managing Director',         funCode:4 }
+    );
+    steps.push(
+        { status:'PendingITMgr',         role:'IT Manager',                funCode:7 },
+        { status:'PendingITAdminAssign', role:'IT Admin (Assign PIC)',      funCode:5 },
+        { status:'PendingITPIC',         role:'IT Person Incharge (IT PIC)',funCode:6 },
+        { status:'PendingITAdminClose',  role:'IT Admin (Close Ticket)',    funCode:9 },
+        { status:'Completed',            role:'Completed',                  funCode:0 }
+    );
+    return steps;
+};
+
+const STATUS_ORDER = ['PendingDeptMgr','PendingManagingDir','PendingITMgr',
+    'PendingITAdminAssign','PendingITPIC','PendingITAdminClose','Completed','Rejected'];
+
+async function loadDetail() {
+    try {
+        const res  = await fetch(`/Ticket/GetDetail/${TICKET_ID}`);
+        const data = await res.json();
+        const t    = data.ticket;
+
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('detail-content').style.display = 'block';
+
+        // Header
+        document.getElementById('hdr-docnum').textContent = t.docNumber;
+        const hdrStatus = document.getElementById('hdr-status');
+        hdrStatus.textContent = STATUS_LABEL[t.status] || t.status;
+        hdrStatus.style.background = STATUS_COLOR[t.status] + '22';
+        hdrStatus.style.color      = STATUS_COLOR[t.status] || '#607080';
+
+        // Info
+        document.getElementById('d-name').textContent   = t.requesterName;
+        document.getElementById('d-dept').textContent   = t.department;
+        document.getElementById('d-email').textContent  = t.requesterEmail;
+        document.getElementById('d-reason').textContent = t.reason || '—';
+        document.getElementById('d-date').textContent   = fmt(t.createdAt);
+
+        // Items
+        document.getElementById('d-items').innerHTML = `
+            <div class="d-flex flex-wrap gap-2">
+                ${t.reqComputer ? '<span class="req-tag tag-computer"><i class="bi bi-laptop me-1"></i>New Computer</span>':''}
+                ${t.reqEmail    ? '<span class="req-tag tag-email"><i class="bi bi-envelope me-1"></i>Email Account</span>':''}
+                ${t.reqNetwork  ? '<span class="req-tag tag-network"><i class="bi bi-hdd-network me-1"></i>Network Drive</span>':''}
+                ${t.reqPrograms ? '<span class="req-tag tag-programs"><i class="bi bi-grid-3x3-gap me-1"></i>Programs</span>':''}
+                ${t.reqVPN      ? `<span class="req-tag tag-vpn"><i class="bi bi-shield-shaded me-1"></i>VPN (${t.vpnType || ''})</span>`:''}
+            </div>
+            ${t.reqVPN && t.apprITPIC ? `<div style="margin-top:12px;font-size:13px">
+                <span style="color:#90a4ae">Assigned IT PIC:</span>
+                <span style="font-weight:600;color:#2e7d32;margin-left:8px">${t.itpicName || t.apprITPIC}</span>
+            </div>` : ''}`;
+
+        // Workflow Timeline
+        renderWorkflow(t, data.logs);
+
+        // Action buttons
+        renderActionPanel(t);
+
+    } catch (e) {
+        document.getElementById('loading-state').innerHTML =
+            `<div class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Unable to load data</div>`;
+    }
+}
+
+function renderWorkflow(t, logs) {
+    const steps = FLOW_STEPS(t.reqVPN, t.status);
+    const curIdx = STATUS_ORDER.indexOf(t.status);
+    const isRejected = t.status === 'Rejected';
+
+    // Map logs by step status
+    const logMap = {};
+    logs.forEach(l => { logMap[l.funCode] = l; });
+
+    const funByStatus = {
+        PendingDeptMgr:8, PendingManagingDir:4, PendingITMgr:7,
+        PendingITAdminAssign:5, PendingITPIC:6, PendingITAdminClose:9
+    };
+
+    document.getElementById('workflow-steps').innerHTML = steps.map((step, i) => {
+        const stepIdx  = STATUS_ORDER.indexOf(step.status);
+        const log      = logMap[step.funCode];
+        const isDone   = log && log.action === 'Approve';
+        const isCurrent= step.status === t.status;
+        const isRej    = log && log.action === 'Reject';
+        const isEnd    = step.status === 'Completed';
+
+        let dotClass = 'waiting', icon = 'bi-circle';
+        if (isEnd && t.status === 'Completed') { dotClass = 'done'; icon = 'bi-check-lg'; }
+        else if (isRej)     { dotClass = 'rejected'; icon = 'bi-x-lg'; }
+        else if (isDone)    { dotClass = 'done';     icon = 'bi-check-lg'; }
+        else if (isCurrent) { dotClass = 'current';  icon = 'bi-clock'; }
+
+        let actionLabel = '', remarkHtml = '';
+        if (isEnd && t.status === 'Completed') actionLabel = `<span class="wf-action-done">✓ Completed</span>`;
+        else if (isDone) actionLabel = `<span class="wf-action-done">✓ Approved ${log.actionAt ? '· ' + fmt(log.actionAt) : ''}</span>`;
+        else if (isRej)  actionLabel = `<span class="wf-action-rejected">✗ Rejected ${log.actionAt ? '· ' + fmt(log.actionAt) : ''}</span>`;
+        else if (isCurrent && !isEnd) actionLabel = `<span class="wf-action-current">⏳ Awaiting</span>`;
+
+        if (log?.remark) remarkHtml = `<div class="wf-remark"><i class="bi bi-chat-text me-1"></i>${log.remark}</div>`;
+
+        const assignedPIC = log?.assignedTo ? `<div class="wf-name" style="color:#2e7d32">→ Assigned: ${log.assignedTo}</div>` : '';
+
+        return `
+        <div class="wf-step">
+            <div class="wf-dot ${dotClass}"><i class="bi ${icon}"></i></div>
+            <div class="wf-body">
+                <div class="wf-role">${step.role}</div>
+                ${log?.approverName ? `<div class="wf-name">${log.approverName}</div>` : ''}
+                ${assignedPIC}
+                ${actionLabel}
+                ${remarkHtml}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderActionPanel(t) {
+    const panel   = document.getElementById('action-panel');
+    const buttons = document.getElementById('action-buttons');
+    const isITAdminAssign = t.status === 'PendingITAdminAssign';
+    const isITAdminClose  = t.status === 'PendingITAdminClose';
+
+    // Show panel only if current user can act
+    // (เช็คจาก server-side ว่าอนุญาตไหม ใน Approve endpoint)
+    if (['Completed','Rejected'].includes(t.status)) return;
+
+    panel.style.display = 'block';
+
+    if (isITAdminAssign) {
+        buttons.innerHTML = `
+            <button class="btn-assign-lg" onclick="openAssignModal()">
+                <i class="bi bi-person-badge me-2"></i>Assign IT PIC
+            </button>
+            <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                <i class="bi bi-x me-1"></i>Reject
+            </button>`;
+    } else {
+        const approveLabel = isITAdminClose ? 'Close Ticket' : 'Approve';
+        const approveIcon  = isITAdminClose ? 'bi-check2-all' : 'bi-check';
+        const btnClass     = isITAdminClose ? 'btn-close-lg' : 'btn-approve-lg';
+        buttons.innerHTML = `
+            <button class="${btnClass}" onclick="openActionModal('Approve')">
+                <i class="bi ${approveIcon} me-1"></i>${approveLabel}
+            </button>
+            <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                <i class="bi bi-x me-1"></i>Reject
+            </button>`;
+    }
+}
+
+function openActionModal(action) {
+    pendingAction = action;
+    const isApprove = action === 'Approve';
+    document.getElementById('modal-title').textContent = isApprove ? 'Confirm Approval' : 'Confirm Rejection';
+    document.getElementById('modal-desc').textContent  = `${action} this ticket?`;
+    const btn = document.getElementById('modal-confirm');
+    btn.style.background = isApprove ? '#2e7d32' : '#b71c1c';
+    btn.style.color = '#fff'; btn.style.border = 'none';
+    btn.textContent = action;
+    document.getElementById('modal-remark').value = '';
+    actionModal.show();
+}
+
+async function openAssignModal() {
+    document.getElementById('sel-itpic').innerHTML = '<option value="">Loading...</option>';
+    document.getElementById('assign-remark').value = '';
+    assignModal.show();
+    const res  = await fetch('/Ticket/GetApprovers?funCode=6');
+    const list = await res.json();
+    const sel  = document.getElementById('sel-itpic');
+    sel.innerHTML = '<option value="">— Select IT Person Incharge —</option>';
+    list.forEach(p => sel.innerHTML += `<option value="${p.samAcc}">${p.displayName} (${p.department})</option>`);
+}
+
+document.getElementById('modal-confirm').onclick = async () => {
+    const remark = document.getElementById('modal-remark').value;
+    const res    = await fetch('/Ticket/Approve', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ requestId: TICKET_ID, action: pendingAction, remark })
+    });
+    const data = await res.json();
+    actionModal.hide();
+    if (data.ok) loadDetail();
+    else alert('Error: ' + data.msg);
+};
+
+document.getElementById('assign-confirm').onclick = async () => {
+    const assignTo = document.getElementById('sel-itpic').value;
+    const remark   = document.getElementById('assign-remark').value;
+    if (!assignTo) { alert('Please select IT Person Incharge'); return; }
+    const res  = await fetch('/Ticket/Approve', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ requestId: TICKET_ID, action: 'Assign', assignTo, remark })
+    });
+    const data = await res.json();
+    assignModal.hide();
+    if (data.ok) loadDetail();
+    else alert('Error: ' + data.msg);
+};
+
+function fmt(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+loadDetail();
+</script>
+}
