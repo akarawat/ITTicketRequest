@@ -175,6 +175,7 @@ namespace ITTicketRequest.Controllers
         }
 
         // GET /Ticket/GetApprovers?funCode=7
+        // ใช้ sp_GetApprovers — Cross-DB: BTITReq.TBUserFunction + BT_HR
         public IActionResult GetApprovers(int funCode)
         {
             var session = GetSession();
@@ -186,24 +187,17 @@ namespace ITTicketRequest.Controllers
                 using var conn = new SqlConnection(connStr);
                 conn.Open();
 
-                const string sql = @"
-                    SELECT f.USERLOGON AS SamAcc, e.DISPNAME AS DisplayName,
-                           e.UEMAIL AS Email, e.DEPART AS Department
-                    FROM   dbo.TBUserFunction f
-                    JOIN   [BT_HR].[dbo].[onl_TBADUsers] e
-                           ON e.SAMACC = f.USERLOGON COLLATE THAI_CI_AS
-                    WHERE  f.FUNCODE = @funCode AND f.FLAG = 1 AND e.empstatus = 1
-                    ORDER  BY e.DISPNAME";
+                using var cmd = new SqlCommand("sp_GetApprovers", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@FunCode", funCode);
 
-                using var cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@funCode", funCode);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
                     list.Add(new {
                         samAcc      = reader["SamAcc"].ToString(),
                         displayName = reader["DisplayName"].ToString(),
-                        email       = reader["Email"] == DBNull.Value ? "" : reader["Email"].ToString(),
-                        department  = reader["Department"] == DBNull.Value ? "" : reader["Department"].ToString()
+                        email       = reader["Email"]?.ToString() ?? "",
+                        department  = reader["Department"]?.ToString() ?? ""
                     });
 
                 return Json(list);

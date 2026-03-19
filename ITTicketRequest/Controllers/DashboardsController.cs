@@ -71,8 +71,9 @@ namespace ITTicketRequest.Controllers
                 using var conn = new SqlConnection(connStr);
                 conn.Open();
 
+                // Cross-DB: TBUserFunction อยู่ใน BTITReq
                 const string sql = @"
-                    SELECT FUNCODE FROM dbo.TBUserFunction
+                    SELECT FUNCODE FROM [BTITReq].[dbo].[TBUserFunction]
                     WHERE  USERLOGON = @sam AND FLAG = 1";
 
                 using var cmd = new SqlCommand(sql, conn);
