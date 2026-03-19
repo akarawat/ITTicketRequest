@@ -8,22 +8,22 @@ namespace ITTicketRequest.Controllers
 {
     public class DashboardsController : Controller
     {
-        private readonly IConfiguration  _config;
+        private readonly IConfiguration _config;
         private readonly AppSettingsModel _settings;
 
         public DashboardsController(IConfiguration config,
                                     IOptions<AppSettingsModel> settings)
         {
-            _config   = config;
+            _config = config;
             _settings = settings.Value;
         }
 
         // ── GET /Dashboards/Index ──────────────────────────────────────
-        public IActionResult Index(string? id,   string? user,
+        public IActionResult Index(string? id, string? user,
                                    string? email, string? fname,
                                    string? depart)
         {
-            var existing  = HttpContext.Session.GetString("UserSession");
+            var existing = HttpContext.Session.GetString("UserSession");
             var authenUrl = _config["TBCorApiServices:AuthenUrl"] ?? "/";
 
             if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(existing))
@@ -34,13 +34,13 @@ namespace ITTicketRequest.Controllers
                 var samAcc = UserSessionModel.ParseSamAcc(user ?? "");
                 var session = new UserSessionModel
                 {
-                    Id         = id,
-                    UserLogon  = user   ?? "",
-                    SamAcc     = samAcc,
-                    Email      = email  ?? "",
-                    FullName   = fname  ?? "",
+                    Id = id,
+                    UserLogon = user ?? "",
+                    SamAcc = samAcc,
+                    Email = email ?? "",
+                    FullName = fname ?? "",
                     Department = depart ?? "",
-                    IsUser     = true
+                    IsUser = true
                 };
                 LoadUserRoles(session, samAcc);
                 HttpContext.Session.SetString("UserSession",
@@ -83,11 +83,11 @@ namespace ITTicketRequest.Controllers
                 {
                     switch (reader.GetInt32(0))
                     {
-                        case 9: session.IsAdmin          = true; break;
-                        case 8: session.IsDeptManager    = true; break;
-                        case 7: session.IsITManager      = true; break;
-                        case 6: session.IsITPIC          = true; break;
-                        case 5: session.IsITAdmin        = true; break;
+                        case 9: session.IsAdmin = true; break;
+                        case 8: session.IsDeptManager = true; break;
+                        case 7: session.IsITManager = true; break;
+                        case 6: session.IsITPIC = true; break;
+                        case 5: session.IsITAdmin = true; break;
                         case 4: session.IsManagingDirector = true; break;
                     }
                 }

@@ -297,11 +297,30 @@
                 <div class="appr-info" id="info-itmgr"></div>
             </div>
 
-            <!-- IT Admin Assign PIC (info only) -->
+            <!-- IT Admin — dynamic list (Fixed, loaded from TBUserFunction FUNCODE=5) -->
             <div class="approval-box" style="border-color:#00695c">
-                <div class="role-label" style="color:#00695c"><i class="bi bi-person-badge"></i>IT ADMIN → ASSIGN PIC</div>
-                <div style="font-size:12px;color:#90a4ae;padding:6px 0">IT Admin will assign IT Person Incharge after IT Manager approves.</div>
-                <div style="font-size:10.5px;color:#00695c;background:#e0f2f1;border-radius:4px;padding:3px 7px;display:inline-block">FUNCODE = 5</div>
+                <div class="role-label" style="color:#00695c">
+                    <i class="bi bi-people"></i>IT ADMIN → ASSIGN PIC
+                </div>
+
+                <!-- Loading state -->
+                <div id="itadmin-loading" style="font-size:12.5px;color:#90a4ae;padding:4px 0">
+                    <span class="spinner-border spinner-border-sm me-1"></span>Loading...
+                </div>
+
+                <!-- Loaded: แสดง list ของ IT Admin ทุกคน -->
+                <div id="itadmin-list" style="display:none"></div>
+
+                <!-- Not found -->
+                <div id="itadmin-notfound" style="display:none;font-size:12px;color:#e65100">
+                    <i class="bi bi-exclamation-triangle me-1"></i>No IT Admin assigned
+                </div>
+
+                <div style="margin-top:8px;font-size:10.5px;color:#90a4ae;
+                            background:#f0faf9;border-radius:4px;padding:4px 8px">
+                    <i class="bi bi-info-circle me-1"></i>
+                    IT Admin will assign IT PIC after IT Manager approves
+                </div>
             </div>
 
             <!-- IT PIC (info only) -->
@@ -485,8 +504,51 @@ document.getElementById('btn-confirm-submit').addEventListener('click', function
     document.getElementById('ticketForm').submit();
 });
 
+// ── Load IT Admin list (FUNCODE=5) ───────────────────────────────
+async function loadITAdmins() {
+    try {
+        const res  = await fetch('/Ticket/GetITAdmins');
+        const list = await res.json();
+
+        document.getElementById('itadmin-loading').style.display = 'none';
+
+        if (!list.length) {
+            document.getElementById('itadmin-notfound').style.display = 'block';
+            return;
+        }
+
+        const el = document.getElementById('itadmin-list');
+        el.innerHTML = list.map(a => `
+            <div style="display:flex;align-items:center;gap:8px;
+                        padding:5px 0;border-bottom:1px solid #f0faf9">
+                <div style="width:26px;height:26px;border-radius:50%;
+                            background:#00695c;color:#fff;display:flex;
+                            align-items:center;justify-content:center;
+                            font-size:10px;font-weight:700;flex-shrink:0">
+                    ${a.displayName.split(' ').slice(0,2).map(w=>w[0]).join('')}
+                </div>
+                <div>
+                    <div style="font-weight:600;font-size:12.5px;color:#1a2332">
+                        ${a.displayName}
+                    </div>
+                    <div style="font-size:11px;color:#607080">${a.email}</div>
+                </div>
+            </div>`).join('');
+
+        // ลบ border-bottom ของแถวสุดท้าย
+        const rows = el.querySelectorAll('div[style*="border-bottom"]');
+        if (rows.length) rows[rows.length-1].style.borderBottom = 'none';
+
+        el.style.display = 'block';
+    } catch {
+        document.getElementById('itadmin-loading').style.display  = 'none';
+        document.getElementById('itadmin-notfound').style.display = 'block';
+    }
+}
+
 // ── Init ──────────────────────────────────────────────────────────
 loadMyManager();
+loadITAdmins();
 loadApprovers(7, 'sel-itmgr', 'info-itmgr');   // IT Manager
 </script>
 }

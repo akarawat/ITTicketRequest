@@ -205,6 +205,35 @@ namespace ITTicketRequest.Controllers
             catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
         }
 
+        // GET /Ticket/GetITAdmins — ดึงรายชื่อ IT Admin (FUNCODE=5) สำหรับแสดงใน Create form
+        public IActionResult GetITAdmins()
+        {
+            var session = GetSession();
+            if (session == null) return Unauthorized();
+            try
+            {
+                var list    = new List<object>();
+                var connStr = _config.GetConnectionString("BTITTicketConn");
+                using var conn = new SqlConnection(connStr);
+                conn.Open();
+
+                using var cmd = new SqlCommand("sp_GetITAdmins", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                    list.Add(new {
+                        samAcc      = reader["SamAcc"].ToString(),
+                        displayName = reader["DisplayName"].ToString(),
+                        email       = reader["Email"]?.ToString() ?? "",
+                        department  = reader["Department"]?.ToString() ?? ""
+                    });
+
+                return Json(list);
+            }
+            catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
+        }
+
         // GET /Ticket/GetMyTickets
         public IActionResult GetMyTickets()
         {
