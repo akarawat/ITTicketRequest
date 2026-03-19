@@ -57,10 +57,9 @@
               "RelativeDocumentMoniker": "Views\\Ticket\\Create.cshtml",
               "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Create.cshtml",
               "RelativeToolTip": "Views\\Ticket\\Create.cshtml",
-              "ViewState": "AgIAAFABAAAAAAAAAADwv2wBAAAZAAAAAAAAAA==",
+              "ViewState": "AgIAAGMBAAAAAAAAAADwv38BAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-19T04:11:23.732Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-19T04:11:23.732Z"
             },
             {
               "$type": "Document",
@@ -70,10 +69,9 @@
               "RelativeDocumentMoniker": "Controllers\\TicketController.cs",
               "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Controllers\\TicketController.cs",
               "RelativeToolTip": "Controllers\\TicketController.cs",
-              "ViewState": "AgIAADACAAAAAAAAAAAgwE8CAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAEgCAAAAAAAAAAAgwGYCAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-19T04:11:07.545Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-19T04:11:07.545Z"
             },
             {
               "$type": "Document",
@@ -83,7 +81,7 @@
               "RelativeDocumentMoniker": "Controllers\\DashboardsController.cs",
               "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Controllers\\DashboardsController.cs",
               "RelativeToolTip": "Controllers\\DashboardsController.cs",
-              "ViewState": "AgIAAEQAAAAAAAAAAAAgwFMAAAAvAAAAAAAAAA==",
+              "ViewState": "AgIAAEQAAAAAAAAAAAAgwFkAAABAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-19T04:11:06.698Z",
               "EditorCaption": ""
