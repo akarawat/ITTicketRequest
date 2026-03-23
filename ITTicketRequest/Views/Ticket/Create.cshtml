@@ -1,39 +1,251 @@
 @model ITTicketRequest.Models.TicketViewModel
-@{ ViewData["Title"] = "New IT Ticket"; }
+@{
+    ViewData["Title"] = "New IT Ticket";
+
+    // ── Session: ดึง user เพื่อเช็ค Role ─────────────────────────────
+    var sessionJson = Context.Session.GetString("UserSession");
+    ITTicketRequest.Models.UserSessionModel? user = null;
+    if (!string.IsNullOrEmpty(sessionJson))
+        user = System.Text.Json.JsonSerializer
+               .Deserialize<ITTicketRequest.Models.UserSessionModel>(sessionJson);
+
+    // ประกาศค่า isITAdmin ให้ใช้ใน @section Scripts ได้
+    var isITAdmin = user?.IsITAdmin == true;
+}
 
 @section Styles {
-<style>
-    :root { --brand:#231f20; --red:#ed1c24; --red-lt:#fef0f0; --border:#e0d6d6; --radius:10px; }
-    .form-header { background:var(--brand); border-radius:var(--radius) var(--radius) 0 0; padding:18px 28px; display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--red); }
-    .form-header h1 { color:#fff; font-size:1.1rem; font-weight:700; margin:0; }
-    .badge-rev { background:rgba(255,255,255,.15); color:#fff; font-size:11px; padding:3px 10px; border-radius:20px; }
-    .form-card { background:#fff; border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); box-shadow:0 2px 12px rgba(35,31,32,.08); padding:28px 32px; }
-    .section-label { display:flex; align-items:center; gap:8px; font-weight:700; font-size:12px; letter-spacing:.8px; text-transform:uppercase; color:var(--red); border-bottom:2px solid var(--red-lt); padding-bottom:6px; margin-bottom:16px; }
-    .req-block { border:1px solid var(--border); border-radius:8px; margin-bottom:12px; overflow:hidden; }
-    .req-block-header { background:var(--red-lt); padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; }
-    .req-block-header .form-check-label { font-weight:700; font-size:13.5px; color:var(--brand); cursor:pointer; }
-    .req-block-body { padding:16px; background:#fff; border-top:1px solid var(--border); display:none; }
-    .req-block.active .req-block-body { display:block; }
-    .prog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(185px,1fr)); gap:8px; }
-    .prog-item { display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:6px; padding:8px 10px; cursor:pointer; transition:background .15s; }
-    .prog-item:has(input:checked) { background:var(--red-lt); border-color:var(--red); }
-    .prog-item label { cursor:pointer; font-size:13px; margin:0; }
-    .drive-table { width:100%; border-collapse:collapse; font-size:13px; }
-    .drive-table th { background:var(--red-lt); color:var(--brand); font-weight:700; padding:8px 12px; text-align:center; border:1px solid var(--border); font-size:12px; text-transform:uppercase; }
-    .drive-table td { padding:8px 12px; border:1px solid var(--border); vertical-align:middle; }
-    .drive-code { font-weight:700; color:var(--red); font-size:14px; text-align:center; }
-    .check-center { text-align:center; }
-    .approval-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
-    .approval-box { border:1px solid var(--border); border-radius:10px; padding:14px; background:#fafafa; }
-    .approval-box .role-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
-    .appr-select { width:100%; font-size:12.5px; border:1px solid var(--border); border-radius:6px; padding:6px 8px; background:#fff; appearance:none; }
-    .appr-info { margin-top:6px; font-size:11.5px; color:#90a4ae; display:flex; align-items:center; gap:4px; }
-    .appr-info .dot { width:6px; height:6px; border-radius:50%; background:#90a4ae; }
-    .appr-info.loaded .dot { background:#2e7d32; }
-    .btn-submit { background:var(--red); color:#fff; border:none; padding:10px 32px; border-radius:8px; font-weight:700; font-size:14px; }
-    .btn-submit:hover { background:#c0151b; color:#fff; }
-    .btn-cancel { border:1.5px solid var(--border); color:#607080; background:#fff; padding:10px 24px; border-radius:8px; font-size:14px; text-decoration:none; }
-</style>
+    <style>
+        :root {
+            --brand: #231f20;
+            --red: #ed1c24;
+            --red-lt: #fef0f0;
+            --border: #e0d6d6;
+            --radius: 10px;
+        }
+
+        .form-header {
+            background: var(--brand);
+            border-radius: var(--radius) var(--radius) 0 0;
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 3px solid var(--red);
+        }
+
+            .form-header h1 {
+                color: #fff;
+                font-size: 1.1rem;
+                font-weight: 700;
+                margin: 0;
+            }
+
+        .badge-rev {
+            background: rgba(255,255,255,.15);
+            color: #fff;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .form-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+            box-shadow: 0 2px 12px rgba(35,31,32,.08);
+            padding: 28px 32px;
+        }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: var(--red);
+            border-bottom: 2px solid var(--red-lt);
+            padding-bottom: 6px;
+            margin-bottom: 16px;
+        }
+
+        .req-block {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .req-block-header {
+            background: var(--red-lt);
+            padding: 10px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .req-block-header .form-check-label {
+                font-weight: 700;
+                font-size: 13.5px;
+                color: var(--brand);
+                cursor: pointer;
+            }
+
+        .req-block-body {
+            padding: 16px;
+            background: #fff;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+
+        .req-block.active .req-block-body {
+            display: block;
+        }
+
+        .prog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(185px,1fr));
+            gap: 8px;
+        }
+
+        .prog-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+            .prog-item:has(input:checked) {
+                background: var(--red-lt);
+                border-color: var(--red);
+            }
+
+            .prog-item label {
+                cursor: pointer;
+                font-size: 13px;
+                margin: 0;
+            }
+
+        .drive-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+            .drive-table th {
+                background: var(--red-lt);
+                color: var(--brand);
+                font-weight: 700;
+                padding: 8px 12px;
+                text-align: center;
+                border: 1px solid var(--border);
+                font-size: 12px;
+                text-transform: uppercase;
+            }
+
+            .drive-table td {
+                padding: 8px 12px;
+                border: 1px solid var(--border);
+                vertical-align: middle;
+            }
+
+        .drive-code {
+            font-weight: 700;
+            color: var(--red);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .check-center {
+            text-align: center;
+        }
+
+        .approval-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
+            gap: 14px;
+        }
+
+        .approval-box {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            background: #fafafa;
+        }
+
+            .approval-box .role-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: .6px;
+                margin-bottom: 10px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+        .appr-select {
+            width: 100%;
+            font-size: 12.5px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            background: #fff;
+            appearance: none;
+        }
+
+        .appr-info {
+            margin-top: 6px;
+            font-size: 11.5px;
+            color: #90a4ae;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+            .appr-info .dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #90a4ae;
+            }
+
+            .appr-info.loaded .dot {
+                background: #2e7d32;
+            }
+
+        .btn-submit {
+            background: var(--red);
+            color: #fff;
+            border: none;
+            padding: 10px 32px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+            .btn-submit:hover {
+                background: #c0151b;
+                color: #fff;
+            }
+
+        .btn-cancel {
+            border: 1.5px solid var(--border);
+            color: #607080;
+            background: #fff;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-decoration: none;
+        }
+    </style>
 }
 
 <form asp-action="Create" method="post" id="ticketForm">
@@ -152,7 +364,9 @@
                     <table class="drive-table">
                         <thead><tr><th style="width:60px">Drive</th><th style="text-align:left">Description</th><th style="width:80px">Read</th><th style="width:80px">Write</th></tr></thead>
                         <tbody>
-                            @{ var drives = new[] { ("S","Share (Common)"),("V","Department Directory"),("T","BTMS"),("X","Company Info (Standard)"),("W","BT - Structure"),("U","Own Directory"),("K","Drawing") }; }
+                            @{
+                                var drives = new[] { ("S", "Share (Common)"), ("V", "Department Directory"), ("T", "BTMS"), ("X", "Company Info (Standard)"), ("W", "BT - Structure"), ("U", "Own Directory"), ("K", "Drawing") };
+                            }
                             @for (int i = 0; i < drives.Length; i++)
                             {
                                 var (code, desc) = drives[i];
@@ -160,7 +374,10 @@
                                     <td class="drive-code">@code:</td>
                                     <td>
                                         <span style="color:#607080;font-size:12px">@desc</span>
-                                        @if (code == "X") { <span class="badge bg-secondary ms-1" style="font-size:10px">Standard</span> }
+                                        @if (code == "X")
+                                        {
+                                            <span class="badge bg-secondary ms-1" style="font-size:10px">Standard</span>
+                                        }
                                         <input type="hidden" name="NetworkDrives[@i].Drive" value="@code" />
                                     </td>
                                     <td class="check-center"><input type="checkbox" name="NetworkDrives[@i].Read" value="true" class="form-check-input" @(code == "X" ? "checked" : "") /></td>
@@ -190,8 +407,10 @@
             </div>
             <div class="req-block-body">
                 <div class="prog-grid mb-3">
-                    @{ var std = new[]{"Microsoft Windows","Kaspersky","Driver Printer"};
-                       var opt = new[]{("Microsoft Office 2016",""),("Acrobat Reader","bi bi-file-earmark-pdf"),("PDF Creator",""),("Office 365 / MS Teams","bi bi-microsoft-teams"),("7-Zip",""),("VLC Player","bi bi-play-circle"),("AX (Dynamics)",""),("TC",""),("CAQ",""),("Solid Edge","")}; }
+                    @{
+                        var std = new[] { "Microsoft Windows", "Kaspersky", "Driver Printer" };
+                        var opt = new[] { ("Microsoft Office 2016", ""), ("Acrobat Reader", "bi bi-file-earmark-pdf"), ("PDF Creator", ""), ("Office 365 / MS Teams", "bi bi-microsoft-teams"), ("7-Zip", ""), ("VLC Player", "bi bi-play-circle"), ("AX (Dynamics)", ""), ("TC", ""), ("CAQ", ""), ("Solid Edge", "") };
+                    }
                     @foreach (var p in std)
                     {
                         <div class="prog-item" style="background:var(--red-lt);border-color:var(--red);opacity:.85">
@@ -201,12 +420,15 @@
                     }
                     @foreach (var (name, icon) in opt)
                     {
-                        var iid = "prog-" + name.Replace(" ","").Replace("/","").Replace("(","").Replace(")","");
+                        var iid = "prog-" + name.Replace(" ", "").Replace("/", "").Replace("(", "").Replace(")", "");
                         <div class="prog-item">
                             <input class="form-check-input" type="checkbox" name="SelectedPrograms" value="@name" id="@iid" />
-                            <label for="@iid">@if(!string.IsNullOrEmpty(icon)){<i class="@icon me-1"></i>}@name</label>
-                        </div>
-                    }
+                            <label for="@iid">@if(!string.IsNullOrEmpty(icon)){
+                            <i class="@icon me-1"></i>
+                        }
+@name</label>
+                    </div>
+                                        }
                 </div>
                 <div class="col-md-8">
                     <label asp-for="ProgramOther" class="form-label" style="font-size:12px">Other (specify)</label>
@@ -250,9 +472,10 @@
             </div>
         </div>
 
-        <!-- SECTION 3: APPROVAL -->
+        <!-- SECTION 3: APPROVAL WORKFLOW -->
         <div class="section-label mt-4"><i class="bi bi-diagram-3"></i>Approval Workflow</div>
         <div class="approval-grid mb-4">
+
             <!-- Requester (fixed) -->
             <div class="approval-box">
                 <div class="role-label" style="color:#607080"><i class="bi bi-person"></i>REQUESTER</div>
@@ -279,7 +502,7 @@
                 </div>
             </div>
 
-            <!-- Managing Director — visible only when VPN selected -->
+            <!-- Managing Director — VPN only -->
             <div id="box-md" class="approval-box" style="border-color:#6a1b9a;display:none">
                 <div class="role-label" style="color:#6a1b9a"><i class="bi bi-building"></i>MANAGING DIRECTOR <span class="badge ms-1" style="background:#f3e5f5;color:#6a1b9a;font-size:9px">VPN ONLY</span></div>
                 <select class="appr-select" id="sel-mgdir" name="ApprManagingDir" onchange="updateApprInfo(this,'info-mgdir')">
@@ -297,61 +520,40 @@
                 <div class="appr-info" id="info-itmgr"></div>
             </div>
 
-            <!-- IT Admin — dynamic list (Fixed, loaded from TBUserFunction FUNCODE=5) -->
+            <!-- IT Admin list -->
             <div class="approval-box" style="border-color:#00695c">
-                <div class="role-label" style="color:#00695c">
-                    <i class="bi bi-people"></i>IT ADMIN → ASSIGN PIC
-                </div>
-
-                <!-- Loading state -->
+                <div class="role-label" style="color:#00695c"><i class="bi bi-people"></i>IT ADMIN → ASSIGN PIC</div>
                 <div id="itadmin-loading" style="font-size:12.5px;color:#90a4ae;padding:4px 0">
                     <span class="spinner-border spinner-border-sm me-1"></span>Loading...
                 </div>
-
-                <!-- Loaded: แสดง list ของ IT Admin ทุกคน -->
                 <div id="itadmin-list" style="display:none"></div>
-
-                <!-- Not found -->
                 <div id="itadmin-notfound" style="display:none;font-size:12px;color:#e65100">
                     <i class="bi bi-exclamation-triangle me-1"></i>No IT Admin assigned
                 </div>
-
-                <div style="margin-top:8px;font-size:10.5px;color:#90a4ae;
-                            background:#f0faf9;border-radius:4px;padding:4px 8px">
-                    <i class="bi bi-info-circle me-1"></i>
-                    IT Admin will assign IT PIC after IT Manager approves
+                <div style="margin-top:8px;font-size:10.5px;color:#90a4ae;background:#f0faf9;border-radius:4px;padding:4px 8px">
+                    <i class="bi bi-info-circle me-1"></i>IT Admin will assign IT PIC after IT Manager approves
                 </div>
             </div>
 
-            <!-- IT PIC — Checkbox list (IT Admin เลือกได้, อื่นๆ เห็น Info) -->
+            <!-- IT PIC — IT Admin sees checkbox list, others see info -->
             <div class="approval-box" style="border-color:#2e7d32">
-                <div class="role-label" style="color:#2e7d32">
-                    <i class="bi bi-tools"></i>IT PERSON INCHARGE
-                </div>
+                <div class="role-label" style="color:#2e7d32"><i class="bi bi-tools"></i>IT PERSON INCHARGE</div>
                 <input type="hidden" id="hid-itpic" name="ApprITPIC" value="" />
-
-                <!-- Loading -->
                 <div id="itpic-loading" style="font-size:12.5px;color:#90a4ae;padding:4px 0">
                     <span class="spinner-border spinner-border-sm me-1"></span>Loading...
                 </div>
-
-                <!-- IT Admin: Checkbox list — เลือกได้ -->
                 <div id="itpic-checkboxes" style="display:none;max-height:200px;overflow-y:auto"></div>
-
-                <!-- Non-admin: Info only -->
                 <div id="itpic-info" style="display:none;font-size:12px;color:#90a4ae;padding:6px 0">
                     IT Admin will assign IT PIC after IT Manager approves.
                 </div>
-
                 <div id="itpic-notfound" style="display:none;font-size:12px;color:#e65100">
                     <i class="bi bi-exclamation-triangle me-1"></i>No IT PIC found
                 </div>
-
-                <div style="margin-top:8px;font-size:10.5px;color:#2e7d32;
-                            background:#e8f5e9;border-radius:4px;padding:3px 7px;display:inline-block">
+                <div style="margin-top:8px;font-size:10.5px;color:#2e7d32;background:#e8f5e9;border-radius:4px;padding:3px 7px;display:inline-block">
                     FUNCODE = 6
                 </div>
             </div>
+
         </div>
 
         <!-- ACTION BUTTONS -->
@@ -411,235 +613,229 @@
 </div>
 
 @section Scripts {
-<script>
-const confirmModal  = new bootstrap.Modal(document.getElementById('confirmModal'));
-let   formValidated = false;
+    <script>
+        const confirmModal  = new bootstrap.Modal(document.getElementById('confirmModal'));
+        let   formValidated = false;
 
-// ── Toggle blocks ─────────────────────────────────────────────────
-function toggleBlock(id, force) {
-    const block = document.getElementById('block-' + id);
-    const chk   = document.getElementById('chk-' + id);
-    const isActive = force !== undefined ? force : !block.classList.contains('active');
-    block.classList.toggle('active', isActive);
-    chk.checked = isActive;
-}
+        // ── ค่าที่ประกาศจาก Razor (ไม่มี user? เพราะใช้ isITAdmin แทน) ────
+        const IS_IT_ADMIN = @(isITAdmin ? "true" : "false");
 
-function toggleVpnDates(show) {
-    document.getElementById('vpn-from-wrap').style.display = show ? '' : 'none';
-    document.getElementById('vpn-to-wrap').style.display   = show ? '' : 'none';
-}
-
-function onVpnChange(checked) {
-    const box = document.getElementById('box-md');
-    box.style.display = checked ? '' : 'none';
-    if (checked && document.getElementById('sel-mgdir').options.length <= 1) {
-        loadApprovers(4, 'sel-mgdir', 'info-mgdir');
-    }
-    if (!checked) document.getElementById('sel-mgdir').value = '';
-}
-
-// ── Load approvers ────────────────────────────────────────────────
-async function loadApprovers(funCode, selId, infoId) {
-    const sel = document.getElementById(selId);
-    sel.innerHTML = '<option value="">Loading...</option>';
-    sel.disabled  = true;
-    try {
-        const res  = await fetch(`/Ticket/GetApprovers?funCode=${funCode}`);
-        const list = await res.json();
-        sel.innerHTML = '<option value="">— Select Approver —</option>';
-        list.forEach(a => {
-            const opt = document.createElement('option');
-            opt.value = a.samAcc;
-            opt.textContent = a.displayName + (a.department ? ` (${a.department})` : '');
-            opt.dataset.email = a.email;
-            sel.appendChild(opt);
-        });
-        sel.disabled = false;
-        updateApprInfo(sel, infoId);
-    } catch { sel.innerHTML = '<option value="">(Failed to load)</option>'; sel.disabled = false; }
-}
-
-function updateApprInfo(sel, infoId) {
-    const el  = document.getElementById(infoId);
-    const opt = sel.options[sel.selectedIndex];
-    if (!opt?.value) { el.className = 'appr-info'; el.innerHTML = ''; return; }
-    el.className = 'appr-info loaded';
-    el.innerHTML = `<div class="dot"></div><span style="font-size:11.5px">${opt.dataset.email || ''}</span>`;
-}
-
-// ── Load My Manager (Dept Manager auto-assign) ────────────────────
-async function loadMyManager() {
-    try {
-        const res  = await fetch('/Ticket/GetMyManager');
-        const data = await res.json();
-        document.getElementById('mgr-loading').style.display = 'none';
-        if (data.found) {
-            document.getElementById('hid-deptmgr').value      = data.samAcc;
-            document.getElementById('mgr-name').textContent   = data.displayName;
-            document.getElementById('mgr-email').textContent  = data.email;
-            document.getElementById('mgr-display').style.display = 'block';
-        } else {
-            document.getElementById('mgr-notfound').style.display = 'block';
+        // ── Toggle blocks ──────────────────────────────────────────────────
+        function toggleBlock(id, force) {
+            const block = document.getElementById('block-' + id);
+            const chk   = document.getElementById('chk-'   + id);
+            const isActive = force !== undefined ? force : !block.classList.contains('active');
+            block.classList.toggle('active', isActive);
+            chk.checked = isActive;
         }
-    } catch {
-        document.getElementById('mgr-loading').style.display    = 'none';
-        document.getElementById('mgr-notfound').style.display   = 'block';
-    }
-}
-
-// ── Submit + Confirmation Modal ───────────────────────────────────
-document.getElementById('ticketForm').addEventListener('submit', function(e) {
-    if (formValidated) return;
-    e.preventDefault();
-
-    const checks = ['chk-computer','chk-email','chk-network','chk-programs','chk-vpn'];
-    if (!checks.some(id => document.getElementById(id).checked)) {
-        alert('Please select at least 1 requested item'); return;
-    }
-    const deptMgr = document.getElementById('hid-deptmgr')?.value;
-    if (!deptMgr) {
-        alert('Department Manager not found. Please contact HR or IT Admin.'); return;
-    }
-    const isVPN = document.getElementById('chk-vpn').checked;
-    if (isVPN && !document.getElementById('sel-mgdir').value) {
-        alert('VPN request requires Managing Director approval. Please select a Managing Director.'); return;
-    }
-
-    // Build summary
-    document.getElementById('cfm-name').textContent = document.getElementById('RequesterName')?.value || '—';
-    document.getElementById('cfm-dept').textContent = document.getElementById('Department')?.value    || '—';
-    const LABELS = {'chk-computer':'Computer','chk-email':'Email','chk-network':'Network Drive','chk-programs':'Programs','chk-vpn':'VPN'};
-    document.getElementById('cfm-items').innerHTML = checks
-        .filter(id => document.getElementById(id).checked)
-        .map(id => `<span style="display:inline-block;background:#fef0f0;color:#ed1c24;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin:2px">${LABELS[id]}</span>`)
-        .join('');
-    document.getElementById('cfm-mgr').textContent = document.getElementById('mgr-name')?.textContent || '—';
-    document.getElementById('cfm-vpn-warn').style.display = isVPN ? 'block' : 'none';
-
-    confirmModal.show();
-});
-
-document.getElementById('btn-confirm-submit').addEventListener('click', function() {
-    this.disabled = true;
-    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
-    formValidated = true;
-    confirmModal.hide();
-    document.getElementById('ticketForm').submit();
-});
-
-// ── Load IT Admin list (FUNCODE=5) ───────────────────────────────
-async function loadITAdmins() {
-    try {
-        const res  = await fetch('/Ticket/GetITAdmins');
-        const list = await res.json();
-
-        document.getElementById('itadmin-loading').style.display = 'none';
-
-        if (!list.length) {
-            document.getElementById('itadmin-notfound').style.display = 'block';
-            return;
+        function toggleVpnDates(show) {
+            document.getElementById('vpn-from-wrap').style.display = show ? '' : 'none';
+            document.getElementById('vpn-to-wrap').style.display   = show ? '' : 'none';
+        }
+        function onVpnChange(checked) {
+            const box = document.getElementById('box-md');
+            box.style.display = checked ? '' : 'none';
+            if (checked && document.getElementById('sel-mgdir').options.length <= 1)
+                loadApprovers(4, 'sel-mgdir', 'info-mgdir');
+            if (!checked) document.getElementById('sel-mgdir').value = '';
         }
 
-        const el = document.getElementById('itadmin-list');
-        el.innerHTML = list.map(a => `
-            <div style="display:flex;align-items:center;gap:8px;
-                        padding:5px 0;border-bottom:1px solid #f0faf9">
-                <div style="width:26px;height:26px;border-radius:50%;
-                            background:#00695c;color:#fff;display:flex;
-                            align-items:center;justify-content:center;
-                            font-size:10px;font-weight:700;flex-shrink:0">
-                    ${a.displayName.split(' ').slice(0,2).map(w=>w[0]).join('')}
-                </div>
-                <div>
-                    <div style="font-weight:600;font-size:12.5px;color:#1a2332">
-                        ${a.displayName}
-                    </div>
-                    <div style="font-size:11px;color:#607080">${a.email}</div>
-                </div>
-            </div>`).join('');
-
-        // ลบ border-bottom ของแถวสุดท้าย
-        const rows = el.querySelectorAll('div[style*="border-bottom"]');
-        if (rows.length) rows[rows.length-1].style.borderBottom = 'none';
-
-        el.style.display = 'block';
-    } catch {
-        document.getElementById('itadmin-loading').style.display  = 'none';
-        document.getElementById('itadmin-notfound').style.display = 'block';
-    }
-}
-
-// ── Load IT PIC Checkbox List (FUNCODE=6) ────────────────────────
-// เฉพาะ IT Admin (FUNCODE=5) Login ถึงจะเลือกได้
-// คนอื่นเห็นแค่ Info
-const IS_IT_ADMIN = @(user?.IsITAdmin == true ? "true" : "false");
-
-async function loadITPICList() {
-    try {
-        const res  = await fetch('/Ticket/GetApprovers?funCode=6');
-        const list = await res.json();
-
-        document.getElementById('itpic-loading').style.display = 'none';
-
-        if (!list.length) {
-            document.getElementById('itpic-notfound').style.display = 'block';
-            return;
+        // ── Load approvers dropdown ────────────────────────────────────────
+        async function loadApprovers(funCode, selId, infoId) {
+            const sel = document.getElementById(selId);
+            sel.innerHTML = '<option value="">Loading...</option>';
+            sel.disabled  = true;
+            try {
+                const res  = await fetch(`/Ticket/GetApprovers?funCode=${funCode}`);
+                const list = await res.json();
+                sel.innerHTML = '<option value="">— Select Approver —</option>';
+                list.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.samAcc;
+                    opt.textContent = a.displayName + (a.department ? ` (${a.department})` : '');
+                    opt.dataset.email = a.email;
+                    sel.appendChild(opt);
+                });
+                sel.disabled = false;
+                updateApprInfo(sel, infoId);
+            } catch { sel.innerHTML = '<option value="">(Failed to load)</option>'; sel.disabled = false; }
+        }
+        function updateApprInfo(sel, infoId) {
+            const el  = document.getElementById(infoId);
+            const opt = sel.options[sel.selectedIndex];
+            if (!opt?.value) { el.className = 'appr-info'; el.innerHTML = ''; return; }
+            el.className = 'appr-info loaded';
+            el.innerHTML = `<div class="dot"></div><span style="font-size:11.5px">${opt.dataset.email || ''}</span>`;
         }
 
-        if (IS_IT_ADMIN === 'true') {
-            // IT Admin — แสดง Checkbox list เลือกได้
-            const el = document.getElementById('itpic-checkboxes');
-            el.innerHTML = list.map((p, i) => `
-                <label style="display:flex;align-items:center;gap:10px;padding:7px 8px;
-                              border-radius:8px;cursor:pointer;margin-bottom:4px;
-                              border:1px solid #e0d6d6;transition:background .1s"
-                       onmouseover="this.style.background='#f0faf9'"
-                       onmouseout="this.style.background=document.getElementById('pic-chk-${i}').checked?'#e8f5e9':'#fff'">
-                    <input type="radio" name="itpic-radio" id="pic-chk-${i}"
-                           value="${p.samAcc}" data-name="${p.displayName}"
-                           style="accent-color:#2e7d32;width:16px;height:16px;flex-shrink:0"
-                           onchange="onITPICSelect(this,'${p.samAcc}','${p.displayName}')" />
-                    <div>
-                        <div style="font-weight:600;font-size:12.5px;color:#1a2332">${p.displayName}</div>
-                        <div style="font-size:11px;color:#607080">${p.email}</div>
-                    </div>
-                </label>`).join('');
-            el.style.display = 'block';
-
-            // ถ้ามีค่า preselect จาก postback
-            const preVal = '@Html.Raw(Model.ApprITPIC ?? "")';
-            if (preVal) {
-                const radio = el.querySelector(`input[value="${preVal}"]`);
-                if (radio) {
-                    radio.checked = true;
-                    radio.closest('label').style.background = '#e8f5e9';
-                    document.getElementById('hid-itpic').value = preVal;
+        // ── Load My Manager ────────────────────────────────────────────────
+        async function loadMyManager() {
+            try {
+                const res  = await fetch('/Ticket/GetMyManager');
+                const data = await res.json();
+                document.getElementById('mgr-loading').style.display = 'none';
+                if (data.found) {
+                    document.getElementById('hid-deptmgr').value     = data.samAcc;
+                    document.getElementById('mgr-name').textContent  = data.displayName;
+                    document.getElementById('mgr-email').textContent = data.email;
+                    document.getElementById('mgr-display').style.display = 'block';
+                } else {
+                    document.getElementById('mgr-notfound').style.display = 'block';
                 }
+            } catch {
+                document.getElementById('mgr-loading').style.display    = 'none';
+                document.getElementById('mgr-notfound').style.display   = 'block';
             }
-        } else {
-            // ไม่ใช่ IT Admin — แสดง Info
-            document.getElementById('itpic-info').style.display = 'block';
         }
-    } catch {
-        document.getElementById('itpic-loading').style.display    = 'none';
-        document.getElementById('itpic-notfound').style.display   = 'block';
-    }
-}
 
-function onITPICSelect(radio, samAcc, name) {
-    // set hidden field
-    document.getElementById('hid-itpic').value = samAcc;
-    // highlight selected row
-    document.querySelectorAll('#itpic-checkboxes label').forEach(l => {
-        l.style.background = l.contains(radio) ? '#e8f5e9' : '#fff';
-        l.style.borderColor = l.contains(radio) ? '#2e7d32' : '#e0d6d6';
-    });
-}
+        // ── Load IT Manager ────────────────────────────────────────────────
+        async function loadITManager() {
+            try {
+                const res  = await fetch('/Ticket/GetITManager');
+                const data = await res.json();
+                document.getElementById('mgr-loading').style.display = 'none';
+                if (data.found) {
+                    document.getElementById('hid-deptmgr').value     = data.samAcc;
+                    document.getElementById('mgr-name').textContent  = data.displayName;
+                    document.getElementById('mgr-email').textContent = data.email;
+                    document.getElementById('mgr-display').style.display = 'block';
+                } else {
+                    document.getElementById('mgr-notfound').style.display = 'block';
+                }
+            } catch {
+                document.getElementById('mgr-loading').style.display    = 'none';
+                document.getElementById('mgr-notfound').style.display   = 'block';
+            }
+        }
 
-// ── Init ──────────────────────────────────────────────────────────
-loadMyManager();
-loadITAdmins();
-loadApprovers(7, 'sel-itmgr', 'info-itmgr');   // IT Manager
-loadITPICList();                                // IT PIC checkbox
-</script>
+        // ── Load IT Admin list ─────────────────────────────────────────────
+        async function loadITAdmins() {
+            try {
+                const res  = await fetch('/Ticket/GetITAdmins');
+                const list = await res.json();
+                document.getElementById('itadmin-loading').style.display = 'none';
+                if (!list.length) { document.getElementById('itadmin-notfound').style.display = 'block'; return; }
+                const el = document.getElementById('itadmin-list');
+                el.innerHTML = list.map(a => `
+                    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0faf9">
+                        <div style="width:26px;height:26px;border-radius:50%;background:#00695c;color:#fff;
+                                    display:flex;align-items:center;justify-content:center;
+                                    font-size:10px;font-weight:700;flex-shrink:0">
+                            ${a.displayName.split(' ').slice(0,2).map(w => w[0]).join('')}
+                        </div>
+                        <div>
+                            <div style="font-weight:600;font-size:12.5px;color:#1a2332">${a.displayName}</div>
+                            <div style="font-size:11px;color:#607080">${a.email}</div>
+                        </div>
+                    </div>`).join('');
+                const rows = el.querySelectorAll('div[style*="border-bottom"]');
+                if (rows.length) rows[rows.length-1].style.borderBottom = 'none';
+                el.style.display = 'block';
+            } catch {
+                document.getElementById('itadmin-loading').style.display    = 'none';
+                document.getElementById('itadmin-notfound').style.display   = 'block';
+            }
+        }
+
+        // ── Load IT PIC list (FUNCODE=6) ───────────────────────────────────
+        // IS_IT_ADMIN = true  → แสดง Radio list ให้ IT Admin เลือกได้
+        // IS_IT_ADMIN = false → แสดง Info เฉยๆ
+        async function loadITPICList() {
+            try {
+                const res  = await fetch('/Ticket/GetApprovers?funCode=6');
+                const list = await res.json();
+                document.getElementById('itpic-loading').style.display = 'none';
+                if (!list.length) { document.getElementById('itpic-notfound').style.display = 'block'; return; }
+
+                if (IS_IT_ADMIN) {
+                    const el = document.getElementById('itpic-checkboxes');
+                    el.innerHTML = list.map((p, i) => `
+                        <label style="display:flex;align-items:center;gap:10px;padding:7px 8px;
+                                      border-radius:8px;cursor:pointer;margin-bottom:4px;
+                                      border:1px solid #e0d6d6;background:#fff;transition:background .1s">
+                            <input type="radio" name="itpic-radio" id="pic-chk-${i}"
+                                   value="${p.samAcc}" data-name="${p.displayName}"
+                                   style="accent-color:#2e7d32;width:16px;height:16px;flex-shrink:0"
+                                   onchange="onITPICSelect(this,'${p.samAcc}')" />
+                            <div>
+                                <div style="font-weight:600;font-size:12.5px;color:#1a2332">${p.displayName}</div>
+                                <div style="font-size:11px;color:#607080">${p.email}</div>
+                            </div>
+                        </label>`).join('');
+                    el.style.display = 'block';
+
+                    // Preselect on postback
+                    const preVal = '@Html.Raw(Model.ApprITPIC ?? "")';
+                    if (preVal) {
+                        const radio = el.querySelector(`input[value="${preVal}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                            radio.closest('label').style.background = '#e8f5e9';
+                            document.getElementById('hid-itpic').value = preVal;
+                        }
+                    }
+                } else {
+                    // ไม่ใช่ IT Admin — แสดง Info
+                    document.getElementById('itpic-info').style.display = 'block';
+                }
+            } catch {
+                document.getElementById('itpic-loading').style.display    = 'none';
+                document.getElementById('itpic-notfound').style.display   = 'block';
+            }
+        }
+
+        function onITPICSelect(radio, samAcc) {
+            document.getElementById('hid-itpic').value = samAcc;
+            document.querySelectorAll('#itpic-checkboxes label').forEach(l => {
+                const isSelected = l.contains(radio);
+                l.style.background   = isSelected ? '#e8f5e9' : '#fff';
+                l.style.borderColor  = isSelected ? '#2e7d32' : '#e0d6d6';
+            });
+        }
+
+        // ── Submit + Confirmation Modal ────────────────────────────────────
+        document.getElementById('ticketForm').addEventListener('submit', function(e) {
+            if (formValidated) return;
+            e.preventDefault();
+
+            const checks = ['chk-computer','chk-email','chk-network','chk-programs','chk-vpn'];
+            if (!checks.some(id => document.getElementById(id).checked)) {
+                alert('Please select at least 1 requested item'); return;
+            }
+            const deptMgr = document.getElementById('hid-deptmgr')?.value;
+            if (!deptMgr) {
+                alert('Department Manager not found. Please contact HR or IT Admin.'); return;
+            }
+            const isVPN = document.getElementById('chk-vpn').checked;
+            if (isVPN && !document.getElementById('sel-mgdir').value) {
+                alert('VPN request requires Managing Director approval. Please select a Managing Director.'); return;
+            }
+
+            document.getElementById('cfm-name').textContent = document.getElementById('RequesterName')?.value || '—';
+            document.getElementById('cfm-dept').textContent = document.getElementById('Department')?.value    || '—';
+            const LABELS = {'chk-computer':'Computer','chk-email':'Email','chk-network':'Network Drive','chk-programs':'Programs','chk-vpn':'VPN'};
+            document.getElementById('cfm-items').innerHTML = checks
+                .filter(id => document.getElementById(id).checked)
+                .map(id => `<span style="display:inline-block;background:#fef0f0;color:#ed1c24;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin:2px">${LABELS[id]}</span>`)
+                .join('');
+            document.getElementById('cfm-mgr').textContent  = document.getElementById('mgr-name')?.textContent || '—';
+            document.getElementById('cfm-vpn-warn').style.display = isVPN ? 'block' : 'none';
+            confirmModal.show();
+        });
+
+        document.getElementById('btn-confirm-submit').addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+            formValidated = true;
+            confirmModal.hide();
+            document.getElementById('ticketForm').submit();
+        });
+
+        // ── Init ───────────────────────────────────────────────────────────
+        loadMyManager();
+        loadITManager();
+        loadITAdmins();
+        loadApprovers(7, 'sel-itmgr', 'info-itmgr');
+        loadITPICList();
+    </script>
 }
