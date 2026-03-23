@@ -1,11 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "D9LXeCdvOm0=",
+  "dgSpecHash": "Ca7jcL3znYc=",
   "success": true,
   "projectFilePath": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\ITTicketRequest.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\sakulchai.p\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\sakulchai.p\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",
+    "C:\\Users\\sakulchai.p\\.nuget\\packages\\exceldatareader\\3.8.0\\exceldatareader.3.8.0.nupkg.sha512",
+    "C:\\Users\\sakulchai.p\\.nuget\\packages\\exceldatareader.dataset\\3.8.0\\exceldatareader.dataset.3.8.0.nupkg.sha512",
     "C:\\Users\\sakulchai.p\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.1.1\\microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",
     "C:\\Users\\sakulchai.p\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\sakulchai.p\\.nuget\\packages\\microsoft.data.sqlclient\\5.2.2\\microsoft.data.sqlclient.5.2.2.nupkg.sha512",
