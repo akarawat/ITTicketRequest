@@ -89,6 +89,7 @@ namespace ITTicketRequest.Controllers
                 cmd.Parameters.AddWithValue("@ApprDeptManager", (object?)vm.ApprDeptManager ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@ApprManagingDir", (object?)vm.ApprManagingDir ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@ApprITManager",   (object?)vm.ApprITManager   ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ApprITPIC",       (object?)vm.ApprITPIC       ?? DBNull.Value);
 
                 var outId = new SqlParameter("@NewTicketId", SqlDbType.UniqueIdentifier)
                             { Direction = ParameterDirection.Output };
@@ -521,6 +522,21 @@ namespace ITTicketRequest.Controllers
                     "Completed"            => (0, ""),
                     _                      => (0, "")
                 };
+
+                // CloseTask: IT PIC ทำเสร็จ → แจ้ง IT Admin Close
+                if (action == "CloseTask" && nextFunCode == 9)
+                {
+                    var emails = GetEmailsByFunCode(9);
+                    if (emails.Any())
+                        await SendMailAsync(string.Join(";", emails),
+                            $"[ITTicket] {docNumber} — IT PIC Task Completed, Ready to Close",
+                            $@"<p>Dear IT Admin,</p>
+                            <p>IT PIC has completed work on ticket <b>{docNumber}</b> from {requesterName}.</p>
+                            <p>Please review and close the ticket.</p>
+                            <p><a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>
+                            Click here to close ticket</a></p>");
+                    return;
+                }
 
                 if (nextFunCode > 0)
                 {

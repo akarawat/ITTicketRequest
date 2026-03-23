@@ -317,16 +317,30 @@ function renderActionPanel(t) {
                 <i class="bi bi-x me-1"></i>Reject
             </button>`;
     } else {
-        const approveLabel = isITAdminClose ? 'Close Ticket' : 'Approve';
-        const approveIcon  = isITAdminClose ? 'bi-check2-all' : 'bi-check';
-        const btnClass     = isITAdminClose ? 'btn-close-lg' : 'btn-approve-lg';
-        buttons.innerHTML = `
-            <button class="${btnClass}" onclick="openActionModal('Approve')">
-                <i class="bi ${approveIcon} me-1"></i>${approveLabel}
-            </button>
-            <button class="btn-reject-lg" onclick="openActionModal('Reject')">
-                <i class="bi bi-x me-1"></i>Reject
-            </button>`;
+        const isITPIC       = t.status === 'PendingITPIC';
+        const approveLabel  = isITAdminClose ? 'Close Ticket' : 'Approve';
+        const approveIcon   = isITAdminClose ? 'bi-check2-all' : 'bi-check';
+        const btnClass      = isITAdminClose ? 'btn-close-lg' : 'btn-approve-lg';
+
+        if (isITPIC) {
+            // IT PIC เห็น "Close Task" button
+            buttons.innerHTML = `
+                <button class="btn-close-lg" onclick="openActionModal('CloseTask')"
+                        style="background:#2e7d32">
+                    <i class="bi bi-check2-all me-1"></i>Close Task
+                </button>
+                <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                    <i class="bi bi-x me-1"></i>Reject
+                </button>`;
+        } else {
+            buttons.innerHTML = `
+                <button class="${btnClass}" onclick="openActionModal('Approve')">
+                    <i class="bi ${approveIcon} me-1"></i>${approveLabel}
+                </button>
+                <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                    <i class="bi bi-x me-1"></i>Reject
+                </button>`;
+        }
     }
 }
 

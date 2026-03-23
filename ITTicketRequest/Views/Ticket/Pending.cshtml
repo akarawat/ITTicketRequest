@@ -26,6 +26,7 @@
     .btn-reject  { background:#fff; color:#b71c1c; border:1px solid #ef9a9a; font-size:12px; padding:4px 14px; border-radius:6px; }
     .btn-assign  { background:#231f20; color:#fff; border:none; font-size:12px; padding:4px 14px; border-radius:6px; font-weight:600; }
     .btn-view    { font-size:12px; padding:4px 12px; border-radius:6px; border:1px solid #e0d6d6; color:#231f20; text-decoration:none; background:#fff; }
+    .btn-close-task { background:#2e7d32; color:#fff; border:none; font-size:12px; padding:4px 14px; border-radius:6px; font-weight:600; }
     .empty-state { text-align:center; padding:60px 20px; color:#90a4ae; }
 </style>
 }
@@ -198,6 +199,11 @@ function renderTable(rows) {
                     ${r.status === 'PendingITAdminAssign'
                         ? `<button class="btn-assign" onclick="openAssignModal('${r.ticketId}','${r.docNumber}')">
                            <i class="bi bi-person-badge me-1"></i>Assign PIC</button>`
+                        : r.status === 'PendingITPIC'
+                        ? `<button class="btn-close-task" onclick="openCloseTaskModal('${r.ticketId}','${r.docNumber}')">
+                           <i class="bi bi-check2-all me-1"></i>Close Task</button>
+                           <button class="btn-reject" onclick="openActionModal('Reject','${r.ticketId}','${r.docNumber}')">
+                           <i class="bi bi-x"></i> Reject</button>`
                         : `<button class="btn-approve" onclick="openActionModal('Approve','${r.ticketId}','${r.docNumber}')">
                            <i class="bi bi-check"></i> Approve</button>
                            <button class="btn-reject" onclick="openActionModal('Reject','${r.ticketId}','${r.docNumber}')">
@@ -243,6 +249,27 @@ async function openAssignModal(ticketId, docNum) {
         document.getElementById('pic-info').textContent =
             opt.value ? `✓ ${opt.dataset.email}` : '';
     };
+}
+
+// ── Close Task Modal ─────────────────────────────────────────────
+function openCloseTaskModal(ticketId, docNum) {
+    pendingAction   = 'CloseTask';
+    pendingTicketId = ticketId;
+    document.getElementById('modal-title').textContent = 'Close Task';
+    document.getElementById('modal-desc').innerHTML =
+        `<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 14px;margin-bottom:10px">
+            <i class="bi bi-check2-all me-2" style="color:#2e7d32"></i>
+            <b style="color:#2e7d32">Ticket: ${docNum}</b>
+        </div>
+        <span style="color:#607080">Confirm that you have completed all tasks for this ticket.<br>
+        IT Admin will be notified to close the ticket.</span>`;
+    const btn = document.getElementById('modal-confirm');
+    btn.style.background = '#2e7d32';
+    btn.style.color = '#fff';
+    btn.style.border = 'none';
+    btn.textContent = 'Confirm Close Task';
+    document.getElementById('modal-remark').value = '';
+    actionModal.show();
 }
 
 document.getElementById('modal-confirm').onclick = async () => {
