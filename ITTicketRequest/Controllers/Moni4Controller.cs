@@ -56,7 +56,7 @@ namespace ITTicketRequest.Controllers
             {
                 ViewBag.Message = "Error";
             }
-            return View();
+            return View("Excelimport");
         }
         public async void Insert_Serial(string fExcelPath)
         {
@@ -177,7 +177,7 @@ namespace ITTicketRequest.Controllers
             {
                 ViewBag.Message = "Error";
             }
-            return View();
+            return View("Excelimport");
         }
         public async void Insert_SerialWo(string fExcelPath)
         {

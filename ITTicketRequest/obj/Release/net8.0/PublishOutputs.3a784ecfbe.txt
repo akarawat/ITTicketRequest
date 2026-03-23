@@ -7,6 +7,8 @@ C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Release\net8.0\PubTmp\Out\
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Release\net8.0\PubTmp\Out\ITTicketRequest.pdb
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Release\net8.0\PubTmp\Out\Azure.Core.dll
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Release\net8.0\PubTmp\Out\Azure.Identity.dll
+C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Release\net8.0\PubTmp\Out\ExcelDataReader.dll
+C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Release\net8.0\PubTmp\Out\ExcelDataReader.DataSet.dll
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Release\net8.0\PubTmp\Out\Microsoft.Bcl.AsyncInterfaces.dll
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Release\net8.0\PubTmp\Out\Microsoft.Data.SqlClient.dll
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Release\net8.0\PubTmp\Out\Microsoft.Identity.Client.dll

@@ -1,0 +1,260 @@
+﻿@{
+    ViewData["Title"] = "Excel Import";
+}
+
+@section Styles {
+    <style>
+        .upload-card { background:#fff; border:1px solid #e0d6d6; border-radius:14px; padding:28px 32px; margin-bottom:24px; transition:box-shadow .2s; }
+        .upload-card:hover { box-shadow:0 4px 20px rgba(35,31,32,.08); }
+        .card-title { font-weight:700; font-size:1rem; color:#231f20; margin-bottom:6px; display:flex; align-items:center; gap:10px; }
+        .card-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; letter-spacing:.4px; text-transform:uppercase; }
+        .badge-wo     { background:#e3f2fd; color:#0d47a1; }
+        .badge-serial { background:#e8f5e9; color:#2e7d32; }
+        .col-preview  { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+        .col-tag      { font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:#f9f6f6; color:#607080; border:1px solid #e0d6d6; }
+        .col-tag.key  { background:#fef0f0; color:#ed1c24; border-color:#ed1c24; }
+        .drop-zone    { border:2px dashed #e0d6d6; border-radius:10px; padding:28px 20px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; background:#fafafa; position:relative; }
+        .drop-zone:hover, .drop-zone.dragover { border-color:#ed1c24; background:#fef0f0; }
+        .drop-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+        .drop-zone .dz-icon { font-size:2.2rem; color:#e0d6d6; margin-bottom:8px; display:block; transition:color .2s; }
+        .drop-zone:hover .dz-icon,.drop-zone.dragover .dz-icon { color:#ed1c24; }
+        .drop-zone .dz-text { font-size:13.5px; color:#607080; }
+        .drop-zone .dz-hint { font-size:11.5px; color:#90a4ae; margin-top:4px; }
+        .drop-zone .dz-selected { font-size:13px; font-weight:600; color:#231f20; margin-top:8px; display:none; }
+        .btn-import { background:#231f20; color:#fff; border:none; padding:10px 28px; border-radius:8px; font-weight:700; font-size:13.5px; cursor:pointer; transition:background .15s; display:inline-flex; align-items:center; gap:8px; }
+        .btn-import:hover:not(:disabled) { background:#ed1c24; }
+        .btn-import:disabled { background:#cfd8dc; cursor:default; }
+        .result-alert { border-radius:8px; padding:12px 16px; font-size:13px; font-weight:600; margin-top:16px; display:flex; align-items:center; gap:10px; }
+        .result-success { background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7; }
+        .result-error   { background:#ffebee; color:#b71c1c; border:1px solid #ef9a9a; }
+        .hint-box { background:#fffde7; border:1px solid #ffe082; border-radius:8px; padding:10px 14px; font-size:12px; color:#795548; margin-bottom:20px; }
+        .how-card { background:#fff; border:1px solid #e0d6d6; border-radius:12px; padding:20px 24px; margin-top:8px; }
+    </style>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 style="font-weight:700;margin:0;color:#231f20">
+            <i class="bi bi-file-earmark-excel me-2" style="color:#ed1c24"></i>Excel Import
+        </h4>
+        <div style="font-size:12px;color:#90a4ae;margin-top:3px">Import Work Order Plan and Serial Number data into the system</div>
+    </div>
+</div>
+
+<div class="hint-box">
+    <i class="bi bi-info-circle me-2"></i>
+    Upload Excel files in the correct format. The system will only insert <b>new records</b> —
+    existing Work Orders and Serial Numbers will be skipped automatically.
+</div>
+
+<div class="row g-4">
+
+    <!-- CARD 1: Work Order Plan -->
+    <div class="col-lg-6">
+        <div class="upload-card">
+            <div class="card-title">
+                <i class="bi bi-clipboard-data" style="color:#0d47a1"></i>
+                Work Order Plan
+                <span class="card-badge badge-wo">Open_WO.xlsx</span>
+            </div>
+            <div style="font-size:12.5px;color:#607080;margin-bottom:14px">
+                Import production Work Orders from Dynamics AX export.
+                Uses <code style="font-size:11px;background:#f4f6fa;padding:1px 5px;border-radius:4px">SP_MigWOData</code>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:#90a4ae;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Required Columns</div>
+            <div class="col-preview">
+                <span class="col-tag key">Production (WO No.)</span>
+                <span class="col-tag">Item number</span>
+                <span class="col-tag">Index / Variant</span>
+                <span class="col-tag">Name</span>
+                <span class="col-tag key">Quantity</span>
+                <span class="col-tag">Delivery / Status</span>
+            </div>
+
+            <form method="post" action="/ImportResultWo" enctype="multipart/form-data" id="form-wo" onsubmit="onSubmit('wo')">
+                @Html.AntiForgeryToken()
+                <div class="drop-zone" id="dz-wo"
+                     ondragover="dzDrag(event,'wo')" ondragleave="dzLeave('wo')" ondrop="dzDrop(event,'wo')">
+                    <input type="file" name="file" accept=".xlsx,.xls" id="file-wo" onchange="fileSelected('wo',this)" />
+                    <i class="bi bi-cloud-upload dz-icon"></i>
+                    <div class="dz-text">Drop <b>Open_WO.xlsx</b> here or click to browse</div>
+                    <div class="dz-hint">Accepts .xlsx / .xls &nbsp;·&nbsp; Max 20 MB</div>
+                    <div class="dz-selected" id="sel-wo"></div>
+                </div>
+
+                @if (ViewBag.Message != null && ViewContext.RouteData.Values["action"]?.ToString() == "ImportResultWo")
+                {
+                    if (ViewBag.Message == "Success")
+                    {
+                        <div class="result-alert result-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Work Order data imported successfully!</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="result-alert result-error">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span>Import failed. Please check the file format and try again.</span>
+                        </div>
+                    }
+                }
+
+                <div class="d-flex align-items-center gap-3 mt-3">
+                    <button type="submit" class="btn-import" id="btn-wo" disabled>
+                        <span id="btn-wo-spin" class="spinner-border spinner-border-sm" style="display:none"></span>
+                        <i class="bi bi-upload" id="btn-wo-icon"></i>
+                        Import Work Orders
+                    </button>
+                    <span id="btn-wo-hint" style="font-size:12px;color:#90a4ae">Select a file first</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CARD 2: Serial Number -->
+    <div class="col-lg-6">
+        <div class="upload-card">
+            <div class="card-title">
+                <i class="bi bi-upc-scan" style="color:#2e7d32"></i>
+                Serial Number Information
+                <span class="card-badge badge-serial">SerialNumber.xlsx</span>
+            </div>
+            <div style="font-size:12.5px;color:#607080;margin-bottom:14px">
+                Import serial number records from inventory export.
+                Uses <code style="font-size:11px;background:#f4f6fa;padding:1px 5px;border-radius:4px">SP_MigSerialData</code>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:#90a4ae;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Required Columns (by position)</div>
+            <div class="col-preview">
+                <span class="col-tag key">[0] Item number</span>
+                <span class="col-tag">[1] Dimension 1</span>
+                <span class="col-tag">[2] Dimension 2</span>
+                <span class="col-tag key">[3] Number (WO)</span>
+                <span class="col-tag">[4] Product name</span>
+                <span class="col-tag">…</span>
+                <span class="col-tag key">[9] Serial number</span>
+            </div>
+
+            <form method="post" action="/ImportResult" enctype="multipart/form-data" id="form-sn" onsubmit="onSubmit('sn')">
+                @Html.AntiForgeryToken()
+                <div class="drop-zone" id="dz-sn"
+                     ondragover="dzDrag(event,'sn')" ondragleave="dzLeave('sn')" ondrop="dzDrop(event,'sn')">
+                    <input type="file" name="file" accept=".xlsx,.xls" id="file-sn" onchange="fileSelected('sn',this)" />
+                    <i class="bi bi-cloud-upload dz-icon"></i>
+                    <div class="dz-text">Drop <b>SerialNumber.xlsx</b> here or click to browse</div>
+                    <div class="dz-hint">Accepts .xlsx / .xls &nbsp;·&nbsp; Max 20 MB</div>
+                    <div class="dz-selected" id="sel-sn"></div>
+                </div>
+
+                @if (ViewBag.Message != null && ViewContext.RouteData.Values["action"]?.ToString() == "ImportResult")
+                {
+                    if (ViewBag.Message == "Success")
+                    {
+                        <div class="result-alert result-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Serial Number data imported successfully!</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="result-alert result-error">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span>Import failed. Please check the file format and try again.</span>
+                        </div>
+                    }
+                }
+
+                <div class="d-flex align-items-center gap-3 mt-3">
+                    <button type="submit" class="btn-import" id="btn-sn" disabled>
+                        <span id="btn-sn-spin" class="spinner-border spinner-border-sm" style="display:none"></span>
+                        <i class="bi bi-upload" id="btn-sn-icon"></i>
+                        Import Serial Numbers
+                    </button>
+                    <span id="btn-sn-hint" style="font-size:12px;color:#90a4ae">Select a file first</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<!-- How to export from AX -->
+<div class="how-card">
+    <div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:#90a4ae;margin-bottom:14px">
+        <i class="bi bi-question-circle me-2"></i>How to Export from Dynamics AX
+    </div>
+    <div class="row g-3" style="font-size:13px">
+        <div class="col-md-6">
+            <div style="font-weight:700;color:#0d47a1;margin-bottom:6px">
+                <i class="bi bi-clipboard-data me-1"></i> Work Order Plan (Open_WO.xlsx)
+            </div>
+            <ol style="color:#607080;padding-left:20px;margin:0;line-height:2">
+                <li>Production control → Production orders → All production orders</li>
+                <li>Filter <b>Status = Released</b></li>
+                <li>Export to Excel → Save as <code>.xlsx</code></li>
+            </ol>
+        </div>
+        <div class="col-md-6">
+            <div style="font-weight:700;color:#2e7d32;margin-bottom:6px">
+                <i class="bi bi-upc-scan me-1"></i> Serial Number (SerialNumber.xlsx)
+            </div>
+            <ol style="color:#607080;padding-left:20px;margin:0;line-height:2">
+                <li>Inventory management → Inquiries → Transactions</li>
+                <li>Filter by Item number / Serial</li>
+                <li>Export to Excel → Save as <code>.xlsx</code></li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function fileSelected(key, input) {
+            const file  = input.files[0];
+            const btn   = document.getElementById('btn-' + key);
+            const hint  = document.getElementById('btn-' + key + '-hint');
+            const selEl = document.getElementById('sel-' + key);
+            if (!file) { btn.disabled=true; hint.textContent='Select a file first'; selEl.style.display='none'; return; }
+            if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                alert('Please select an Excel file (.xlsx or .xls)'); input.value='';
+                btn.disabled=true; hint.textContent='Select a file first'; selEl.style.display='none'; return;
+            }
+            if (file.size > 20*1024*1024) {
+                alert('File size exceeds 20 MB.'); input.value='';
+                btn.disabled=true; hint.textContent='Select a file first'; selEl.style.display='none'; return;
+            }
+            const sizeMB = (file.size/1024/1024).toFixed(2);
+            selEl.textContent = `📄 ${file.name}  (${sizeMB} MB)`;
+            selEl.style.display = 'block';
+            btn.disabled = false;
+            hint.textContent = 'Ready to import';
+            hint.style.color = '#2e7d32';
+        }
+
+        function onSubmit(key) {
+            const btn  = document.getElementById('btn-' + key);
+            const spin = document.getElementById('btn-' + key + '-spin');
+            const icon = document.getElementById('btn-' + key + '-icon');
+            btn.disabled = true;
+            spin.style.display = 'inline-block';
+            icon.style.display = 'none';
+        }
+
+        function dzDrag(e, key) { e.preventDefault(); document.getElementById('dz-'+key).classList.add('dragover'); }
+        function dzLeave(key)   { document.getElementById('dz-'+key).classList.remove('dragover'); }
+        function dzDrop(e, key) {
+            e.preventDefault(); dzLeave(key);
+            const input = document.getElementById('file-'+key);
+            if (e.dataTransfer.files.length) {
+                const dt = new DataTransfer(); dt.items.add(e.dataTransfer.files[0]);
+                input.files = dt.files; fileSelected(key, input);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const result = document.querySelector('.result-alert');
+            if (result) result.scrollIntoView({ behavior:'smooth', block:'center' });
+        });
+    </script>
+}
