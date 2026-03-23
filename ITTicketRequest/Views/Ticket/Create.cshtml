@@ -511,13 +511,30 @@
                 <div class="appr-info" id="info-mgdir"></div>
             </div>
 
-            <!-- IT Manager -->
+            <!-- IT Manager — Auto-assigned (คนเดียว, FUNCODE=7) -->
             <div class="approval-box" style="border-color:#0d47a1">
-                <div class="role-label" style="color:#0d47a1"><i class="bi bi-person-workspace"></i>IT MANAGER</div>
-                <select class="appr-select" id="sel-itmgr" name="ApprITManager" onchange="updateApprInfo(this,'info-itmgr')">
-                    <option value="">— Loading... —</option>
-                </select>
-                <div class="appr-info" id="info-itmgr"></div>
+                <div class="role-label" style="color:#0d47a1">
+                    <i class="bi bi-person-workspace"></i>IT MANAGER
+                </div>
+                <input type="hidden" id="hid-itmgr" name="ApprITManager" value="" />
+
+                <div id="itmgr-loading" style="font-size:12.5px;color:#90a4ae;padding:4px 0">
+                    <span class="spinner-border spinner-border-sm me-1"></span>Loading...
+                </div>
+                <div id="itmgr-display" style="display:none">
+                    <div style="font-weight:600;font-size:13px" id="itmgr-name"></div>
+                    <div class="appr-info loaded mt-1">
+                        <div class="dot" style="background:#0d47a1"></div>
+                        <span id="itmgr-email" style="font-size:11.5px;color:#607080"></span>
+                    </div>
+                    <div style="margin-top:6px;font-size:10.5px;color:#0d47a1;
+                                background:#e8eef9;border-radius:4px;padding:3px 7px;display:inline-block">
+                        <i class="bi bi-lock me-1"></i>Auto-assigned from system
+                    </div>
+                </div>
+                <div id="itmgr-notfound" style="display:none;font-size:12px;color:#e65100">
+                    <i class="bi bi-exclamation-triangle me-1"></i>IT Manager not found
+                </div>
             </div>
 
             <!-- IT Admin list -->
@@ -688,26 +705,6 @@
             }
         }
 
-        // ── Load IT Manager ────────────────────────────────────────────────
-        async function loadITManager() {
-            try {
-                const res  = await fetch('/Ticket/GetITManager');
-                const data = await res.json();
-                document.getElementById('mgr-loading').style.display = 'none';
-                if (data.found) {
-                    document.getElementById('hid-deptmgr').value     = data.samAcc;
-                    document.getElementById('mgr-name').textContent  = data.displayName;
-                    document.getElementById('mgr-email').textContent = data.email;
-                    document.getElementById('mgr-display').style.display = 'block';
-                } else {
-                    document.getElementById('mgr-notfound').style.display = 'block';
-                }
-            } catch {
-                document.getElementById('mgr-loading').style.display    = 'none';
-                document.getElementById('mgr-notfound').style.display   = 'block';
-            }
-        }
-
         // ── Load IT Admin list ─────────────────────────────────────────────
         async function loadITAdmins() {
             try {
@@ -831,11 +828,30 @@
             document.getElementById('ticketForm').submit();
         });
 
+        // ── Load IT Manager (Auto-assigned, FUNCODE=7) ────────────────────
+        async function loadITManager() {
+            try {
+                const res  = await fetch('/Ticket/GetITManager');
+                const data = await res.json();
+                document.getElementById('itmgr-loading').style.display = 'none';
+                if (data.found) {
+                    document.getElementById('hid-itmgr').value      = data.samAcc;
+                    document.getElementById('itmgr-name').textContent  = data.displayName;
+                    document.getElementById('itmgr-email').textContent = data.email;
+                    document.getElementById('itmgr-display').style.display = 'block';
+                } else {
+                    document.getElementById('itmgr-notfound').style.display = 'block';
+                }
+            } catch {
+                document.getElementById('itmgr-loading').style.display    = 'none';
+                document.getElementById('itmgr-notfound').style.display   = 'block';
+            }
+        }
+
         // ── Init ───────────────────────────────────────────────────────────
         loadMyManager();
         loadITManager();
         loadITAdmins();
-        loadApprovers(7, 'sel-itmgr', 'info-itmgr');
         loadITPICList();
     </script>
 }

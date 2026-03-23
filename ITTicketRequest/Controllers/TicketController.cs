@@ -9,19 +9,19 @@ namespace ITTicketRequest.Controllers
 {
     public class TicketController : Controller
     {
-        private readonly IConfiguration   _config;
+        private readonly IConfiguration _config;
         private readonly AppSettingsModel _settings;
         private readonly IHttpClientFactory _http;
 
         public TicketController(IConfiguration config, IOptions<AppSettingsModel> settings, IHttpClientFactory http)
         {
-            _config   = config;
+            _config = config;
             _settings = settings.Value;
-            _http     = http;
+            _http = http;
         }
 
-        private string LocalMailUrl => $"{_config["TBCorApiServices:URLSITE"]}SendMail/MailSenderMessage";
-
+        //private string LocalMailUrl => $"{_config["TBCorApiServices:URLSITE"]}SendMail/MailSenderMessage";
+        private string LocalMailUrl => $"{_config["TBCorApiServices:EmailSender"]}";
         private UserSessionModel? GetSession()
         {
             var json = HttpContext.Session.GetString("UserSession");
@@ -29,17 +29,32 @@ namespace ITTicketRequest.Controllers
             return JsonSerializer.Deserialize<UserSessionModel>(json);
         }
 
-        // VIEWS
+        // ── Map FunCode → Pending Status ─────────────────────────────────
+        private static string? PendingStatusByFunCode(int? funCode) => funCode switch
+        {
+            8 => "PendingDeptMgr",
+            4 => "PendingManagingDir",
+            7 => "PendingITMgr",
+            5 => "PendingITAdminAssign",
+            6 => "PendingITPIC",
+            9 => "PendingITAdminClose",
+            _ => null
+        };
+
+        // ════════════════════════════════════════════════════════════
+        //  VIEWS
+        // ════════════════════════════════════════════════════════════
+
         public IActionResult Create()
         {
             var session = GetSession();
             if (session == null) return Redirect(_config["TBCorApiServices:AuthenUrl"] ?? "/");
             var vm = new TicketViewModel
             {
-                RequesterName  = session.FullName,
+                RequesterName = session.FullName,
                 RequesterEmail = session.Email,
-                Department     = session.Department,
-                SamAcc         = session.SamAcc
+                Department = session.Department,
+                SamAcc = session.SamAcc
             };
             return View(vm);
         }
@@ -57,29 +72,29 @@ namespace ITTicketRequest.Controllers
                 conn.Open();
                 using var cmd = new SqlCommand("sp_InsertTicket", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@SamAcc",          session.SamAcc);
-                cmd.Parameters.AddWithValue("@RequesterName",   vm.RequesterName);
-                cmd.Parameters.AddWithValue("@Email",           vm.RequesterEmail);
-                cmd.Parameters.AddWithValue("@Department",      vm.Department);
-                cmd.Parameters.AddWithValue("@Section",         (object?)vm.Section       ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Position",        (object?)vm.Position      ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Reason",          (object?)vm.Reason        ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ReqComputer",     vm.ReqComputer);
-                cmd.Parameters.AddWithValue("@ComputerType",    (object?)vm.ComputerType  ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ComputerNote",    (object?)vm.ComputerNote  ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ReqEmail",        vm.ReqEmail);
-                cmd.Parameters.AddWithValue("@EmailRequest",    (object?)vm.EmailRequest  ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@NetworkDrives",   JsonSerializer.Serialize(vm.NetworkDrives));
-                cmd.Parameters.AddWithValue("@Programs",        JsonSerializer.Serialize(vm.SelectedPrograms));
-                cmd.Parameters.AddWithValue("@ProgramOther",    (object?)vm.ProgramOther  ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ReqVPN",          vm.ReqVPN);
-                cmd.Parameters.AddWithValue("@VPNType",         (object?)vm.VPNType       ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@VPNFrom",         vm.VPNFrom.HasValue ? vm.VPNFrom.Value : DBNull.Value);
-                cmd.Parameters.AddWithValue("@VPNTo",           vm.VPNTo.HasValue   ? vm.VPNTo.Value   : DBNull.Value);
+                cmd.Parameters.AddWithValue("@SamAcc", session.SamAcc);
+                cmd.Parameters.AddWithValue("@RequesterName", vm.RequesterName);
+                cmd.Parameters.AddWithValue("@Email", vm.RequesterEmail);
+                cmd.Parameters.AddWithValue("@Department", vm.Department);
+                cmd.Parameters.AddWithValue("@Section", (object?)vm.Section ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Position", (object?)vm.Position ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Reason", (object?)vm.Reason ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ReqComputer", vm.ReqComputer);
+                cmd.Parameters.AddWithValue("@ComputerType", (object?)vm.ComputerType ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ComputerNote", (object?)vm.ComputerNote ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ReqEmail", vm.ReqEmail);
+                cmd.Parameters.AddWithValue("@EmailRequest", (object?)vm.EmailRequest ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@NetworkDrives", JsonSerializer.Serialize(vm.NetworkDrives));
+                cmd.Parameters.AddWithValue("@Programs", JsonSerializer.Serialize(vm.SelectedPrograms));
+                cmd.Parameters.AddWithValue("@ProgramOther", (object?)vm.ProgramOther ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ReqVPN", vm.ReqVPN);
+                cmd.Parameters.AddWithValue("@VPNType", (object?)vm.VPNType ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@VPNFrom", vm.VPNFrom.HasValue ? vm.VPNFrom.Value : DBNull.Value);
+                cmd.Parameters.AddWithValue("@VPNTo", vm.VPNTo.HasValue ? vm.VPNTo.Value : DBNull.Value);
                 cmd.Parameters.AddWithValue("@ApprDeptManager", (object?)vm.ApprDeptManager ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@ApprManagingDir", (object?)vm.ApprManagingDir ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ApprITManager",   (object?)vm.ApprITManager   ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ApprITPIC",       (object?)vm.ApprITPIC       ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ApprITManager", (object?)vm.ApprITManager ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ApprITPIC", (object?)vm.ApprITPIC ?? DBNull.Value);
                 var outId = new SqlParameter("@NewTicketId", SqlDbType.UniqueIdentifier) { Direction = ParameterDirection.Output };
                 cmd.Parameters.Add(outId);
                 cmd.ExecuteNonQuery();
@@ -114,7 +129,10 @@ namespace ITTicketRequest.Controllers
             return View();
         }
 
-        // JSON ENDPOINTS
+        // ════════════════════════════════════════════════════════════
+        //  JSON ENDPOINTS
+        // ════════════════════════════════════════════════════════════
+
         public IActionResult GetMyManager()
         {
             var session = GetSession();
@@ -127,12 +145,12 @@ namespace ITTicketRequest.Controllers
                 using var cmd = new SqlCommand("sp_GetMGRByMySamAcc", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@SamAcc", session.SamAcc);
-                var samMgr   = new SqlParameter("@SamAccMgr",   SqlDbType.NVarChar, 100) { Direction = ParameterDirection.Output };
+                var samMgr = new SqlParameter("@SamAccMgr", SqlDbType.NVarChar, 100) { Direction = ParameterDirection.Output };
                 var emailMgr = new SqlParameter("@SamAccEmail", SqlDbType.NVarChar, 512) { Direction = ParameterDirection.Output };
                 cmd.Parameters.Add(samMgr);
                 cmd.Parameters.Add(emailMgr);
                 cmd.ExecuteNonQuery();
-                var mgrSam   = samMgr.Value   == DBNull.Value ? "" : samMgr.Value.ToString()!;
+                var mgrSam = samMgr.Value == DBNull.Value ? "" : samMgr.Value.ToString()!;
                 var mgrEmail = emailMgr.Value == DBNull.Value ? "" : emailMgr.Value.ToString()!;
                 if (string.IsNullOrEmpty(mgrSam)) return Json(new { found = false });
                 string displayName = mgrSam;
@@ -144,27 +162,31 @@ namespace ITTicketRequest.Controllers
             }
             catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
         }
+
+        // GET /Ticket/GetITManager — ดึง IT Manager (FUNCODE=7) auto-assign
         public IActionResult GetITManager()
         {
             var session = GetSession();
             if (session == null) return Unauthorized();
             try
             {
-                var connStr = _config.GetConnectionString("sp_GetITMGRByMySamAcc");
+                var connStr = _config.GetConnectionString("BTITTicketConn"); // ← fix: ใช้ connection string จริง
                 using var conn = new SqlConnection(connStr);
                 conn.Open();
                 using var cmd = new SqlCommand("sp_GetITMGRBySamAcc", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                var samMgr   = new SqlParameter("@SamAccMgr",   SqlDbType.NVarChar, 100) { Direction = ParameterDirection.Output };
+                var samMgr = new SqlParameter("@SamAccMgr", SqlDbType.NVarChar, 100) { Direction = ParameterDirection.Output };
                 var emailMgr = new SqlParameter("@SamAccEmail", SqlDbType.NVarChar, 512) { Direction = ParameterDirection.Output };
-                var mgrDisplay = new SqlParameter("@displayName", SqlDbType.NVarChar, 512) { Direction = ParameterDirection.Output };
+                var displayMgr = new SqlParameter("@displayName", SqlDbType.NVarChar, 512) { Direction = ParameterDirection.Output };
                 cmd.Parameters.Add(samMgr);
                 cmd.Parameters.Add(emailMgr);
+                cmd.Parameters.Add(displayMgr); // ← fix: Add ก่อน ExecuteNonQuery
                 cmd.ExecuteNonQuery();
-                var mgrSam   = samMgr.Value   == DBNull.Value ? "" : samMgr.Value.ToString()!;
+                var mgrSam = samMgr.Value == DBNull.Value ? "" : samMgr.Value.ToString()!;
                 var mgrEmail = emailMgr.Value == DBNull.Value ? "" : emailMgr.Value.ToString()!;
-                var displayName = mgrDisplay.Value == DBNull.Value ? "" : mgrDisplay.Value.ToString()!;
-                return Json(new { found = true, samAcc = mgrSam, displayName, email = mgrEmail});
+                var displayName = displayMgr.Value == DBNull.Value ? "" : displayMgr.Value.ToString()!;
+                if (string.IsNullOrEmpty(mgrSam)) return Json(new { found = false });
+                return Json(new { found = true, samAcc = mgrSam, displayName, email = mgrEmail });
             }
             catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
         }
@@ -222,43 +244,59 @@ namespace ITTicketRequest.Controllers
             var session = GetSession();
             if (session == null) return Unauthorized();
             int funCode = 0;
-            if      (session.IsAdmin)            funCode = 9;
-            else if (session.IsDeptManager)      funCode = 8;
+            
+            if (session.IsDeptManager) funCode = 8;
             else if (session.IsManagingDirector) funCode = 4;
-            else if (session.IsITManager)        funCode = 7;
-            else if (session.IsITAdmin)          funCode = 5;
-            else if (session.IsITPIC)            funCode = 6;
+            else if (session.IsITManager) funCode = 7;
+            else if (session.IsITAdmin) funCode = 5;
+            else if (session.IsITPIC) funCode = 6;
+            else if (session.IsAdmin) funCode = 9;
             if (funCode == 0) return Json(new List<object>());
-            return GetTicketList(funCode: funCode, approverSamAcc: funCode == 9 ? null : session.SamAcc);
+            return GetTicketList(session.SamAcc, funCode: funCode, approverSamAcc: session.SamAcc);
         }
 
+        // GET /Ticket/GetPendingCount
         public IActionResult GetPendingCount()
         {
             var session = GetSession();
             if (session == null) return Json(new { count = 0 });
+
             int funCode = 0;
-            if      (session.IsAdmin)            funCode = 9;
-            else if (session.IsDeptManager)      funCode = 8;
+            if (session.IsDeptManager) funCode = 8;
             else if (session.IsManagingDirector) funCode = 4;
-            else if (session.IsITManager)        funCode = 7;
-            else if (session.IsITAdmin)          funCode = 5;
-            else if (session.IsITPIC)            funCode = 6;
+            else if (session.IsITManager) funCode = 7;
+            else if (session.IsITAdmin) funCode = 5;
+            else if (session.IsITPIC) funCode = 6;
+            else if (session.IsAdmin) funCode = 9;
             if (funCode == 0) return Json(new { count = 0 });
+
+            // Map funCode → Status string ที่ชัดเจน
+            var pendingStatus = PendingStatusByFunCode(funCode);
+            if (pendingStatus == null) return Json(new { count = 0 });
+
             try
             {
                 var connStr = _config.GetConnectionString("BTITTicketConn");
                 using var conn = new SqlConnection(connStr);
                 conn.Open();
+
                 using var cmd = new SqlCommand("sp_GetTicketList", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@SamAcc",         DBNull.Value);
-                cmd.Parameters.AddWithValue("@Status",         DBNull.Value);
-                cmd.Parameters.AddWithValue("@FunCode",        funCode);
+                // @SamAcc         = session.SamAcc → นับเฉพาะ ticket ของ User ที่ Login
+                // @Status         = pendingStatus   → กรอง Status ตรง Role ของ User
+                // @FunCode        = NULL             → ไม่ต้องใช้ เพราะใช้ @Status แล้ว
+                // @ApproverSamAcc = session.SamAcc  → กรองเฉพาะ ticket ที่ Assign ให้คนนี้
+                cmd.Parameters.AddWithValue("@SamAcc", session.SamAcc);
+                cmd.Parameters.AddWithValue("@Status", pendingStatus);
+                cmd.Parameters.AddWithValue("@FunCode", funCode);
                 cmd.Parameters.AddWithValue("@ApproverSamAcc", funCode == 9 ? (object)DBNull.Value : session.SamAcc);
-                cmd.Parameters.AddWithValue("@PageNo",   1);
-                cmd.Parameters.AddWithValue("@PageSize", 1);
+                cmd.Parameters.AddWithValue("@PageNo", 1);
+                cmd.Parameters.AddWithValue("@PageSize", 1);  // ดึงแค่ 1 row — อ่าน TotalCount
+
                 using var reader = cmd.ExecuteReader();
-                int count = reader.Read() && reader["TotalCount"] != DBNull.Value ? Convert.ToInt32(reader["TotalCount"]) : 0;
+                int count = reader.Read() && reader["TotalCount"] != DBNull.Value
+                            ? Convert.ToInt32(reader["TotalCount"]) : 0;
+
                 return Json(new { count });
             }
             catch { return Json(new { count = 0 }); }
@@ -296,7 +334,7 @@ namespace ITTicketRequest.Controllers
         public IActionResult Approve([FromBody] ApproveRequest body)
         {
             var session = GetSession();
-            if (session == null)        return Json(new { ok = false, msg = "Please sign in again" });
+            if (session == null) return Json(new { ok = false, msg = "Please sign in again" });
             if (!session.IsAnyApprover) return Json(new { ok = false, msg = "You do not have approval permission" });
             try
             {
@@ -311,12 +349,12 @@ namespace ITTicketRequest.Controllers
                     if (r.Read()) { docNumber = r["DocNumber"].ToString()!; requesterName = r["RequesterName"].ToString()!; requesterEmail = r["RequesterEmail"].ToString()!; reqVPN = (bool)r["ReqVPN"]; apprITMgr = r["ApprITManager"] == DBNull.Value ? null : r["ApprITManager"].ToString(); }
                 using var cmd = new SqlCommand("sp_ApproveTicket", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@TicketId",     body.RequestId);
-                cmd.Parameters.AddWithValue("@ApproverSam",  session.SamAcc);
+                cmd.Parameters.AddWithValue("@TicketId", body.RequestId);
+                cmd.Parameters.AddWithValue("@ApproverSam", session.SamAcc);
                 cmd.Parameters.AddWithValue("@ApproverName", session.FullName);
-                cmd.Parameters.AddWithValue("@Action",       body.Action);
-                cmd.Parameters.AddWithValue("@Remark",       (object?)body.Remark   ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@AssignTo",     (object?)body.AssignTo ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Action", body.Action);
+                cmd.Parameters.AddWithValue("@Remark", (object?)body.Remark ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@AssignTo", (object?)body.AssignTo ?? DBNull.Value);
                 using var result = cmd.ExecuteReader();
                 if (result.Read()) newStatus = result["NewStatus"]?.ToString() ?? "";
                 _ = NotifyWorkflowAsync(body.RequestId, docNumber, requesterName, requesterEmail, newStatus, body.Action, session, apprITMgr, body.AssignTo);
@@ -325,9 +363,13 @@ namespace ITTicketRequest.Controllers
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
         }
 
-        // HELPERS
+        // ════════════════════════════════════════════════════════════
+        //  HELPERS
+        // ════════════════════════════════════════════════════════════
+
         private IActionResult GetTicketList(string? samAcc = null, int? funCode = null, string? approverSamAcc = null)
         {
+            var pendingStatus = PendingStatusByFunCode(funCode);
             try
             {
                 var rows = new List<object>();
@@ -336,11 +378,11 @@ namespace ITTicketRequest.Controllers
                 conn.Open();
                 using var cmd = new SqlCommand("sp_GetTicketList", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@SamAcc",         (object?)samAcc         ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Status",         DBNull.Value);
-                cmd.Parameters.AddWithValue("@FunCode",        (object?)funCode        ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@SamAcc", (object?)samAcc ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Status", pendingStatus);
+                cmd.Parameters.AddWithValue("@FunCode", (object?)funCode ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@ApproverSamAcc", (object?)approverSamAcc ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@PageNo",   1);
+                cmd.Parameters.AddWithValue("@PageNo", 1);
                 cmd.Parameters.AddWithValue("@PageSize", 500);
                 using var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -350,7 +392,10 @@ namespace ITTicketRequest.Controllers
             catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
         }
 
-        // EMAIL
+        // ════════════════════════════════════════════════════════════
+        //  EMAIL
+        // ════════════════════════════════════════════════════════════
+
         private async Task NotifyDeptManagerAsync(Guid ticketId, TicketViewModel vm)
         {
             try
@@ -382,19 +427,20 @@ namespace ITTicketRequest.Controllers
                 }
                 var (nextFunCode, nextRole) = newStatus switch
                 {
-                    "PendingManagingDir"   => (4, "Managing Director"),
-                    "PendingITMgr"         => (7, "IT Manager"),
+                    "PendingManagingDir" => (4, "Managing Director"),
+                    "PendingITMgr" => (7, "IT Manager"),
                     "PendingITAdminAssign" => (5, "IT Admin (Assign PIC)"),
-                    "PendingITPIC"         => (6, "IT Person Incharge"),
-                    "PendingITAdminClose"  => (9, "IT Admin (Close Ticket)"),
-                    _                      => (0, "")
+                    "PendingITPIC" => (6, "IT Person Incharge"),
+                    "PendingITAdminClose" => (9, "IT Admin (Close Ticket)"),
+                    _ => (0, "")
                 };
                 if (nextFunCode > 0)
                 {
                     var emails = nextFunCode == 6 && !string.IsNullOrEmpty(assignedPIC) ? GetEmailBySam(assignedPIC) : nextFunCode == 7 && !string.IsNullOrEmpty(selITMgr) ? GetEmailBySam(selITMgr) : GetEmailsByFunCode(nextFunCode);
                     if (emails.Any()) await SendMailAsync(string.Join(";", emails), $"[ITTicket] {docNumber} — Pending {nextRole}", $"<p>Dear {nextRole},</p><p>Ticket <b>{docNumber}</b> from {requesterName} is awaiting your action.</p><p><a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to proceed</a></p>");
                 }
-                else if (newStatus == "Completed") await SendMailAsync(requesterEmail, $"[ITTicket] {docNumber} — Completed", $"<p>Dear {requesterName},</p><p>Your ticket <b>{docNumber}</b> has been <b style='color:#2e7d32'>Completed</b>.</p><p><a href='{link}'>View details</a></p>");
+                else if (newStatus == "Completed")
+                    await SendMailAsync(requesterEmail, $"[ITTicket] {docNumber} — Completed", $"<p>Dear {requesterName},</p><p>Your ticket <b>{docNumber}</b> has been <b style='color:#2e7d32'>Completed</b>.</p><p><a href='{link}'>View details</a></p>");
             }
             catch { }
         }
@@ -424,7 +470,6 @@ namespace ITTicketRequest.Controllers
                 var connStr = _config.GetConnectionString("BTITTicketConn");
                 using var conn = new SqlConnection(connStr);
                 conn.Open();
-                // Cross-DB: TBUserFunction อยู่ใน [BTITReq]
                 const string sql = @"SELECT e.UEMAIL FROM [BTITReq].[dbo].[TBUserFunction] f JOIN [BT_HR].[dbo].[onl_TBADUsers] e ON e.SAMACC = f.USERLOGON COLLATE THAI_CI_AS WHERE f.FUNCODE=@fc AND f.FLAG=1 AND e.empstatus=1 AND e.UEMAIL IS NOT NULL AND e.UEMAIL<>''";
                 using var cmd = new SqlCommand(sql, conn);
                 cmd.Parameters.AddWithValue("@fc", funCode);
@@ -446,9 +491,9 @@ namespace ITTicketRequest.Controllers
     // ── DTO ─────────────────────────────────────────────────────────────
     public class ApproveRequest
     {
-        public Guid    RequestId { get; set; }
-        public string  Action    { get; set; } = "";   // Approve | Reject | Assign | CloseTask
-        public string? Remark    { get; set; }
-        public string? AssignTo  { get; set; }         // IT Admin Assign PIC
+        public Guid RequestId { get; set; }
+        public string Action { get; set; } = "";   // Approve | Reject | Assign | CloseTask
+        public string? Remark { get; set; }
+        public string? AssignTo { get; set; }
     }
 }
