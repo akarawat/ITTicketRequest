@@ -244,7 +244,7 @@ namespace ITTicketRequest.Controllers
             var session = GetSession();
             if (session == null) return Unauthorized();
             int funCode = 0;
-            
+
             if (session.IsDeptManager) funCode = 8;
             else if (session.IsManagingDirector) funCode = 4;
             else if (session.IsITManager) funCode = 7;
@@ -272,7 +272,7 @@ namespace ITTicketRequest.Controllers
 
             // Map funCode → Status string ที่ชัดเจน
             var pendingStatus = PendingStatusByFunCode(funCode);
-            if (pendingStatus == null) return Json(new { count = 0 });
+            //if (pendingStatus == null) return Json(new { count = 0 });
 
             try
             {
@@ -325,9 +325,146 @@ namespace ITTicketRequest.Controllers
                 while (reader.Read()) programs.Add(new { programName = reader["ProgramName"].ToString() });
                 reader.NextResult();
                 while (reader.Read()) logs.Add(new { logId = reader["LogId"].ToString(), funCode = (int)reader["ApproverFunCode"], approverSam = reader["ApproverSam"].ToString(), approverName = reader["ApproverDisplayName"] == DBNull.Value ? null : reader["ApproverDisplayName"].ToString(), action = reader["Action"].ToString(), assignedTo = reader["AssignedTo"] == DBNull.Value ? null : reader["AssignedTo"].ToString(), remark = reader["Remark"] == DBNull.Value ? null : reader["Remark"].ToString(), actionAt = reader["ActionAt"] });
-                return Json(new { ticket, drives, programs, logs });
+                // Result 5: IT PIC list
+                reader.NextResult();
+                var picList = new List<object>();
+                while (reader.Read())
+                    picList.Add(new
+                    {
+                        picId = reader["PICId"].ToString(),
+                        samAcc = reader["SamAcc"].ToString(),
+                        displayName = reader["DisplayName"]?.ToString() ?? "",
+                        email = reader["Email"]?.ToString() ?? "",
+                        assignedAt = reader["AssignedAt"],
+                        closedAt = reader["ClosedAt"] == DBNull.Value ? null : reader["ClosedAt"].ToString(),
+                        status = reader["Status"].ToString(),
+                        closeRemark = reader["CloseRemark"] == DBNull.Value ? null : reader["CloseRemark"].ToString()
+                    });
+
+                return Json(new { ticket, drives, programs, logs, picList });
             }
             catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
+        }
+
+        // POST /Ticket/AssignITPIC — Assign IT PIC หลายคน
+        [HttpPost]
+        public async Task<IActionResult> AssignITPIC([FromBody] ApproveRequest body)
+        {
+            var session = GetSession();
+            if (session == null) return Json(new { ok = false, msg = "Please sign in again" });
+            if (!session.IsITAdmin && !session.IsAdmin)
+                return Json(new { ok = false, msg = "IT Admin permission required" });
+            if (body.AssignToList == null || body.AssignToList.Length == 0)
+                return Json(new { ok = false, msg = "Please select at least 1 IT PIC" });
+
+            try
+            {
+                var connStr = _config.GetConnectionString("BTITTicketConn");
+                using var conn = new SqlConnection(connStr);
+                conn.Open();
+
+                // ดึงข้อมูล Ticket
+                string docNumber = "", requesterName = "";
+                using var cmdGet = new SqlCommand(
+                    "SELECT DocNumber, RequesterName FROM dbo.TBITTicket WHERE TicketId=@id", conn);
+                cmdGet.Parameters.AddWithValue("@id", body.RequestId);
+                using (var r = cmdGet.ExecuteReader())
+                    if (r.Read()) { docNumber = r["DocNumber"].ToString()!; requesterName = r["RequesterName"].ToString()!; }
+
+                // Assign PIC
+                var picJson = System.Text.Json.JsonSerializer.Serialize(body.AssignToList);
+                using var cmd = new SqlCommand("sp_AssignITPIC", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@TicketId", body.RequestId);
+                cmd.Parameters.AddWithValue("@PICSamList", picJson);
+                cmd.Parameters.AddWithValue("@AssignedBy", session.SamAcc);
+                cmd.Parameters.AddWithValue("@Remark", (object?)body.Remark ?? DBNull.Value);
+
+                // อ่าน PIC list พร้อม Email
+                var picEmails = new List<string>();
+                var picNames = new List<string>();
+                using var result = cmd.ExecuteReader();
+                while (result.Read())
+                {
+                    var em = result["Email"]?.ToString();
+                    var nm = result["DisplayName"]?.ToString();
+                    if (!string.IsNullOrEmpty(em)) picEmails.Add(em);
+                    if (!string.IsNullOrEmpty(nm)) picNames.Add(nm);
+                }
+
+                // ส่งเมล์ให้ทุก PIC ที่ได้รับมอบหมาย
+                if (picEmails.Any())
+                {
+                    var link = $"{_settings.URLSITE}Ticket/Detail/{body.RequestId}";
+                    var picListHtml = string.Join("", picNames.Select(n =>
+                        $"<li style='margin:4px 0'><i class='bi bi-person-fill'></i> {n}</li>"));
+                    var emailBody = $@"<p>Dear IT Person Incharge,</p>
+                        <p>You have been assigned to work on IT Ticket <b>{docNumber}</b> from {requesterName}.</p>
+                        <p><b>Assigned IT PIC:</b></p><ul>{picListHtml}</ul>
+                        <p style='margin-top:16px'>
+                        <a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;
+                        border-radius:6px;text-decoration:none;font-weight:bold'>
+                        Click here to view and close task</a></p>";
+                    await SendMailAsync(string.Join(";", picEmails), $"[ITTicket] {docNumber} — You have been assigned as IT PIC", emailBody);
+                }
+
+                return Json(new { ok = true, msg = $"Assigned {picEmails.Count} IT PIC(s) successfully" });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
+
+        // POST /Ticket/CloseITPICTask — IT PIC แต่ละคน Close งานตัวเอง
+        [HttpPost]
+        public async Task<IActionResult> CloseITPICTask([FromBody] ApproveRequest body)
+        {
+            var session = GetSession();
+            if (session == null) return Json(new { ok = false, msg = "Please sign in again" });
+
+            try
+            {
+                var connStr = _config.GetConnectionString("BTITTicketConn");
+                using var conn = new SqlConnection(connStr);
+                conn.Open();
+
+                // ดึงข้อมูลก่อน close
+                string docNumber = "", requesterEmail = "", requesterName = "";
+                using var cmdGet = new SqlCommand(
+                    "SELECT DocNumber, RequesterName, RequesterEmail FROM dbo.TBITTicket WHERE TicketId=@id", conn);
+                cmdGet.Parameters.AddWithValue("@id", body.RequestId);
+                using (var r = cmdGet.ExecuteReader())
+                    if (r.Read())
+                    {
+                        docNumber = r["DocNumber"].ToString()!;
+                        requesterName = r["RequesterName"].ToString()!;
+                        requesterEmail = r["RequesterEmail"].ToString()!;
+                    }
+
+                var newStatusParam = new SqlParameter("@NewStatus", SqlDbType.NVarChar, 50)
+                { Direction = ParameterDirection.Output };
+                using var cmd = new SqlCommand("sp_CloseITPICTask", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@TicketId", body.RequestId);
+                cmd.Parameters.AddWithValue("@SamAcc", session.SamAcc);
+                cmd.Parameters.AddWithValue("@Remark", (object?)body.Remark ?? DBNull.Value);
+                cmd.Parameters.Add(newStatusParam);
+                cmd.ExecuteNonQuery();
+
+                var newStatus = newStatusParam.Value?.ToString() ?? "PendingITPIC";
+
+                // ถ้าทุกคน Close → แจ้ง IT Admin
+                if (newStatus == "PendingITAdminClose")
+                {
+                    var adminEmails = GetEmailsByFunCode(9);
+                    if (adminEmails.Any())
+                    {
+                        var link = $"{_settings.URLSITE}Ticket/Detail/{body.RequestId}";
+                        await SendMailAsync(string.Join(";", adminEmails), $"[ITTicket] {docNumber} — All IT PIC Tasks Completed, Ready to Close", $"<p>Dear IT Admin,</p><p>All IT PIC have completed their tasks for ticket <b>{docNumber}</b> from {requesterName}.</p><p>Please close the ticket.</p><p><a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to close ticket</a></p>");
+                    }
+                }
+
+                return Json(new { ok = true, newStatus, msg = "Task closed successfully" });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
         }
 
         [HttpPost]
@@ -369,7 +506,6 @@ namespace ITTicketRequest.Controllers
 
         private IActionResult GetTicketList(string? samAcc = null, int? funCode = null, string? approverSamAcc = null)
         {
-            var pendingStatus = PendingStatusByFunCode(funCode);
             try
             {
                 var rows = new List<object>();
@@ -379,7 +515,7 @@ namespace ITTicketRequest.Controllers
                 using var cmd = new SqlCommand("sp_GetTicketList", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.AddWithValue("@SamAcc", (object?)samAcc ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@Status", pendingStatus);
+                cmd.Parameters.AddWithValue("@Status", DBNull.Value);
                 cmd.Parameters.AddWithValue("@FunCode", (object?)funCode ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@ApproverSamAcc", (object?)approverSamAcc ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@PageNo", 1);
@@ -494,6 +630,7 @@ namespace ITTicketRequest.Controllers
         public Guid RequestId { get; set; }
         public string Action { get; set; } = "";   // Approve | Reject | Assign | CloseTask
         public string? Remark { get; set; }
-        public string? AssignTo { get; set; }
+        public string? AssignTo { get; set; }         // single (legacy)
+        public string[]? AssignToList { get; set; }       // multi IT PIC
     }
 }
