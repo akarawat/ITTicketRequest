@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\ticket\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:views\\ticket\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\dashboards\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:views\\dashboards\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\itticketrequest.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:itticketrequest.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
@@ -19,16 +31,8 @@
       "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\ticket\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:views\\ticket\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\controllers\\ticketcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:controllers\\ticketcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\ticket\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -73,11 +77,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "launchSettings.json",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "Properties\\launchSettings.json",
@@ -90,20 +94,35 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA8AAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-19T05:02:31.627Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "Create.cshtml",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Create.cshtml",
               "RelativeDocumentMoniker": "Views\\Ticket\\Create.cshtml",
               "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Create.cshtml",
               "RelativeToolTip": "Views\\Ticket\\Create.cshtml",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAAACgAAAANAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-03-19T04:11:23.732Z",
-              "IsPinned": true
+              "IsPinned": true,
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
@@ -112,6 +131,19 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-03-19T03:46:52.22Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Dashboards\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Dashboards\\Index.cshtml",
+              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Dashboards\\Index.cshtml",
+              "RelativeToolTip": "Views\\Dashboards\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-24T02:06:14.401Z",
               "IsPinned": true,
               "EditorCaption": ""
             },
@@ -121,20 +153,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Excelimport.cshtml",
-              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Moni4\\Excelimport.cshtml",
-              "RelativeDocumentMoniker": "Views\\Moni4\\Excelimport.cshtml",
-              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Moni4\\Excelimport.cshtml",
-              "RelativeToolTip": "Views\\Moni4\\Excelimport.cshtml",
-              "ViewState": "AgIAAD0AAAAAAAAAAIAwwGEAAABLAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-23T09:18:13.542Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "ITTicketRequest.csproj",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\ITTicketRequest.csproj",
               "RelativeDocumentMoniker": "ITTicketRequest.csproj",
@@ -147,7 +166,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "Moni4Controller.cs",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Controllers\\Moni4Controller.cs",
               "RelativeDocumentMoniker": "Controllers\\Moni4Controller.cs",
@@ -160,7 +179,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "Detail.cshtml",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Detail.cshtml",
               "RelativeDocumentMoniker": "Views\\Ticket\\Detail.cshtml",
@@ -172,7 +191,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "ControllerActionInvoker.cs",
               "DocumentMoniker": "C:\\Users\\sakulchai.p\\AppData\\Local\\Temp\\.vsdbgsrc\\8c249d5c96d995aadefec7ba20d880f505d88845cd6e1d7681525b4ed291c8d7\\ControllerActionInvoker.cs",
               "RelativeDocumentMoniker": "..\\..\\..\\Users\\sakulchai.p\\AppData\\Local\\Temp\\.vsdbgsrc\\8c249d5c96d995aadefec7ba20d880f505d88845cd6e1d7681525b4ed291c8d7\\ControllerActionInvoker.cs",
@@ -184,7 +203,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 5,
+              "Title": "Excelimport.cshtml",
+              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Moni4\\Excelimport.cshtml",
+              "RelativeDocumentMoniker": "Views\\Moni4\\Excelimport.cshtml",
+              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Moni4\\Excelimport.cshtml",
+              "RelativeToolTip": "Views\\Moni4\\Excelimport.cshtml",
+              "ViewState": "AgIAAD0AAAAAAAAAAIAwwGEAAABLAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-23T09:18:13.542Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "UserRights.cshtml",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Admin\\UserRights.cshtml",
               "RelativeDocumentMoniker": "Views\\Admin\\UserRights.cshtml",
@@ -196,7 +227,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "Pending.cshtml",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Pending.cshtml",
               "RelativeDocumentMoniker": "Views\\Ticket\\Pending.cshtml",
@@ -208,7 +239,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "AppSettingsModel.cs",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Models\\AppSettingsModel.cs",
               "RelativeDocumentMoniker": "Models\\AppSettingsModel.cs",
@@ -220,7 +251,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "TicketViewModel.cs",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Models\\TicketViewModel.cs",
               "RelativeDocumentMoniker": "Models\\TicketViewModel.cs",
@@ -228,23 +259,12 @@
               "RelativeToolTip": "Models\\TicketViewModel.cs",
               "ViewState": "AgIAACoAAAAAAAAAAAAcwDwAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-23T02:19:39.279Z"
+              "WhenOpened": "2026-03-23T02:19:39.279Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "_Layout.cshtml",
-              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Shared\\_Layout.cshtml",
-              "RelativeDocumentMoniker": "Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Shared\\_Layout.cshtml",
-              "RelativeToolTip": "Views\\Shared\\_Layout.cshtml",
-              "ViewState": "AgIAAFkAAAAAAAAAAAAmwG4AAABwAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-19T05:02:31.627Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "AdminController.cs",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Controllers\\AdminController.cs",
               "RelativeDocumentMoniker": "Controllers\\AdminController.cs",
@@ -256,7 +276,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "TicketController.cs",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Controllers\\TicketController.cs",
               "RelativeDocumentMoniker": "Controllers\\TicketController.cs",
@@ -268,7 +288,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "DashboardsController.cs",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Controllers\\DashboardsController.cs",
               "RelativeDocumentMoniker": "Controllers\\DashboardsController.cs",
