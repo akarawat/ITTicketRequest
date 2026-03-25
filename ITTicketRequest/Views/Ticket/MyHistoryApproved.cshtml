@@ -1,0 +1,449 @@
+@{
+    ViewData["Title"] = "My Approval History";
+    var sessionJson = Context.Session.GetString("UserSession");
+    ITTicketRequest.Models.UserSessionModel? user = null;
+    if (!string.IsNullOrEmpty(sessionJson))
+        user = System.Text.Json.JsonSerializer.Deserialize<ITTicketRequest.Models.UserSessionModel>(sessionJson);
+}
+
+@section Styles {
+    <style>
+        .filter-bar {
+            background: #fff;
+            border: 1px solid #e0d6d6;
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tbl-wrap {
+            background: #fff;
+            border: 1px solid #e0d6d6;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        table.hist-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+
+            table.hist-table thead th {
+                background: #231f20;
+                color: #fff;
+                font-weight: 700;
+                padding: 11px 14px;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: .5px;
+            }
+
+            table.hist-table tbody tr {
+                border-bottom: 1px solid #f0f2f5;
+                transition: background .1s;
+            }
+
+                table.hist-table tbody tr:hover {
+                    background: #fdf8f8;
+                }
+
+            table.hist-table tbody td {
+                padding: 11px 14px;
+                vertical-align: middle;
+            }
+
+        .doc-num {
+            font-weight: 700;
+            color: #231f20;
+            font-size: 13px;
+        }
+
+        .action-badge {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .a-approved {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .a-rejected {
+            background: #ffebee;
+            color: #b71c1c;
+        }
+
+        .a-assigned {
+            background: #e3f2fd;
+            color: #0d47a1;
+        }
+
+        .a-closetask {
+            background: #e0f2f1;
+            color: #00695c;
+        }
+
+        .status-chip {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            background: #f9f6f6;
+            color: #607080;
+            white-space: nowrap;
+        }
+
+        .role-chip {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            background: #fef0f0;
+            color: #ed1c24;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #90a4ae;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e0d6d6;
+            border-radius: 10px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-num {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-lbl {
+            font-size: 11.5px;
+            color: #90a4ae;
+            margin-top: 2px;
+        }
+        /* Pagination */
+        .pager {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 16px;
+        }
+
+            .pager button {
+                min-width: 34px;
+                height: 34px;
+                border: 1px solid #e0d6d6;
+                border-radius: 6px;
+                background: #fff;
+                color: #231f20;
+                font-size: 13px;
+                cursor: pointer;
+                transition: all .15s;
+            }
+
+                .pager button:hover:not(:disabled) {
+                    background: #fef0f0;
+                    border-color: #ed1c24;
+                    color: #ed1c24;
+                }
+
+                .pager button.active {
+                    background: #231f20;
+                    color: #fff;
+                    border-color: #231f20;
+                    font-weight: 700;
+                }
+
+                .pager button:disabled {
+                    opacity: .4;
+                    cursor: default;
+                }
+    </style>
+}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h4 style="font-weight:700;margin:0;color:#231f20">
+            <i class="bi bi-clock-history me-2" style="color:#ed1c24"></i>My Approval History
+        </h4>
+        <div style="font-size:12px;color:#90a4ae;margin-top:3px">
+            Actions performed by <b>@(user?.FullName ?? user?.SamAcc ?? "")</b>
+            <span class="role-chip ms-2">@(user?.SamAcc ?? "")</span>
+        </div>
+    </div>
+    <button class="btn btn-sm btn-outline-secondary" style="border-radius:8px" onclick="loadHistory()">
+        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+    </button>
+</div>
+
+<!-- Stats row -->
+<div class="row g-3 mb-3" id="stats-row">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div style="width:36px;height:36px;border-radius:8px;background:#e8f5e9;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle" style="color:#2e7d32;font-size:18px"></i>
+            </div>
+            <div><div class="stat-num text-success" id="cnt-approved">—</div><div class="stat-lbl">Approved</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div style="width:36px;height:36px;border-radius:8px;background:#ffebee;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-x-circle" style="color:#b71c1c;font-size:18px"></i>
+            </div>
+            <div><div class="stat-num text-danger" id="cnt-rejected">—</div><div class="stat-lbl">Rejected</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div style="width:36px;height:36px;border-radius:8px;background:#e3f2fd;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-person-badge" style="color:#0d47a1;font-size:18px"></i>
+            </div>
+            <div><div class="stat-num" style="color:#0d47a1" id="cnt-assigned">—</div><div class="stat-lbl">Assigned PIC</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div style="width:36px;height:36px;border-radius:8px;background:#e0f2f1;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check2-all" style="color:#00695c;font-size:18px"></i>
+            </div>
+            <div><div class="stat-num" style="color:#00695c" id="cnt-closed">—</div><div class="stat-lbl">Closed Task</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+    <select id="filter-action" class="form-select form-select-sm" style="width:160px" onchange="applyFilter()">
+        <option value="">All Actions</option>
+        <option value="Approve">Approved</option>
+        <option value="Reject">Rejected</option>
+        <option value="Assign">Assigned PIC</option>
+        <option value="CloseTask">Closed Task</option>
+    </select>
+    <div class="d-flex align-items-center gap-2">
+        <label style="font-size:12px;color:#90a4ae;white-space:nowrap">Date From</label>
+        <input type="date" id="filter-from" class="form-control form-control-sm" style="width:140px" onchange="applyFilter()" />
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <label style="font-size:12px;color:#90a4ae;white-space:nowrap">To</label>
+        <input type="date" id="filter-to" class="form-control form-control-sm" style="width:140px" onchange="applyFilter()" />
+    </div>
+    <button class="btn btn-sm btn-outline-secondary ms-auto" onclick="clearFilter()" style="border-radius:8px;font-size:12px">
+        <i class="bi bi-x me-1"></i>Clear
+    </button>
+    <span id="row-count" style="font-size:12px;color:#90a4ae;white-space:nowrap"></span>
+</div>
+
+<!-- Table -->
+<div class="tbl-wrap">
+    <table class="hist-table">
+        <thead>
+            <tr>
+                <th style="width:120px">Doc No.</th>
+                <th>Requester</th>
+                <th style="width:130px">My Action</th>
+                <th style="width:110px">Role</th>
+                <th>Assigned To</th>
+                <th>Remark</th>
+                <th style="width:140px">Date / Time</th>
+                <th style="width:60px"></th>
+            </tr>
+        </thead>
+        <tbody id="hist-tbody">
+            <tr>
+                <td colspan="8" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm me-2" style="color:#ed1c24"></div>
+                    <span style="color:#90a4ae;font-size:13px">Loading...</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="pager" id="pager" style="display:none"></div>
+
+@section Scripts {
+    <script>
+        const PAGE_SIZE = 20;
+        let currentPage = 1;
+        let totalCount  = 0;
+        let allStats    = { Approve:0, Reject:0, Assign:0, CloseTask:0 };
+
+        function applyFilter() { currentPage = 1; loadHistory(); }
+
+        function clearFilter() {
+            document.getElementById('filter-action').value = '';
+            document.getElementById('filter-from').value   = '';
+            document.getElementById('filter-to').value     = '';
+            applyFilter();
+        }
+
+        async function loadHistory() {
+            document.getElementById('hist-tbody').innerHTML =
+                `<tr><td colspan="8" class="text-center py-4">
+                 <div class="spinner-border spinner-border-sm me-2" style="color:#ed1c24"></div>
+                 <span style="color:#90a4ae;font-size:13px">Loading...</span></td></tr>`;
+            document.getElementById('pager').style.display = 'none';
+
+            const action   = document.getElementById('filter-action').value;
+            const dateFrom = document.getElementById('filter-from').value;
+            const dateTo   = document.getElementById('filter-to').value;
+
+            const params = new URLSearchParams({
+                pageNo:   currentPage,
+                pageSize: PAGE_SIZE,
+                ...(action   && { actionFilter: action }),
+                ...(dateFrom && { dateFrom }),
+                ...(dateTo   && { dateTo })
+            });
+
+            try {
+                const res  = await fetch(`/Ticket/GetMyApprovalHistory?${params}`);
+                const data = await res.json();
+                totalCount = data.totalCount || 0;
+
+                document.getElementById('row-count').textContent =
+                    `${totalCount} record${totalCount !== 1 ? 's' : ''}`;
+
+                renderTable(data.rows || []);
+                renderPager();
+
+                // โหลด stats เฉพาะครั้งแรก (ไม่กรอง Action) เพื่อนับ total
+                if (!action && !dateFrom && !dateTo && currentPage === 1)
+                    await loadStats();
+
+            } catch (e) {
+                document.getElementById('hist-tbody').innerHTML =
+                    `<tr><td colspan="8" class="text-center py-4 text-danger">
+                     <i class="bi bi-exclamation-triangle me-2"></i>Error loading data</td></tr>`;
+            }
+        }
+
+        async function loadStats() {
+            // โหลดแต่ละ action แยกกันเพื่อนับ
+            const actions = ['Approve','Reject','Assign','CloseTask'];
+            for (const a of actions) {
+                try {
+                    const res  = await fetch(`/Ticket/GetMyApprovalHistory?actionFilter=${a}&pageNo=1&pageSize=1`);
+                    const data = await res.json();
+                    allStats[a] = data.totalCount || 0;
+                } catch {}
+            }
+            document.getElementById('cnt-approved').textContent = allStats['Approve'];
+            document.getElementById('cnt-rejected').textContent = allStats['Reject'];
+            document.getElementById('cnt-assigned').textContent = allStats['Assign'];
+            document.getElementById('cnt-closed').textContent   = allStats['CloseTask'];
+        }
+
+        const ACTION_CLASS = {
+            Approve:'a-approved', Reject:'a-rejected', Assign:'a-assigned', CloseTask:'a-closetask'
+        };
+
+        function renderTable(rows) {
+            if (!rows.length) {
+                document.getElementById('hist-tbody').innerHTML =
+                    `<tr><td colspan="8"><div class="empty-state">
+                     <i class="bi bi-inbox" style="font-size:2.5rem;display:block;margin-bottom:10px;opacity:.3"></i>
+                     No approval history found</div></td></tr>`;
+                return;
+            }
+
+            document.getElementById('hist-tbody').innerHTML = rows.map(r => `
+                <tr>
+                    <td><span class="doc-num">${r.docNumber}</span></td>
+                    <td>
+                        <div style="font-weight:600;font-size:13px">${r.requesterName}</div>
+                        <div style="font-size:11.5px;color:#90a4ae">${r.department}</div>
+                        <span class="status-chip mt-1">${r.statusLabel}</span>
+                    </td>
+                    <td>
+                        <span class="action-badge ${ACTION_CLASS[r.action] || ''}">
+                            ${r.action === 'Approve'   ? '<i class="bi bi-check me-1"></i>' : ''}
+                            ${r.action === 'Reject'    ? '<i class="bi bi-x me-1"></i>' : ''}
+                            ${r.action === 'Assign'    ? '<i class="bi bi-person-badge me-1"></i>' : ''}
+                            ${r.action === 'CloseTask' ? '<i class="bi bi-check2-all me-1"></i>' : ''}
+                            ${r.actionLabel}
+                        </span>
+                    </td>
+                    <td><span style="font-size:12px;color:#607080">${r.roleName}</span></td>
+                    <td style="font-size:12.5px;color:#607080">
+                        ${r.assignedToName ? `<i class="bi bi-person me-1"></i>${r.assignedToName}` : '—'}
+                    </td>
+                    <td style="font-size:12.5px;color:#607080;max-width:160px">
+                        ${r.remark
+                            ? `<span title="${r.remark}" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px">${r.remark}</span>`
+                            : '—'}
+                    </td>
+                    <td style="font-size:12px;color:#607080;white-space:nowrap">${fmt(r.actionAt)}</td>
+                    <td>
+                        <a href="/Ticket/Detail/${r.ticketId}"
+                           style="font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid #e0d6d6;
+                                  color:#231f20;text-decoration:none;background:#fff">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function renderPager() {
+            const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+            if (totalPages <= 1) { document.getElementById('pager').style.display = 'none'; return; }
+
+            const pager = document.getElementById('pager');
+            pager.style.display = 'flex';
+
+            let html = `<button onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>
+                            <i class="bi bi-chevron-left"></i></button>`;
+
+            // แสดงหน้า max 7 ปุ่ม
+            const start = Math.max(1, currentPage - 3);
+            const end   = Math.min(totalPages, start + 6);
+            for (let p = start; p <= end; p++)
+                html += `<button class="${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+
+            html += `<button onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>
+                         <i class="bi bi-chevron-right"></i></button>`;
+            html += `<span style="font-size:12px;color:#90a4ae;margin-left:4px">
+                         Page ${currentPage} / ${totalPages}</span>`;
+
+            pager.innerHTML = html;
+        }
+
+        function goPage(p) {
+            if (p < 1 || p > Math.ceil(totalCount / PAGE_SIZE)) return;
+            currentPage = p;
+            loadHistory();
+            window.scrollTo({ top:0, behavior:'smooth' });
+        }
+
+        function fmt(iso) {
+            if (!iso) return '—';
+            return new Date(iso).toLocaleDateString('en-GB', {
+                day:'2-digit', month:'2-digit', year:'numeric',
+                hour:'2-digit', minute:'2-digit'
+            });
+        }
+
+        loadHistory();
+    </script>
+}

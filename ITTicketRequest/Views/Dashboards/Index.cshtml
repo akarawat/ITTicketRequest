@@ -57,25 +57,25 @@
     <div class="col-6 col-md-3">
         <div class="stat-card">
             <div class="stat-icon" style="background:#fef0f0"><i class="bi bi-ticket" style="color:#ed1c24"></i></div>
-            <div><div class="stat-num" id="stat-total"><span class="spinner-border spinner-border-sm text-secondary"></span></div><div class="stat-lbl">Total Tickets</div></div>
+            <div><div class="stat-num" id="stat-total"><span class="spinner-border spinner-border-sm text-secondary"></span></div><div class="stat-lbl">Total My Tickets</div></div>
         </div>
     </div>
     <div class="col-6 col-md-3">
         <div class="stat-card">
             <div class="stat-icon" style="background:#fff8e1"><i class="bi bi-clock-history" style="color:#e65100"></i></div>
-            <div><div class="stat-num" id="stat-pending"><span class="spinner-border spinner-border-sm text-secondary"></span></div><div class="stat-lbl">Pending</div></div>
+            <div><div class="stat-num" id="stat-pending"><span class="spinner-border spinner-border-sm text-secondary"></span></div><div class="stat-lbl">My Tickets Pending</div></div>
         </div>
     </div>
     <div class="col-6 col-md-3">
         <div class="stat-card">
             <div class="stat-icon" style="background:#e8f5e9"><i class="bi bi-check-circle" style="color:#2e7d32"></i></div>
-            <div><div class="stat-num" id="stat-done"><span class="spinner-border spinner-border-sm text-secondary"></span></div><div class="stat-lbl">Completed</div></div>
+            <div><div class="stat-num" id="stat-done"><span class="spinner-border spinner-border-sm text-secondary"></span></div><div class="stat-lbl">My Tickets Completed</div></div>
         </div>
     </div>
     <div class="col-6 col-md-3">
         <div class="stat-card">
             <div class="stat-icon" style="background:#fce4ec"><i class="bi bi-x-circle" style="color:#c62828"></i></div>
-            <div><div class="stat-num" id="stat-rejected"><span class="spinner-border spinner-border-sm text-secondary"></span></div><div class="stat-lbl">Rejected</div></div>
+            <div><div class="stat-num" id="stat-rejected"><span class="spinner-border spinner-border-sm text-secondary"></span></div><div class="stat-lbl">My Tickets Rejected</div></div>
         </div>
     </div>
 </div>
@@ -99,7 +99,10 @@
         <div class="col-6 col-md-3">
             <a class="quick-card" href="/Ticket/Pending">
                 <div class="icon-wrap" style="background:#fff8e1"><i class="bi bi-bell" style="color:#e65100"></i></div>
-                <h6>Pending</h6><p>Tickets awaiting your action</p>
+                <h6>
+                    My Action Pending
+                    <span id="myaction-pending" class="pending-badge" style="display:none"></span>
+                </h6><p>Tickets awaiting your action</p>
             </a>
         </div>
     }
@@ -170,5 +173,17 @@ async function loadStats() {
     }
 }
 loadStats();
+</script>
+<script>
+    (async function() {
+        try {
+            const res   = await fetch('/Ticket/GetPendingCount');
+            const data  = await res.json();
+            const badge = document.getElementById('myaction-pending');
+            if (!badge) return;
+            badge.textContent   = data.count > 99 ? '99+' : data.count;
+            badge.style.display = data.count > 0 ? 'inline-flex' : 'none';
+        } catch {}
+    })();
 </script>
 }

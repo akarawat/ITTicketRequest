@@ -36,11 +36,13 @@ namespace ITTicketRequest.Controllers
             //fname = "Tuchpoom Jaikamlue"; 
             //depart = "Procurement";
             //----
+
             //id = "123456789";
             //user = "julaluck.p";
             //email = "julaluck.p@berninathailand.com";
             //fname = "Julaluck Panyama";
             //depart = "Planning, Project & IT";
+
             //----
             //id = "123456789";
             //user = "Nanthawan.C"; 
@@ -59,6 +61,12 @@ namespace ITTicketRequest.Controllers
             //user = "Saowanee.s";
             //email = "Saowanee.s@berninathailand.com";
             //fname = "Saowanee Srimai";
+            //depart = "Planning, Project & IT";
+
+            //id = "123456789";
+            //user = "wachira.k";
+            //email = "wachira.k@berninathailand.com";
+            //fname = "Wachira Khamrit";
             //depart = "Planning, Project & IT";
 
             if (!string.IsNullOrEmpty(id))

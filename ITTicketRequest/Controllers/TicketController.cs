@@ -467,6 +467,71 @@ namespace ITTicketRequest.Controllers
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
         }
+        // GET /Ticket/MyHistoryApproved
+        public IActionResult MyHistoryApproved()
+        {
+            var session = GetSession();
+            if (session == null) return Redirect(_config["TBCorApiServices:AuthenUrl"] ?? "/");
+            if (!session.IsAnyApprover) return RedirectToAction("MyTickets");
+            return View();
+        }
+
+        // GET /Ticket/GetMyApprovalHistory
+        public IActionResult GetMyApprovalHistory(string? actionFilter, string? dateFrom, string? dateTo,
+                                                   int pageNo = 1, int pageSize = 20)
+        {
+            var session = GetSession();
+            if (session == null) return Unauthorized();
+            try
+            {
+                var rows = new List<object>();
+                var connStr = _config.GetConnectionString("BTITTicketConn");
+                using var conn = new SqlConnection(connStr);
+                conn.Open();
+
+                using var cmd = new SqlCommand("sp_GetMyApprovalHistory", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ApproverSam", session.SamAcc);
+                cmd.Parameters.AddWithValue("@Action", (object?)actionFilter ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@DateFrom", string.IsNullOrEmpty(dateFrom) ? DBNull.Value
+                                                            : (object)DateTime.Parse(dateFrom));
+                cmd.Parameters.AddWithValue("@DateTo", string.IsNullOrEmpty(dateTo) ? DBNull.Value
+                                                            : (object)DateTime.Parse(dateTo));
+                cmd.Parameters.AddWithValue("@PageNo", pageNo);
+                cmd.Parameters.AddWithValue("@PageSize", pageSize);
+
+                int totalCount = 0;
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    if (totalCount == 0 && reader["TotalCount"] != DBNull.Value)
+                        totalCount = Convert.ToInt32(reader["TotalCount"]);
+
+                    rows.Add(new
+                    {
+                        ticketId = reader["TicketId"].ToString(),
+                        docNumber = reader["DocNumber"].ToString(),
+                        requesterName = reader["RequesterName"].ToString(),
+                        department = reader["Department"].ToString(),
+                        ticketStatus = reader["Status"].ToString(),
+                        statusLabel = reader["StatusLabel"].ToString(),
+                        ticketCreatedAt = reader["TicketCreatedAt"],
+                        completedAt = reader["CompletedAt"] == DBNull.Value ? null : reader["CompletedAt"].ToString(),
+                        action = reader["Action"].ToString(),
+                        actionLabel = reader["ActionLabel"].ToString(),
+                        roleName = reader["RoleName"].ToString(),
+                        remark = reader["Remark"] == DBNull.Value ? null : reader["Remark"].ToString(),
+                        assignedTo = reader["AssignedTo"] == DBNull.Value ? null : reader["AssignedTo"].ToString(),
+                        assignedToName = reader["AssignedToName"] == DBNull.Value ? null : reader["AssignedToName"].ToString(),
+                        actionAt = reader["ActionAt"]
+                    });
+                }
+
+                return Json(new { rows, totalCount, pageNo, pageSize });
+            }
+            catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
+        }
+
 
         [HttpPost]
         public IActionResult Approve([FromBody] ApproveRequest body)
