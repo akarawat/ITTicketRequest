@@ -26,10 +26,18 @@ namespace ITTicketRequest.Controllers
             var existing = HttpContext.Session.GetString("UserSession");
             var authenUrl = _config["TBCorApiServices:AuthenUrl"] ?? "/";
 
+            // If no session and no query params, redirect to authen URL
             if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(existing))
                 return Redirect(authenUrl);
 
             /* Sample Data for Debugging */
+
+            //id = "123456789";
+            //user = "suthichai.n"; 
+            //email = "suthichai.n@berninathailand.com"; 
+            //fname = "Suthichai Namasen"; 
+            //depart = "Planning, Project & IT";
+
             //id = "123456789";
             //user = "tuchpoom.j"; 
             //email = "tuchpoom.j@berninathailand.com"; 
@@ -45,9 +53,9 @@ namespace ITTicketRequest.Controllers
 
             //----
             //id = "123456789";
-            //user = "Nanthawan.C"; 
-            //email = "Nanthawan.C@berninathailand.com"; 
-            //fname = "Nanthawan Chanthong"; 
+            //user = "Nanthawan.C";
+            //email = "Nanthawan.C@berninathailand.com";
+            //fname = "Nanthawan Chanthong";
             //depart = "Planning, Project & IT";
             //----
 
@@ -67,6 +75,13 @@ namespace ITTicketRequest.Controllers
             //user = "wachira.k";
             //email = "wachira.k@berninathailand.com";
             //fname = "Wachira Khamrit";
+            //depart = "Planning, Project & IT";
+
+            //----
+            //id = "123456789";
+            //user = "benjamat.j";
+            //email = "benjamat.j@berninathailand.com";
+            //fname = "Benjamat Jongsiriwat";
             //depart = "Planning, Project & IT";
 
             if (!string.IsNullOrEmpty(id))

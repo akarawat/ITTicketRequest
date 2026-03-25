@@ -532,6 +532,67 @@ namespace ITTicketRequest.Controllers
             catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
         }
 
+        // POST /Ticket/ReturnITPICTask — IT PIC ส่งงานคืน → IT Admin Assign ใหม่
+        [HttpPost]
+        public async Task<IActionResult> ReturnITPICTask([FromBody] ApproveRequest body)
+        {
+            var session = GetSession();
+            if (session == null) return Json(new { ok = false, msg = "Please sign in again" });
+
+            try
+            {
+                var connStr = _config.GetConnectionString("BTITTicketConn");
+                using var conn = new SqlConnection(connStr);
+                conn.Open();
+
+                // ดึงข้อมูล Ticket
+                string docNumber = "", requesterName = "";
+                using var cmdGet = new SqlCommand(
+                    "SELECT DocNumber, RequesterName FROM dbo.TBITTicket WHERE TicketId=@id", conn);
+                cmdGet.Parameters.AddWithValue("@id", body.RequestId);
+                using (var r = cmdGet.ExecuteReader())
+                    if (r.Read())
+                    {
+                        docNumber = r["DocNumber"].ToString()!;
+                        requesterName = r["RequesterName"].ToString()!;
+                    }
+
+                var newStatusParam = new SqlParameter("@NewStatus", SqlDbType.NVarChar, 50)
+                { Direction = ParameterDirection.Output };
+                using var cmd = new SqlCommand("sp_ReturnITPICTask", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@TicketId", body.RequestId);
+                cmd.Parameters.AddWithValue("@SamAcc", session.SamAcc);
+                cmd.Parameters.AddWithValue("@Remark", (object?)body.Remark ?? DBNull.Value);
+                cmd.Parameters.Add(newStatusParam);
+                cmd.ExecuteNonQuery();
+
+                var newStatus = newStatusParam.Value?.ToString() ?? "PendingITPIC";
+
+                // ถ้าทุกคนส่งคืนแล้ว → แจ้ง IT Admin ให้ Assign ใหม่
+                if (newStatus == "PendingITAdminAssign")
+                {
+                    var adminEmails = GetEmailsByFunCode(9);
+                    if (adminEmails.Any())
+                    {
+                        var link = $"{_settings.URLSITE}Ticket/Detail/{body.RequestId}";
+                        await SendMailAsync(string.Join(";", adminEmails),
+                            $"[ITTicket] {docNumber} — IT PIC Returned Task, Please Reassign",
+                            $@"<p>Dear IT Admin,</p>
+                            <p>IT PIC <b>{session.FullName}</b> has returned the task for ticket
+                            <b>{docNumber}</b> from {requesterName}.</p>
+                            <p><b>Reason:</b> {body.Remark ?? "Not specified"}</p>
+                            <p>Please assign a new IT PIC for this ticket.</p>
+                            <p><a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;
+                            border-radius:6px;text-decoration:none;font-weight:bold'>
+                            Click here to reassign</a></p>");
+                    }
+                }
+
+                return Json(new { ok = true, newStatus, msg = "Task returned successfully" });
+            }
+            catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
+        }
 
         [HttpPost]
         public IActionResult Approve([FromBody] ApproveRequest body)

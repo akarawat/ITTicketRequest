@@ -257,6 +257,17 @@
             font-size: 13.5px;
             cursor: pointer;
         }
+
+        .btn-return-lg {
+            background: #e65100;
+            color: #fff;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13.5px;
+            cursor: pointer;
+        }
         /* PIC list */
         .pic-row {
             display: flex;
@@ -549,22 +560,30 @@
                     <span style="color:#e65100">⏳ Active: ${activeCount}</span>
                 </div>
                 ${picList.map(p => {
-                    const isClosed = p.status === 'Closed';
+                    const isClosed   = p.status === 'Closed';
+                    const isReturned = p.status === 'Returned';
                     const initials = p.displayName.split(' ').slice(0,2).map(w => w[0]).join('');
                     const isMine   = p.samAcc.toLowerCase() === CURRENT_SAM.toLowerCase();
                     const canClose = isMine && !isClosed && IS_IT_PIC && status === 'PendingITPIC';
                     return `
                     <div class="pic-row ${isClosed ? 'closed' : 'active'}">
                         <div class="d-flex align-items-center gap-10" style="gap:10px">
-                            <div class="pic-avatar ${isClosed ? 'closed' : ''}">${initials}</div>
+                            <div class="pic-avatar ${isClosed || isReturned ? 'closed' : ''}">${initials}</div>
                             <div>
                                 <div style="font-weight:600;font-size:13px">${p.displayName}</div>
                                 <div style="font-size:11px;color:#607080">${p.email}</div>
-                                ${isClosed ? `<div style="font-size:11px;color:#2e7d32;margin-top:2px">
-                                    <i class="bi bi-check-circle me-1"></i>Closed ${fmt(p.closedAt)}
-                                    ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
-                                </div>` : `<div style="font-size:11px;color:#e65100;margin-top:2px">
-                                    <i class="bi bi-clock me-1"></i>In Progress</div>`}
+                                ${p.status === 'Closed'
+                            ? `<div style="font-size:11px;color:#2e7d32;margin-top:2px">
+                                <i class="bi bi-check-circle me-1"></i>Closed ${fmt(p.closedAt)}
+                                ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
+                               </div>`
+                            : p.status === 'Returned'
+                            ? `<div style="font-size:11px;color:#e65100;margin-top:2px">
+                                <i class="bi bi-arrow-return-left me-1"></i>Returned ${fmt(p.closedAt)}
+                                ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
+                               </div>`
+                            : `<div style="font-size:11px;color:#0d47a1;margin-top:2px">
+                                <i class="bi bi-clock me-1"></i>In Progress</div>`}
                             </div>
                         </div>
                         ${canClose ? `
@@ -634,7 +653,6 @@
         }
 
         // ── Action Panel ────────────────────────────────────────────────────
-
         function renderActionPanel(t, picList) {
             const panel   = document.getElementById('action-panel');
             const buttons = document.getElementById('action-buttons');
@@ -648,7 +666,7 @@
             const isITPICStep     = t.status === 'PendingITPIC';
             const isCloseStep     = t.status === 'PendingITAdminClose';
 
-            // IT PIC — เห็น Close Task ของตัวเองเท่านั้น
+            // IT PIC — เห็น Close Task + Return Task ของตัวเองเท่านั้น
             if (isITPICStep && IS_IT_PIC) {
                 const myPIC = picList.find(p => p.samAcc.toLowerCase() === CURRENT_SAM.toLowerCase());
                 if (myPIC && myPIC.status === 'Active') {
@@ -657,8 +675,8 @@
                         <button class="btn-close-lg" onclick="openCloseTaskModal()">
                             <i class="bi bi-check2-all me-1"></i>Close Task
                         </button>
-                        <button class="btn-reject-lg" onclick="openActionModal('Reject')">
-                            <i class="bi bi-x me-1"></i>Reject
+                        <button class="btn-return-lg" onclick="openReturnTaskModal()">
+                            <i class="bi bi-arrow-return-left me-1"></i>Return Task
                         </button>`;
                 }
                 return;
@@ -713,6 +731,28 @@
             openActionModal('CloseTask');
         }
 
+        function openReturnTaskModal() {
+            pendingAction = 'ReturnTask';
+            document.getElementById('modal-title').textContent = 'Return Task';
+            document.getElementById('modal-desc').innerHTML = `
+                <div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;
+                            padding:10px 14px;margin-bottom:10px;font-size:13px;color:#e65100">
+                    <i class="bi bi-arrow-return-left me-2"></i>
+                    <b>Return task to IT Admin for reassignment</b>
+                </div>
+                <span style="color:#607080;font-size:13px">
+                    Please provide a reason so IT Admin can reassign appropriately.
+                </span>`;
+            const btn = document.getElementById('modal-confirm');
+            btn.style.background = '#e65100';
+            btn.style.color = '#fff';
+            btn.style.border = 'none';
+            btn.textContent = 'Confirm Return';
+            document.getElementById('modal-remark').value = '';
+            document.getElementById('modal-remark').placeholder = 'Reason for returning (e.g. not in my area of responsibility)';
+            actionModal.show();
+        }
+
         async function openAssignModal() {
             document.getElementById('pic-checkbox-list').innerHTML =
                 `<div class="text-center py-3" style="color:#90a4ae">
@@ -763,6 +803,22 @@
 
             if (pendingAction === 'CloseTask') {
                 const res  = await fetch('/Ticket/CloseITPICTask', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ requestId: TICKET_ID, remark })
+                });
+                const data = await res.json();
+                actionModal.hide();
+                if (data.ok) loadDetail();
+                else alert('Error: ' + data.msg);
+                return;
+            }
+
+            if (pendingAction === 'ReturnTask') {
+                if (!remark.trim()) {
+                    alert('Please provide a reason for returning the task.');
+                    return;
+                }
+                const res  = await fetch('/Ticket/ReturnITPICTask', {
                     method:'POST', headers:{'Content-Type':'application/json'},
                     body: JSON.stringify({ requestId: TICKET_ID, remark })
                 });
