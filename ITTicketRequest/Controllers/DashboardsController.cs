@@ -29,6 +29,38 @@ namespace ITTicketRequest.Controllers
             if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(existing))
                 return Redirect(authenUrl);
 
+            /* Sample Data for Debugging */
+            //id = "123456789";
+            //user = "tuchpoom.j"; 
+            //email = "tuchpoom.j@berninathailand.com"; 
+            //fname = "Tuchpoom Jaikamlue"; 
+            //depart = "Procurement";
+            //----
+            //id = "123456789";
+            //user = "julaluck.p";
+            //email = "julaluck.p@berninathailand.com";
+            //fname = "Julaluck Panyama";
+            //depart = "Planning, Project & IT";
+            //----
+            //id = "123456789";
+            //user = "Nanthawan.C"; 
+            //email = "Nanthawan.C@berninathailand.com"; 
+            //fname = "Nanthawan Chanthong"; 
+            //depart = "Planning, Project & IT";
+            //----
+
+            //id = "123456789";
+            //user = "pannee.j";
+            //email = "pannee.j@berninathailand.com";
+            //fname = "Saowanee Srimai";
+            //depart = "Planning, Project & IT";
+
+            //id = "123456789";
+            //user = "Saowanee.s";
+            //email = "Saowanee.s@berninathailand.com";
+            //fname = "Saowanee Srimai";
+            //depart = "Planning, Project & IT";
+
             if (!string.IsNullOrEmpty(id))
             {
                 var samAcc = UserSessionModel.ParseSamAcc(user ?? "");

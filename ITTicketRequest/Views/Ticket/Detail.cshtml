@@ -634,10 +634,15 @@
         }
 
         // ── Action Panel ────────────────────────────────────────────────────
+
         function renderActionPanel(t, picList) {
             const panel   = document.getElementById('action-panel');
             const buttons = document.getElementById('action-buttons');
             if (['Completed','Rejected'].includes(t.status)) return;
+
+            // ── ซ่อนปุ่ม Action ถ้า User เป็นคนสร้าง Ticket นั้นเอง ────────
+            const isOwnTicket = t.samAcc?.toLowerCase() === CURRENT_SAM.toLowerCase();
+            if (isOwnTicket && !IS_IT_ADMIN) return;
 
             const isAssignStep    = t.status === 'PendingITAdminAssign';
             const isITPICStep     = t.status === 'PendingITPIC';

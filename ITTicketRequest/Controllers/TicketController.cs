@@ -22,6 +22,7 @@ namespace ITTicketRequest.Controllers
 
         //private string LocalMailUrl => $"{_config["TBCorApiServices:URLSITE"]}SendMail/MailSenderMessage";
         private string LocalMailUrl => $"{_config["TBCorApiServices:EmailSender"]}";
+        private string MailDebug => $"{_config["TBCorApiServices:MailDebug"]}";
         private UserSessionModel? GetSession()
         {
             var json = HttpContext.Session.GetString("UserSession");
@@ -618,6 +619,7 @@ namespace ITTicketRequest.Controllers
 
         private async Task SendMailAsync(string addresses, string subject, string body)
         {
+            if (MailDebug == "1") return; // ถ้าเปิด MailDebug จะไม่ส่งเมล์จริง (ใช้สำหรับ dev/test)
             if (string.IsNullOrEmpty(addresses)) return;
             try { await _http.CreateClient().PostAsJsonAsync(LocalMailUrl, new { Addresses = addresses, Form = _settings.MailForm, Subject = subject, Body = body, Priority = 1 }); }
             catch { }
