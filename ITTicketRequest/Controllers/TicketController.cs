@@ -403,9 +403,18 @@ namespace ITTicketRequest.Controllers
                         <p>You have been assigned to work on IT Ticket <b>{docNumber}</b> from {requesterName}.</p>
                         <p><b>Assigned IT PIC:</b></p><ul>{picListHtml}</ul>
                         <p style='margin-top:16px'>
-                        <a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;
+                        <a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;
                         border-radius:6px;text-decoration:none;font-weight:bold'>
-                        Click here to view and close task</a></p>";
+                        Click here to view and close task</a></p> 
+                        <br/>
+                        <p>Best regards,<br/>IT Ticket System<br/>
+                        <font color='red'>BERNINA Thailand</font> www.bernina.com<br/>
+                        79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>
+                        Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>
+                        Fax.: +66 (0) 53 581351<br/>
+                        <hr/>
+                        </p>     
+                        ";
                     await SendMailAsync(string.Join(";", picEmails), $"[ITTicket] {docNumber} — You have been assigned as IT PIC", emailBody);
                 }
 
@@ -459,7 +468,7 @@ namespace ITTicketRequest.Controllers
                     if (adminEmails.Any())
                     {
                         var link = $"{_settings.URLSITE}Ticket/Detail/{body.RequestId}";
-                        await SendMailAsync(string.Join(";", adminEmails), $"[ITTicket] {docNumber} — All IT PIC Tasks Completed, Ready to Close", $"<p>Dear IT Admin,</p><p>All IT PIC have completed their tasks for ticket <b>{docNumber}</b> from {requesterName}.</p><p>Please close the ticket.</p><p><a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to close ticket</a></p>");
+                        await SendMailAsync(string.Join(";", adminEmails), $"[ITTicket] {docNumber} — All IT PIC Tasks Completed, Ready to Close", $"<p>Dear IT Admin,</p><p>All IT PIC have completed their tasks for ticket <b>{docNumber}</b> from {requesterName}.</p><p>Please close the ticket.</p><p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to close ticket</a></p> <br/><p>Best regards,<br/>IT Ticket System<font color='red'>BERNINA Thailand</font> www.bernina.com<br/>79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>Fax.: +66 (0) 53 581351<br/><hr/></p>");
                     }
                 }
 
@@ -583,9 +592,17 @@ namespace ITTicketRequest.Controllers
                             <b>{docNumber}</b> from {requesterName}.</p>
                             <p><b>Reason:</b> {body.Remark ?? "Not specified"}</p>
                             <p>Please assign a new IT PIC for this ticket.</p>
-                            <p><a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;
+                            <p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;
                             border-radius:6px;text-decoration:none;font-weight:bold'>
-                            Click here to reassign</a></p>");
+                            Click here to reassign</a></p>
+                            <br/>
+                            <p>Best regards,<br/>IT Ticket System
+                            <font color='red'>BERNINA Thailand</font> www.bernina.com<br/>
+                            79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>
+                            Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>
+                            Fax.: +66 (0) 53 581351<br/>
+                            <hr/>
+                            </p> ");
                     }
                 }
 
@@ -666,7 +683,7 @@ namespace ITTicketRequest.Controllers
                 var emails = !string.IsNullOrEmpty(vm.ApprDeptManager) ? GetEmailBySam(vm.ApprDeptManager) : GetEmailsByFunCode(8);
                 if (!emails.Any()) return;
                 var link = $"{_settings.URLSITE}Ticket/Detail/{ticketId}";
-                var body = $"<p>Dear Department Manager,</p><p>New IT Ticket Request from <b>{vm.RequesterName}</b> ({vm.Department}) awaiting your approval.</p><p><a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to approve</a></p>";
+                var body = $"<p>Dear Department Manager,</p><p>New IT Ticket Request from <b>{vm.RequesterName}</b> ({vm.Department}) awaiting your approval.</p><p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to approve</a></p> <br/><p>Best regards,<br/>IT Ticket System<font color='red'>BERNINA Thailand</font> www.bernina.com<br/>79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>Fax.: +66 (0) 53 581351<br/><hr/></p> ";
                 await SendMailAsync(string.Join(";", emails), $"[ITTicket] New Request from {vm.RequesterName} — Pending Approval", body);
             }
             catch { }
@@ -679,13 +696,13 @@ namespace ITTicketRequest.Controllers
                 var link = $"{_settings.URLSITE}Ticket/Detail/{ticketId}";
                 if (action == "Reject")
                 {
-                    await SendMailAsync(requesterEmail, $"[ITTicket] {docNumber} — Rejected", $"<p>Dear {requesterName},</p><p>Your ticket <b>{docNumber}</b> has been <b style='color:#c62828'>Rejected</b> by {approver.FullName}.</p><p><a href='{link}'>View details</a></p>");
+                    await SendMailAsync(requesterEmail, $"[ITTicket] {docNumber} — Rejected", $"<p>Dear {requesterName},</p><p>Your ticket <b>{docNumber}</b> has been <b style='color:#c62828'>Rejected</b> by {approver.FullName}.</p><p><a href='{link}'>View details</a></p> <br/><p>Best regards,<br/>IT Ticket System<font color='red'>BERNINA Thailand</font> www.bernina.com<br/>79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>Fax.: +66 (0) 53 581351<br/><hr/></p>");
                     return;
                 }
                 if (action == "CloseTask")
                 {
                     var adminEmails = GetEmailsByFunCode(9);
-                    if (adminEmails.Any()) await SendMailAsync(string.Join(";", adminEmails), $"[ITTicket] {docNumber} — IT PIC Task Completed, Ready to Close", $"<p>Dear IT Admin,</p><p>IT PIC has completed work on ticket <b>{docNumber}</b>. Please close the ticket.</p><p><a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to close ticket</a></p>");
+                    if (adminEmails.Any()) await SendMailAsync(string.Join(";", adminEmails), $"[ITTicket] {docNumber} — IT PIC Task Completed, Ready to Close", $"<p>Dear IT Admin,</p><p>IT PIC has completed work on ticket <b>{docNumber}</b>. Please close the ticket.</p><p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to close ticket</a></p>  <br/><p>Best regards,<br/>IT Ticket System<font color='red'>BERNINA Thailand</font> www.bernina.com<br/>79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>Fax.: +66 (0) 53 581351<br/><hr/></p>");
                     return;
                 }
                 var (nextFunCode, nextRole) = newStatus switch
@@ -700,10 +717,10 @@ namespace ITTicketRequest.Controllers
                 if (nextFunCode > 0)
                 {
                     var emails = nextFunCode == 6 && !string.IsNullOrEmpty(assignedPIC) ? GetEmailBySam(assignedPIC) : nextFunCode == 7 && !string.IsNullOrEmpty(selITMgr) ? GetEmailBySam(selITMgr) : GetEmailsByFunCode(nextFunCode);
-                    if (emails.Any()) await SendMailAsync(string.Join(";", emails), $"[ITTicket] {docNumber} — Pending {nextRole}", $"<p>Dear {nextRole},</p><p>Ticket <b>{docNumber}</b> from {requesterName} is awaiting your action.</p><p><a href='{link}' style='background:#231f20;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to proceed</a></p>");
+                    if (emails.Any()) await SendMailAsync(string.Join(";", emails), $"[ITTicket] {docNumber} — Pending {nextRole}", $"<p>Dear {nextRole},</p><p>Ticket <b>{docNumber}</b> from {requesterName} is awaiting your action.</p><p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to proceed</a></p> <br/><p>Best regards,<br/>IT Ticket System<font color='red'>BERNINA Thailand</font> www.bernina.com<br/>79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>Fax.: +66 (0) 53 581351<br/><hr/></p>");
                 }
                 else if (newStatus == "Completed")
-                    await SendMailAsync(requesterEmail, $"[ITTicket] {docNumber} — Completed", $"<p>Dear {requesterName},</p><p>Your ticket <b>{docNumber}</b> has been <b style='color:#2e7d32'>Completed</b>.</p><p><a href='{link}'>View details</a></p>");
+                    await SendMailAsync(requesterEmail, $"[ITTicket] {docNumber} — Completed", $"<p>Dear {requesterName},</p><p>Your ticket <b>{docNumber}</b> has been <b style='color:#2e7d32'>Completed</b>.</p><p><a href='{link}'>View details</a></p> <br/><p>Best regards,<br/>IT Ticket System<font color='red'>BERNINA Thailand</font> www.bernina.com<br/>79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>Fax.: +66 (0) 53 581351<br/><hr/></p>");
             }
             catch { }
         }

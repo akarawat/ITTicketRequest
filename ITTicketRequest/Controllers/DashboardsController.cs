@@ -27,10 +27,16 @@ namespace ITTicketRequest.Controllers
             var authenUrl = _config["TBCorApiServices:AuthenUrl"] ?? "/";
 
             // If no session and no query params, redirect to authen URL
-            if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(existing))
-                return Redirect(authenUrl);
+            //if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(existing))
+            //    return Redirect(authenUrl);
 
             /* Sample Data for Debugging */
+
+            //id = "123456789";
+            //user = "martin.r"; 
+            //email = "martin.r@berninathailand.com"; 
+            //fname = "Martin R"; 
+            //depart = "MD";
 
             //id = "123456789";
             //user = "suthichai.n"; 
@@ -59,11 +65,11 @@ namespace ITTicketRequest.Controllers
             //depart = "Planning, Project & IT";
             //----
 
-            //id = "123456789";
-            //user = "pannee.j";
-            //email = "pannee.j@berninathailand.com";
-            //fname = "Saowanee Srimai";
-            //depart = "Planning, Project & IT";
+            id = "123456789";
+            user = "pannee.j";
+            email = "pannee.j@berninathailand.com";
+            fname = "Pannee Jaiklangduk";
+            depart = "Planning, Project & IT";
 
             //id = "123456789";
             //user = "Saowanee.s";
