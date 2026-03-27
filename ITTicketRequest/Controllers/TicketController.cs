@@ -244,60 +244,138 @@ namespace ITTicketRequest.Controllers
         {
             var session = GetSession();
             if (session == null) return Unauthorized();
-            int funCode = 0;
 
-            if (session.IsDeptManager) funCode = 8;
-            else if (session.IsManagingDirector) funCode = 4;
-            else if (session.IsITManager) funCode = 7;
-            else if (session.IsITAdmin) funCode = 5;
-            else if (session.IsITPIC) funCode = 6;
-            else if (session.IsAdmin) funCode = 9;
-            if (funCode == 0) return Json(new List<object>());
-            return GetTicketList(session.SamAcc, funCode: funCode, approverSamAcc: session.SamAcc);
+            // รวม Role ทั้งหมดของ User (กรณีมีหลาย Role เช่น DeptMgr + ITMgr)
+            var funCodes = new List<int>();
+            if (session.IsAdmin) return GetTicketList(funCode: 9);  // Admin เห็นทุก Ticket
+            if (session.IsDeptManager) funCodes.Add(8);
+            if (session.IsManagingDirector) funCodes.Add(4);
+            if (session.IsITManager) funCodes.Add(7);
+            if (session.IsITAdmin) funCodes.Add(5);
+            if (session.IsITPIC) funCodes.Add(6);
+
+            if (!funCodes.Any()) return Json(new List<object>());
+
+            // Single role — เรียก GetTicketList ปกติ
+            if (funCodes.Count == 1)
+                return GetTicketList(funCode: funCodes[0], approverSamAcc: session.SamAcc);
+
+            // Multi-role — UNION ผลลัพธ์จากทุก Role แล้ว dedup ด้วย TicketId
+            try
+            {
+                var seen = new HashSet<string>();
+                var rows = new List<object>();
+                var connStr = _config.GetConnectionString("BTITTicketConn");
+
+                foreach (var fc in funCodes)
+                {
+                    var pendingStatus = PendingStatusByFunCode(fc);
+                    using var conn = new SqlConnection(connStr);
+                    conn.Open();
+                    using var cmd = new SqlCommand("sp_GetTicketList", conn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@SamAcc", DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Status", (object?)pendingStatus ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FunCode", fc);
+                    cmd.Parameters.AddWithValue("@ApproverSamAcc", session.SamAcc);
+                    cmd.Parameters.AddWithValue("@PageNo", 1);
+                    cmd.Parameters.AddWithValue("@PageSize", 500);
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var tid = reader["TicketId"].ToString()!;
+                        if (!seen.Add(tid)) continue;  // dedup
+                        rows.Add(new
+                        {
+                            ticketId = tid,
+                            docNumber = reader["DocNumber"].ToString(),
+                            requesterName = reader["RequesterName"].ToString(),
+                            department = reader["Department"].ToString(),
+                            status = reader["Status"].ToString(),
+                            statusLabel = reader["StatusLabel"].ToString(),
+                            reqComputer = (bool)reader["ReqComputer"],
+                            reqEmail = (bool)reader["ReqEmail"],
+                            reqNetwork = (bool)reader["ReqNetwork"],
+                            reqPrograms = (bool)reader["ReqPrograms"],
+                            reqVPN = (bool)reader["ReqVPN"],
+                            apprITPIC = reader["ApprITPIC"] == DBNull.Value ? null : reader["ApprITPIC"].ToString(),
+                            createdAt = reader["CreatedAt"]
+                        });
+                    }
+                }
+                return Json(rows);
+            }
+            catch (Exception ex) { return StatusCode(500, new { error = ex.Message }); }
         }
 
-        // GET /Ticket/GetPendingCount
+        // GET /Ticket/GetPendingCount — รองรับ Multi-Role (เช่น DeptMgr + ITMgr)
         public IActionResult GetPendingCount()
         {
             var session = GetSession();
             if (session == null) return Json(new { count = 0 });
 
-            int funCode = 0;
-            if (session.IsDeptManager) funCode = 8;
-            else if (session.IsManagingDirector) funCode = 4;
-            else if (session.IsITManager) funCode = 7;
-            else if (session.IsITAdmin) funCode = 5;
-            else if (session.IsITPIC) funCode = 6;
-            else if (session.IsAdmin) funCode = 9;
-            if (funCode == 0) return Json(new { count = 0 });
+            // รวม Role ทั้งหมดของ User
+            var funCodes = new List<int>();
+            if (session.IsAdmin) return CountPending(9, null, session.SamAcc);
+            if (session.IsDeptManager) funCodes.Add(8);
+            if (session.IsManagingDirector) funCodes.Add(4);
+            if (session.IsITManager) funCodes.Add(7);
+            if (session.IsITAdmin) funCodes.Add(5);
+            if (session.IsITPIC) funCodes.Add(6);
 
-            // Map funCode → Status string ที่ชัดเจน
-            var pendingStatus = PendingStatusByFunCode(funCode);
-            //if (pendingStatus == null) return Json(new { count = 0 });
+            if (!funCodes.Any()) return Json(new { count = 0 });
 
+            // Single role
+            if (funCodes.Count == 1)
+                return CountPending(funCodes[0], PendingStatusByFunCode(funCodes[0]), session.SamAcc);
+
+            // Multi-role — นับ unique TicketId จากทุก Role (dedup)
+            try
+            {
+                var seen = new HashSet<string>();
+                var connStr = _config.GetConnectionString("BTITTicketConn");
+                foreach (var fc in funCodes)
+                {
+                    var pendingStatus = PendingStatusByFunCode(fc);
+                    using var conn = new SqlConnection(connStr);
+                    conn.Open();
+                    using var cmd = new SqlCommand("sp_GetTicketList", conn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@SamAcc", DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Status", (object?)pendingStatus ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@FunCode", fc);
+                    cmd.Parameters.AddWithValue("@ApproverSamAcc", session.SamAcc);
+                    cmd.Parameters.AddWithValue("@PageNo", 1);
+                    cmd.Parameters.AddWithValue("@PageSize", 500);
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                        seen.Add(reader["TicketId"].ToString()!);
+                }
+                return Json(new { count = seen.Count });
+            }
+            catch { return Json(new { count = 0 }); }
+        }
+
+        // Helper: นับ Pending สำหรับ Single Role
+        private IActionResult CountPending(int funCode, string? pendingStatus, string approverSamAcc)
+        {
             try
             {
                 var connStr = _config.GetConnectionString("BTITTicketConn");
                 using var conn = new SqlConnection(connStr);
                 conn.Open();
-
                 using var cmd = new SqlCommand("sp_GetTicketList", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
-                // @SamAcc         = session.SamAcc → นับเฉพาะ ticket ของ User ที่ Login
-                // @Status         = pendingStatus   → กรอง Status ตรง Role ของ User
-                // @FunCode        = NULL             → ไม่ต้องใช้ เพราะใช้ @Status แล้ว
-                // @ApproverSamAcc = session.SamAcc  → กรองเฉพาะ ticket ที่ Assign ให้คนนี้
-                cmd.Parameters.AddWithValue("@SamAcc", session.SamAcc);
-                cmd.Parameters.AddWithValue("@Status", pendingStatus);
+                cmd.Parameters.AddWithValue("@SamAcc", DBNull.Value);
+                cmd.Parameters.AddWithValue("@Status", (object?)pendingStatus ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@FunCode", funCode);
-                cmd.Parameters.AddWithValue("@ApproverSamAcc", funCode == 9 ? (object)DBNull.Value : session.SamAcc);
+                cmd.Parameters.AddWithValue("@ApproverSamAcc", funCode == 9 ? (object)DBNull.Value : approverSamAcc);
                 cmd.Parameters.AddWithValue("@PageNo", 1);
-                cmd.Parameters.AddWithValue("@PageSize", 1);  // ดึงแค่ 1 row — อ่าน TotalCount
-
+                cmd.Parameters.AddWithValue("@PageSize", 1);
                 using var reader = cmd.ExecuteReader();
                 int count = reader.Read() && reader["TotalCount"] != DBNull.Value
                             ? Convert.ToInt32(reader["TotalCount"]) : 0;
-
                 return Json(new { count });
             }
             catch { return Json(new { count = 0 }); }
@@ -476,6 +554,7 @@ namespace ITTicketRequest.Controllers
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
         }
+
         // GET /Ticket/MyHistoryApproved
         public IActionResult MyHistoryApproved()
         {
