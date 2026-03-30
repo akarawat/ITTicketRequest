@@ -3,12 +3,16 @@
   "WorkspaceRootPath": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\sql\\12_sp_returnitpictask.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
-      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:sql\\12_sp_returnitpictask.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\ticket\\pending.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:views\\ticket\\pending.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\controllers\\dashboardscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:controllers\\dashboardscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\sql\\12_sp_returnitpictask.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:sql\\12_sp_returnitpictask.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\controllers\\ticketcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -29,10 +33,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\ticket\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:views\\ticket\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\ticket\\pending.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:views\\ticket\\pending.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\views\\ticket\\myhistoryapproved.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -76,10 +76,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\sql\\12_sp_returnitpictask.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:sql\\12_sp_returnitpictask.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
     }
   ],
   "DocumentGroupContainers": [
@@ -89,7 +85,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 10,
           "Children": [
             {
               "$type": "Document",
@@ -106,7 +102,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "_Layout.cshtml",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "Views\\Shared\\_Layout.cshtml",
@@ -132,7 +128,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
@@ -158,7 +154,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "TicketController.cs",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Controllers\\TicketController.cs",
               "RelativeDocumentMoniker": "Controllers\\TicketController.cs",
@@ -167,8 +163,7 @@
               "ViewState": "AgIAAA8CAAAAAAAAAAAAACwCAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-19T04:11:07.545Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -185,7 +180,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "Detail.cshtml",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Detail.cshtml",
               "RelativeDocumentMoniker": "Views\\Ticket\\Detail.cshtml",
@@ -197,20 +192,33 @@
               "IsPinned": true
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "12_sp_ReturnITPICTask.sql ",
-              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\SQL\\12_sp_ReturnITPICTask.sql",
-              "RelativeDocumentMoniker": "SQL\\12_sp_ReturnITPICTask.sql",
-              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\SQL\\12_sp_ReturnITPICTask.sql",
-              "RelativeToolTip": "SQL\\12_sp_ReturnITPICTask.sql",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-03-27T06:32:29.921Z",
-              "EditorCaption": ""
-            },
-            {
               "$type": "Bookmark",
               "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ITTicketRequest.csproj",
+              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\ITTicketRequest.csproj",
+              "RelativeDocumentMoniker": "ITTicketRequest.csproj",
+              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\ITTicketRequest.csproj",
+              "RelativeToolTip": "ITTicketRequest.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-03-23T08:45:12.481Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Pending.cshtml",
+              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Pending.cshtml",
+              "RelativeDocumentMoniker": "Views\\Ticket\\Pending.cshtml",
+              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Pending.cshtml",
+              "RelativeToolTip": "Views\\Ticket\\Pending.cshtml",
+              "ViewState": "AgIAAFUBAAAAAAAAAAAtwF4BAAA8AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-23T05:52:02.777Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -220,22 +228,10 @@
               "RelativeDocumentMoniker": "Controllers\\DashboardsController.cs",
               "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Controllers\\DashboardsController.cs",
               "RelativeToolTip": "Controllers\\DashboardsController.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAuwCcAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAzwBwAAABIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-19T04:11:06.698Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ITTicketRequest.csproj",
-              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\ITTicketRequest.csproj",
-              "RelativeDocumentMoniker": "ITTicketRequest.csproj",
-              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\ITTicketRequest.csproj",
-              "RelativeToolTip": "ITTicketRequest.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-03-23T08:45:12.481Z"
             },
             {
               "$type": "Document",
@@ -287,15 +283,14 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "Pending.cshtml",
-              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Pending.cshtml",
-              "RelativeDocumentMoniker": "Views\\Ticket\\Pending.cshtml",
-              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Pending.cshtml",
-              "RelativeToolTip": "Views\\Ticket\\Pending.cshtml",
-              "ViewState": "AgIAAMsBAAAAAAAAAAAAAAACAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-23T05:52:02.777Z"
+              "DocumentIndex": 2,
+              "Title": "12_sp_ReturnITPICTask.sql",
+              "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\SQL\\12_sp_ReturnITPICTask.sql",
+              "RelativeDocumentMoniker": "SQL\\12_sp_ReturnITPICTask.sql",
+              "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\SQL\\12_sp_ReturnITPICTask.sql",
+              "RelativeToolTip": "SQL\\12_sp_ReturnITPICTask.sql",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-03-27T06:32:29.921Z"
             },
             {
               "$type": "Document",
@@ -319,7 +314,8 @@
               "RelativeToolTip": "Models\\AppSettingsModel.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAIA5wBkAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-23T02:19:50.157Z"
+              "WhenOpened": "2026-03-23T02:19:50.157Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",

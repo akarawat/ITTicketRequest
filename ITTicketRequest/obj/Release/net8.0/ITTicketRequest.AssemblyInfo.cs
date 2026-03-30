@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ITTicketRequest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+72d24c185ef1a80f0a46b7cdd76740fbf226131f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b11fc749f10fde37c199e56b69402f915ca17a89")]
 [assembly: System.Reflection.AssemblyProductAttribute("ITTicketRequest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ITTicketRequest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -29,8 +29,14 @@ namespace ITTicketRequest.Controllers
             // If no session and no query params, redirect to authen URL
             if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(existing))
                 return Redirect(authenUrl);
-
+            
             /* Sample Data for Debugging */
+
+            //id = "123456789";
+            //user = "Keatisak.L"; 
+            //email = "Keatisak.L@berninathailand.com"; 
+            //fname = "Keatisak Lerdwutthiworaruck"; 
+            //depart = "QC & QA & Safety";
 
             //id = "123456789";
             //user = "martin.r"; 

@@ -358,9 +358,9 @@
                                    <i class="bi bi-check2-all me-1"></i>Close Task</button>
                                    <button class="btn-return-task" onclick="openReturnTaskModal('${r.ticketId}','${r.docNumber}')">
                                    <i class="bi bi-arrow-return-left me-1"></i>Return</button>`
-                                : `<button class="btn-approve" onclick="openActionModal('Approve','${r.ticketId}','${r.docNumber}')">
+                                : `<button class="btn-approve" onclick="openActionModal('Approve','${r.ticketId}','${r.docNumber}')" style="display:none">
                                    <i class="bi bi-check"></i> Approve</button>
-                                   <button class="btn-reject" onclick="openActionModal('Reject','${r.ticketId}','${r.docNumber}')">
+                                   <button class="btn-reject" onclick="openActionModal('Reject','${r.ticketId}','${r.docNumber}')" style="display:none">
                                    <i class="bi bi-x"></i> Reject</button>`
                             }
                         </div>
