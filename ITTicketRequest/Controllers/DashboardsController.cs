@@ -96,6 +96,12 @@ namespace ITTicketRequest.Controllers
             //fname = "Benjamat Jongsiriwat";
             //depart = "Planning, Project & IT";
 
+            //id = "123456789";
+            //user = "Attapol.J";
+            //email = "Attapol.J@berninathailand.com";
+            //fname = "Attapol Jingmak";
+            //depart = "Planning, Project & IT";
+
             if (!string.IsNullOrEmpty(id))
             {
                 var samAcc = UserSessionModel.ParseSamAcc(user ?? "");

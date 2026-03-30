@@ -564,7 +564,9 @@
                     const isReturned = p.status === 'Returned';
                     const initials = p.displayName.split(' ').slice(0,2).map(w => w[0]).join('');
                     const isMine   = p.samAcc.toLowerCase() === CURRENT_SAM.toLowerCase();
-                    const canClose = isMine && !isClosed && IS_IT_PIC && status === 'PendingITPIC';
+                    // แสดงปุ่มถ้า: เป็นตัวเอง + ยัง Active + Status เป็น PendingITPIC หรือ PendingITAdminClose
+                    const canClose = isMine && !isClosed && !isReturned
+                                  && (status === 'PendingITPIC' || status === 'PendingITAdminClose');
                     return `
                     <div class="pic-row ${isClosed ? 'closed' : 'active'}">
                         <div class="d-flex align-items-center gap-10" style="gap:10px">
@@ -663,13 +665,15 @@
             if (isOwnTicket && !IS_IT_ADMIN) return;
 
             const isAssignStep    = t.status === 'PendingITAdminAssign';
-            const isITPICStep     = t.status === 'PendingITPIC';
+            // IT PIC ยัง Active ได้แม้ Status = PendingITAdminClose (SP อาจเปลี่ยน Status เร็วเกินไป)
+            const isITPICStep = t.status === 'PendingITPIC' || t.status === 'PendingITAdminClose';
             const isCloseStep     = t.status === 'PendingITAdminClose';
 
-            // IT PIC — เห็น Close Task + Return Task ของตัวเองเท่านั้น
-            if (isITPICStep && IS_IT_PIC) {
-                const myPIC = picList.find(p => p.samAcc.toLowerCase() === CURRENT_SAM.toLowerCase());
-                if (myPIC && myPIC.status === 'Active') {
+            // IT PIC — เช็คจาก picList โดยตรง (ไม่เช็ค IS_IT_PIC เพราะ user อาจไม่มี FUNCODE=6)
+            if (isITPICStep) {
+                const myPIC = picList.find(p => p.samAcc.toLowerCase() === CURRENT_SAM.toLowerCase()
+                                             && p.status === 'Active');
+                if (myPIC) {
                     panel.style.display = 'block';
                     buttons.innerHTML = `
                         <button class="btn-close-lg" onclick="openCloseTaskModal()">
@@ -678,8 +682,8 @@
                         <button class="btn-return-lg" onclick="openReturnTaskModal()">
                             <i class="bi bi-arrow-return-left me-1"></i>Return Task
                         </button>`;
+                    return;
                 }
-                return;
             }
 
             if (!IS_IT_ADMIN && !t.status.startsWith('Pending')) return;
