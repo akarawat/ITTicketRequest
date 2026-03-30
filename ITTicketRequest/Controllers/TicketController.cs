@@ -397,7 +397,35 @@ namespace ITTicketRequest.Controllers
                 var drives = new List<object>(); var programs = new List<object>(); var logs = new List<object>();
                 using var reader = cmd.ExecuteReader();
                 if (reader.Read())
-                    ticket = new { ticketId = reader["TicketId"].ToString(), docNumber = reader["DocNumber"].ToString(), samAcc = reader["SamAcc"].ToString(), requesterName = reader["RequesterName"].ToString(), requesterEmail = reader["RequesterEmail"].ToString(), department = reader["Department"].ToString(), reason = reader["Reason"] == DBNull.Value ? null : reader["Reason"].ToString(), reqComputer = (bool)reader["ReqComputer"], reqEmail = (bool)reader["ReqEmail"], reqNetwork = (bool)reader["ReqNetwork"], reqPrograms = (bool)reader["ReqPrograms"], reqVPN = (bool)reader["ReqVPN"], vpnType = reader["VPNType"] == DBNull.Value ? null : reader["VPNType"].ToString(), status = reader["Status"].ToString(), apprITPIC = reader["ApprITPIC"] == DBNull.Value ? null : reader["ApprITPIC"].ToString(), itpicName = reader["ITPICName"] == DBNull.Value ? null : reader["ITPICName"].ToString(), createdAt = reader["CreatedAt"], completedAt = reader["CompletedAt"] == DBNull.Value ? null : reader["CompletedAt"].ToString() };
+                    ticket = new
+                    {
+                        ticketId = reader["TicketId"].ToString(),
+                        docNumber = reader["DocNumber"].ToString(),
+                        samAcc = reader["SamAcc"].ToString(),
+                        requesterName = reader["RequesterName"].ToString(),
+                        requesterEmail = reader["RequesterEmail"].ToString(),
+                        department = reader["Department"].ToString(),
+                        section = reader["Section"] == DBNull.Value ? null : reader["Section"].ToString(),
+                        position = reader["Position"] == DBNull.Value ? null : reader["Position"].ToString(),
+                        reason = reader["Reason"] == DBNull.Value ? null : reader["Reason"].ToString(),
+                        reqComputer = (bool)reader["ReqComputer"],
+                        computerType = reader["ComputerType"] == DBNull.Value ? null : reader["ComputerType"].ToString(),
+                        computerNote = reader["ComputerNote"] == DBNull.Value ? null : reader["ComputerNote"].ToString(),
+                        reqEmail = (bool)reader["ReqEmail"],
+                        emailRequest = reader["EmailRequest"] == DBNull.Value ? null : reader["EmailRequest"].ToString(),
+                        reqNetwork = (bool)reader["ReqNetwork"],
+                        reqPrograms = (bool)reader["ReqPrograms"],
+                        programOther = reader["ProgramOther"] == DBNull.Value ? null : reader["ProgramOther"].ToString(),
+                        reqVPN = (bool)reader["ReqVPN"],
+                        vpnType = reader["VPNType"] == DBNull.Value ? null : reader["VPNType"].ToString(),
+                        vpnFrom = reader["VPNFrom"] == DBNull.Value ? null : reader["VPNFrom"].ToString(),
+                        vpnTo = reader["VPNTo"] == DBNull.Value ? null : reader["VPNTo"].ToString(),
+                        status = reader["Status"].ToString(),
+                        apprITPIC = reader["ApprITPIC"] == DBNull.Value ? null : reader["ApprITPIC"].ToString(),
+                        itpicName = reader["ITPICName"] == DBNull.Value ? null : reader["ITPICName"].ToString(),
+                        createdAt = reader["CreatedAt"],
+                        completedAt = reader["CompletedAt"] == DBNull.Value ? null : reader["CompletedAt"].ToString()
+                    };
                 reader.NextResult();
                 while (reader.Read()) drives.Add(new { drive = reader["Drive"].ToString(), driveRead = (bool)reader["DriveRead"], driveWrite = (bool)reader["DriveWrite"], customPath = reader["CustomPath"] == DBNull.Value ? null : reader["CustomPath"].ToString() });
                 reader.NextResult();
@@ -491,9 +519,9 @@ namespace ITTicketRequest.Controllers
                         Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>
                         Fax.: +66 (0) 53 581351<br/>
                         <hr/>
-                        </p>     
-                        ";
-                    await SendMailAsync(string.Join(";", picEmails), $"[ITTicket] {docNumber} — You have been assigned as IT PIC", emailBody);
+                        </p> ";
+                    await SendMailAsync(string.Join(";", picEmails),
+                        $"[ITTicket] {docNumber} — You have been assigned as IT PIC", emailBody);
                 }
 
                 return Json(new { ok = true, msg = $"Assigned {picEmails.Count} IT PIC(s) successfully" });
@@ -546,7 +574,9 @@ namespace ITTicketRequest.Controllers
                     if (adminEmails.Any())
                     {
                         var link = $"{_settings.URLSITE}Ticket/Detail/{body.RequestId}";
-                        await SendMailAsync(string.Join(";", adminEmails), $"[ITTicket] {docNumber} — All IT PIC Tasks Completed, Ready to Close", $"<p>Dear IT Admin,</p><p>All IT PIC have completed their tasks for ticket <b>{docNumber}</b> from {requesterName}.</p><p>Please close the ticket.</p><p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to close ticket</a></p> <br/><p>Best regards,<br/>IT Ticket System<font color='red'>BERNINA Thailand</font> www.bernina.com<br/>79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>Fax.: +66 (0) 53 581351<br/><hr/></p>");
+                        await SendMailAsync(string.Join(";", adminEmails),
+                            $"[ITTicket] {docNumber} — All IT PIC Tasks Completed, Ready to Close",
+                            $"<p>Dear IT Admin,</p><p>All IT PIC have completed their tasks for ticket <b>{docNumber}</b> from {requesterName}.</p><p>Please close the ticket.</p><p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to close ticket</a></p> <br/><p>Best regards,<br/>IT Ticket System<font color='red'>BERNINA Thailand</font> www.bernina.com<br/>79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>Fax.: +66 (0) 53 581351<br/><hr/></p>");
                     }
                 }
 
@@ -674,7 +704,7 @@ namespace ITTicketRequest.Controllers
                             <p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;
                             border-radius:6px;text-decoration:none;font-weight:bold'>
                             Click here to reassign</a></p>
-                            <br/>
+							<br/>
                             <p>Best regards,<br/>IT Ticket System
                             <font color='red'>BERNINA Thailand</font> www.bernina.com<br/>
                             79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>
