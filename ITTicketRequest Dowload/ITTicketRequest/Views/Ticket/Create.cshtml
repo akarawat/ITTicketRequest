@@ -1,0 +1,492 @@
+@model ITTicketRequest.Models.TicketViewModel
+@{ ViewData["Title"] = "New IT Ticket"; }
+
+@section Styles {
+<style>
+    :root { --brand:#231f20; --red:#ed1c24; --red-lt:#fef0f0; --border:#e0d6d6; --radius:10px; }
+    .form-header { background:var(--brand); border-radius:var(--radius) var(--radius) 0 0; padding:18px 28px; display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--red); }
+    .form-header h1 { color:#fff; font-size:1.1rem; font-weight:700; margin:0; }
+    .badge-rev { background:rgba(255,255,255,.15); color:#fff; font-size:11px; padding:3px 10px; border-radius:20px; }
+    .form-card { background:#fff; border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); box-shadow:0 2px 12px rgba(35,31,32,.08); padding:28px 32px; }
+    .section-label { display:flex; align-items:center; gap:8px; font-weight:700; font-size:12px; letter-spacing:.8px; text-transform:uppercase; color:var(--red); border-bottom:2px solid var(--red-lt); padding-bottom:6px; margin-bottom:16px; }
+    .req-block { border:1px solid var(--border); border-radius:8px; margin-bottom:12px; overflow:hidden; }
+    .req-block-header { background:var(--red-lt); padding:10px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; }
+    .req-block-header .form-check-label { font-weight:700; font-size:13.5px; color:var(--brand); cursor:pointer; }
+    .req-block-body { padding:16px; background:#fff; border-top:1px solid var(--border); display:none; }
+    .req-block.active .req-block-body { display:block; }
+    .prog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(185px,1fr)); gap:8px; }
+    .prog-item { display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:6px; padding:8px 10px; cursor:pointer; transition:background .15s; }
+    .prog-item:has(input:checked) { background:var(--red-lt); border-color:var(--red); }
+    .prog-item label { cursor:pointer; font-size:13px; margin:0; }
+    .drive-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .drive-table th { background:var(--red-lt); color:var(--brand); font-weight:700; padding:8px 12px; text-align:center; border:1px solid var(--border); font-size:12px; text-transform:uppercase; }
+    .drive-table td { padding:8px 12px; border:1px solid var(--border); vertical-align:middle; }
+    .drive-code { font-weight:700; color:var(--red); font-size:14px; text-align:center; }
+    .check-center { text-align:center; }
+    .approval-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; }
+    .approval-box { border:1px solid var(--border); border-radius:10px; padding:14px; background:#fafafa; }
+    .approval-box .role-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+    .appr-select { width:100%; font-size:12.5px; border:1px solid var(--border); border-radius:6px; padding:6px 8px; background:#fff; appearance:none; }
+    .appr-info { margin-top:6px; font-size:11.5px; color:#90a4ae; display:flex; align-items:center; gap:4px; }
+    .appr-info .dot { width:6px; height:6px; border-radius:50%; background:#90a4ae; }
+    .appr-info.loaded .dot { background:#2e7d32; }
+    .btn-submit { background:var(--red); color:#fff; border:none; padding:10px 32px; border-radius:8px; font-weight:700; font-size:14px; }
+    .btn-submit:hover { background:#c0151b; color:#fff; }
+    .btn-cancel { border:1.5px solid var(--border); color:#607080; background:#fff; padding:10px 24px; border-radius:8px; font-size:14px; text-decoration:none; }
+</style>
+}
+
+<form asp-action="Create" method="post" id="ticketForm">
+    @Html.AntiForgeryToken()
+
+    <div class="form-header">
+        <div>
+            <h1><i class="bi bi-ticket me-2"></i>IT Ticket Request</h1>
+            <div style="color:rgba(255,255,255,.65);font-size:11px;margin-top:2px">Bernina Thailand · IT Infrastructure &amp; Security</div>
+        </div>
+        <div class="text-end">
+            <div class="badge-rev">New Request</div>
+            <div style="color:rgba(255,255,255,.65);font-size:11px;margin-top:4px">TKT-@DateTime.Now.ToString("yyyy")-NEW</div>
+        </div>
+    </div>
+
+    <div class="form-card">
+
+        <!-- SECTION 1: REQUESTER -->
+        <div class="section-label"><i class="bi bi-person-badge"></i>Requester Information</div>
+        <div class="row g-3 mb-4">
+            <input type="hidden" asp-for="SamAcc" />
+            <div class="col-md-6">
+                <label asp-for="RequesterName" class="form-label"></label>
+                <div class="input-group">
+                    <span class="input-group-text" style="background:var(--red-lt);color:var(--red);border-color:var(--border)"><i class="bi bi-person"></i></span>
+                    <input asp-for="RequesterName" class="form-control" readonly />
+                </div>
+                <div class="form-text">Auto-filled from SSO</div>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="RequesterEmail" class="form-label"></label>
+                <div class="input-group">
+                    <span class="input-group-text" style="background:var(--red-lt);color:var(--red);border-color:var(--border)"><i class="bi bi-envelope"></i></span>
+                    <input asp-for="RequesterEmail" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Department" class="form-label"></label>
+                <input asp-for="Department" class="form-control" readonly />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Section" class="form-label"></label>
+                <input asp-for="Section" class="form-control" placeholder="Enter section (if applicable)" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Position" class="form-label"></label>
+                <input asp-for="Position" class="form-control" placeholder="Job Title / Position" />
+            </div>
+            <div class="col-12">
+                <label asp-for="Reason" class="form-label"></label>
+                <textarea asp-for="Reason" class="form-control" rows="2" placeholder="Enter reason for this request..."></textarea>
+            </div>
+        </div>
+
+        <!-- SECTION 2: REQUEST ITEMS -->
+        <div class="section-label"><i class="bi bi-list-check"></i>Requested Items</div>
+
+        <!-- Computer -->
+        <div class="req-block" id="block-computer">
+            <div class="req-block-header" onclick="toggleBlock('computer')">
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" asp-for="ReqComputer" id="chk-computer"
+                           onclick="event.stopPropagation(); toggleBlock('computer', this.checked)" />
+                    <label class="form-check-label" for="chk-computer"><i class="bi bi-laptop me-1"></i>New Computer</label>
+                </div>
+            </div>
+            <div class="req-block-body">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Computer Type</label>
+                        <div class="d-flex gap-3 mt-1">
+                            <div class="form-check"><input class="form-check-input" type="radio" asp-for="ComputerType" value="Laptop" id="laptop" /><label for="laptop"><i class="bi bi-laptop"></i> Laptop</label></div>
+                            <div class="form-check"><input class="form-check-input" type="radio" asp-for="ComputerType" value="Desktop" id="desktop" /><label for="desktop"><i class="bi bi-pc-display"></i> Desktop</label></div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <label asp-for="ComputerNote" class="form-label">Special Requirements</label>
+                        <input asp-for="ComputerNote" class="form-control" placeholder="Enter special specifications..." />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email -->
+        <div class="req-block" id="block-email">
+            <div class="req-block-header" onclick="toggleBlock('email')">
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" asp-for="ReqEmail" id="chk-email"
+                           onclick="event.stopPropagation(); toggleBlock('email', this.checked)" />
+                    <label class="form-check-label" for="chk-email"><i class="bi bi-envelope-at me-1"></i>Email Account</label>
+                </div>
+            </div>
+            <div class="req-block-body">
+                <div class="col-md-7">
+                    <label asp-for="EmailRequest" class="form-label">Requested Email</label>
+                    <div class="input-group">
+                        <input asp-for="EmailRequest" class="form-control" placeholder="firstname.lastname" />
+                        <span class="input-group-text" style="background:var(--red-lt);color:var(--red);border-color:var(--border)">@@berninathailand.com</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Drive -->
+        <div class="req-block" id="block-network">
+            <div class="req-block-header" onclick="toggleBlock('network')">
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" asp-for="ReqNetwork" id="chk-network"
+                           onclick="event.stopPropagation(); toggleBlock('network', this.checked)" />
+                    <label class="form-check-label" for="chk-network"><i class="bi bi-hdd-network me-1"></i>Network Drive</label>
+                </div>
+            </div>
+            <div class="req-block-body">
+                <div class="table-responsive">
+                    <table class="drive-table">
+                        <thead><tr><th style="width:60px">Drive</th><th style="text-align:left">Description</th><th style="width:80px">Read</th><th style="width:80px">Write</th></tr></thead>
+                        <tbody>
+                            @{ var drives = new[] { ("S","Share (Common)"),("V","Department Directory"),("T","BTMS"),("X","Company Info (Standard)"),("W","BT - Structure"),("U","Own Directory"),("K","Drawing") }; }
+                            @for (int i = 0; i < drives.Length; i++)
+                            {
+                                var (code, desc) = drives[i];
+                                <tr>
+                                    <td class="drive-code">@code:</td>
+                                    <td>
+                                        <span style="color:#607080;font-size:12px">@desc</span>
+                                        @if (code == "X") { <span class="badge bg-secondary ms-1" style="font-size:10px">Standard</span> }
+                                        <input type="hidden" name="NetworkDrives[@i].Drive" value="@code" />
+                                    </td>
+                                    <td class="check-center"><input type="checkbox" name="NetworkDrives[@i].Read" value="true" class="form-check-input" @(code == "X" ? "checked" : "") /></td>
+                                    <td class="check-center"><input type="checkbox" name="NetworkDrives[@i].Write" value="true" class="form-check-input" /></td>
+                                </tr>
+                            }
+                            <tr>
+                                <td class="drive-code" style="color:#607080">Other</td>
+                                <td><input type="text" name="NetworkDrives[7].CustomPath" class="form-control form-control-sm" placeholder="Cross Dept path..." /><input type="hidden" name="NetworkDrives[7].Drive" value="Other" /></td>
+                                <td class="check-center"><input type="checkbox" name="NetworkDrives[7].Read" value="true" class="form-check-input" /></td>
+                                <td class="check-center"><input type="checkbox" name="NetworkDrives[7].Write" value="true" class="form-check-input" /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Programs -->
+        <div class="req-block" id="block-programs">
+            <div class="req-block-header" onclick="toggleBlock('programs')">
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" asp-for="ReqPrograms" id="chk-programs"
+                           onclick="event.stopPropagation(); toggleBlock('programs', this.checked)" />
+                    <label class="form-check-label" for="chk-programs"><i class="bi bi-grid-3x3-gap me-1"></i>Programs</label>
+                </div>
+            </div>
+            <div class="req-block-body">
+                <div class="prog-grid mb-3">
+                    @{ var std = new[]{"Microsoft Windows","Kaspersky","Driver Printer"};
+                       var opt = new[]{("Microsoft Office 2016",""),("Acrobat Reader","bi bi-file-earmark-pdf"),("PDF Creator",""),("Office 365 / MS Teams","bi bi-microsoft-teams"),("7-Zip",""),("VLC Player","bi bi-play-circle"),("AX (Dynamics)",""),("TC",""),("CAQ",""),("Solid Edge","")}; }
+                    @foreach (var p in std)
+                    {
+                        <div class="prog-item" style="background:var(--red-lt);border-color:var(--red);opacity:.85">
+                            <input class="form-check-input" type="checkbox" checked disabled /><label>@p</label>
+                            <input type="hidden" name="SelectedPrograms" value="@p" />
+                        </div>
+                    }
+                    @foreach (var (name, icon) in opt)
+                    {
+                        var iid = "prog-" + name.Replace(" ","").Replace("/","").Replace("(","").Replace(")","");
+                        <div class="prog-item">
+                            <input class="form-check-input" type="checkbox" name="SelectedPrograms" value="@name" id="@iid" />
+                            <label for="@iid">@if(!string.IsNullOrEmpty(icon)){<i class="@icon me-1"></i>}@name</label>
+                        </div>
+                    }
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="ProgramOther" class="form-label" style="font-size:12px">Other (specify)</label>
+                    <input asp-for="ProgramOther" class="form-control form-control-sm" placeholder="Program name, version..." />
+                </div>
+            </div>
+        </div>
+
+        <!-- VPN -->
+        <div class="req-block" id="block-vpn">
+            <div class="req-block-header" onclick="toggleBlock('vpn')">
+                <div class="form-check mb-0">
+                    <input class="form-check-input" type="checkbox" asp-for="ReqVPN" id="chk-vpn"
+                           onclick="event.stopPropagation(); toggleBlock('vpn', this.checked); onVpnChange(this.checked)" />
+                    <label class="form-check-label" for="chk-vpn"><i class="bi bi-shield-shaded me-1"></i>VPN — FortiClient</label>
+                </div>
+            </div>
+            <div class="req-block-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Access Type</label>
+                        <div class="d-flex gap-3 mt-1">
+                            <div class="form-check"><input class="form-check-input" type="radio" asp-for="VPNType" value="Permanent" id="vpn-perm" onchange="toggleVpnDates(false)" /><label for="vpn-perm">Permanent</label></div>
+                            <div class="form-check"><input class="form-check-input" type="radio" asp-for="VPNType" value="Temporary" id="vpn-temp" onchange="toggleVpnDates(true)" /><label for="vpn-temp">Temporary</label></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4" id="vpn-from-wrap" style="display:none">
+                        <label asp-for="VPNFrom" class="form-label">From</label>
+                        <input asp-for="VPNFrom" type="date" class="form-control" />
+                    </div>
+                    <div class="col-md-4" id="vpn-to-wrap" style="display:none">
+                        <label asp-for="VPNTo" class="form-label">To</label>
+                        <input asp-for="VPNTo" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <div class="p-2 rounded" style="background:#fef0f0;border:1px solid #ed1c24;font-size:12px;color:#c62828">
+                            <i class="bi bi-info-circle me-1"></i>VPN requests require <b>Managing Director</b> approval in addition to the standard workflow.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: APPROVAL -->
+        <div class="section-label mt-4"><i class="bi bi-diagram-3"></i>Approval Workflow</div>
+        <div class="approval-grid mb-4">
+            <!-- Requester (fixed) -->
+            <div class="approval-box">
+                <div class="role-label" style="color:#607080"><i class="bi bi-person"></i>REQUESTER</div>
+                <div style="font-weight:600;font-size:13px">@Model.RequesterName</div>
+                <div class="appr-info loaded"><div class="dot"></div><span style="font-size:11.5px">@Model.Department</span></div>
+            </div>
+
+            <!-- Dept Manager — Auto from HR -->
+            <div class="approval-box" style="border-color:#ed1c24">
+                <div class="role-label" style="color:#ed1c24"><i class="bi bi-person-check"></i>DEPARTMENT MANAGER</div>
+                <input type="hidden" id="hid-deptmgr" name="ApprDeptManager" value="" />
+                <div id="mgr-loading" style="font-size:12.5px;color:#90a4ae;padding:4px 0">
+                    <span class="spinner-border spinner-border-sm me-1"></span>Loading...
+                </div>
+                <div id="mgr-display" style="display:none">
+                    <div style="font-weight:600;font-size:13px" id="mgr-name"></div>
+                    <div class="appr-info loaded mt-1"><div class="dot" style="background:#2e7d32"></div><span id="mgr-email" style="font-size:11.5px;color:#607080"></span></div>
+                    <div style="margin-top:6px;font-size:10.5px;color:#2e7d32;background:#e8f5e9;border-radius:4px;padding:3px 7px;display:inline-block">
+                        <i class="bi bi-lock me-1"></i>Auto-assigned from HR
+                    </div>
+                </div>
+                <div id="mgr-notfound" style="display:none;font-size:12px;color:#e65100">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Manager not found
+                </div>
+            </div>
+
+            <!-- Managing Director — visible only when VPN selected -->
+            <div id="box-md" class="approval-box" style="border-color:#6a1b9a;display:none">
+                <div class="role-label" style="color:#6a1b9a"><i class="bi bi-building"></i>MANAGING DIRECTOR <span class="badge ms-1" style="background:#f3e5f5;color:#6a1b9a;font-size:9px">VPN ONLY</span></div>
+                <select class="appr-select" id="sel-mgdir" name="ApprManagingDir" onchange="updateApprInfo(this,'info-mgdir')">
+                    <option value="">— Select Approver —</option>
+                </select>
+                <div class="appr-info" id="info-mgdir"></div>
+            </div>
+
+            <!-- IT Manager -->
+            <div class="approval-box" style="border-color:#0d47a1">
+                <div class="role-label" style="color:#0d47a1"><i class="bi bi-person-workspace"></i>IT MANAGER</div>
+                <select class="appr-select" id="sel-itmgr" name="ApprITManager" onchange="updateApprInfo(this,'info-itmgr')">
+                    <option value="">— Loading... —</option>
+                </select>
+                <div class="appr-info" id="info-itmgr"></div>
+            </div>
+
+            <!-- IT Admin Assign PIC (info only) -->
+            <div class="approval-box" style="border-color:#00695c">
+                <div class="role-label" style="color:#00695c"><i class="bi bi-person-badge"></i>IT ADMIN → ASSIGN PIC</div>
+                <div style="font-size:12px;color:#90a4ae;padding:6px 0">IT Admin will assign IT Person Incharge after IT Manager approves.</div>
+                <div style="font-size:10.5px;color:#00695c;background:#e0f2f1;border-radius:4px;padding:3px 7px;display:inline-block">FUNCODE = 5</div>
+            </div>
+
+            <!-- IT PIC (info only) -->
+            <div class="approval-box" style="border-color:#2e7d32">
+                <div class="role-label" style="color:#2e7d32"><i class="bi bi-tools"></i>IT PERSON INCHARGE</div>
+                <div style="font-size:12px;color:#90a4ae;padding:6px 0">Assigned by IT Admin to handle this ticket.</div>
+                <div style="font-size:10.5px;color:#2e7d32;background:#e8f5e9;border-radius:4px;padding:3px 7px;display:inline-block">FUNCODE = 6</div>
+            </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="d-flex gap-3 pt-3 border-top">
+            <button type="submit" class="btn-submit" id="btn-submit">
+                <i class="bi bi-send me-2"></i>Submit Ticket
+            </button>
+            <a href="/Ticket/MyTickets" class="btn-cancel ms-auto">
+                <i class="bi bi-x-circle me-1"></i>Cancel
+            </a>
+        </div>
+    </div>
+</form>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:480px">
+        <div class="modal-content" style="border-radius:14px;border:none;overflow:hidden">
+            <div style="background:#231f20;border-bottom:3px solid #ed1c24;padding:20px 24px;display:flex;align-items:center;gap:12px">
+                <div style="width:40px;height:40px;background:rgba(237,28,36,.2);border-radius:50%;display:flex;align-items:center;justify-content:center">
+                    <i class="bi bi-send" style="color:#ed1c24;font-size:18px"></i>
+                </div>
+                <div>
+                    <div style="color:#fff;font-weight:700;font-size:15px">Confirm Submission</div>
+                    <div style="color:rgba(255,255,255,.65);font-size:12px">Please review before submitting</div>
+                </div>
+            </div>
+            <div class="modal-body p-4">
+                <div style="background:#f9f6f6;border-radius:10px;padding:14px 16px;margin-bottom:16px">
+                    <div style="font-size:11px;font-weight:700;color:#607080;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Summary</div>
+                    <table style="width:100%;font-size:13px;border-collapse:collapse">
+                        <tr><td style="color:#90a4ae;padding:3px 0;width:110px">Requester</td><td style="font-weight:600" id="cfm-name"></td></tr>
+                        <tr><td style="color:#90a4ae;padding:3px 0">Department</td><td id="cfm-dept"></td></tr>
+                        <tr><td style="color:#90a4ae;padding:3px 0;vertical-align:top">Items</td><td id="cfm-items" style="padding:3px 0"></td></tr>
+                        <tr><td style="color:#90a4ae;padding:3px 0">Dept Manager</td><td style="color:#2e7d32;font-weight:600" id="cfm-mgr"></td></tr>
+                    </table>
+                </div>
+                <div id="cfm-vpn-warn" style="display:none;background:#fef0f0;border:1px solid #ed1c24;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#c62828;margin-bottom:12px">
+                    <i class="bi bi-shield-shaded me-1"></i>VPN request — will also notify <b>Managing Director</b>
+                </div>
+                <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#795548">
+                    <i class="bi bi-info-circle me-1"></i>Once submitted, the ticket will be sent to Department Manager for approval.
+                </div>
+            </div>
+            <div style="padding:16px 24px;border-top:1px solid #f0f2f5;display:flex;justify-content:flex-end;gap:10px;background:#fff">
+                <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal"
+                        style="border-radius:8px;padding:8px 20px;font-size:13px;border:1px solid #e0d6d6">
+                    <i class="bi bi-arrow-left me-1"></i>Go Back
+                </button>
+                <button type="button" id="btn-confirm-submit"
+                        style="background:#ed1c24;color:#fff;border:none;border-radius:8px;padding:8px 24px;font-size:13px;font-weight:700;cursor:pointer">
+                    <i class="bi bi-send me-2"></i>Confirm &amp; Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const confirmModal  = new bootstrap.Modal(document.getElementById('confirmModal'));
+let   formValidated = false;
+
+// ── Toggle blocks ─────────────────────────────────────────────────
+function toggleBlock(id, force) {
+    const block = document.getElementById('block-' + id);
+    const chk   = document.getElementById('chk-' + id);
+    const isActive = force !== undefined ? force : !block.classList.contains('active');
+    block.classList.toggle('active', isActive);
+    chk.checked = isActive;
+}
+
+function toggleVpnDates(show) {
+    document.getElementById('vpn-from-wrap').style.display = show ? '' : 'none';
+    document.getElementById('vpn-to-wrap').style.display   = show ? '' : 'none';
+}
+
+function onVpnChange(checked) {
+    const box = document.getElementById('box-md');
+    box.style.display = checked ? '' : 'none';
+    if (checked && document.getElementById('sel-mgdir').options.length <= 1) {
+        loadApprovers(4, 'sel-mgdir', 'info-mgdir');
+    }
+    if (!checked) document.getElementById('sel-mgdir').value = '';
+}
+
+// ── Load approvers ────────────────────────────────────────────────
+async function loadApprovers(funCode, selId, infoId) {
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '<option value="">Loading...</option>';
+    sel.disabled  = true;
+    try {
+        const res  = await fetch(`/Ticket/GetApprovers?funCode=${funCode}`);
+        const list = await res.json();
+        sel.innerHTML = '<option value="">— Select Approver —</option>';
+        list.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a.samAcc;
+            opt.textContent = a.displayName + (a.department ? ` (${a.department})` : '');
+            opt.dataset.email = a.email;
+            sel.appendChild(opt);
+        });
+        sel.disabled = false;
+        updateApprInfo(sel, infoId);
+    } catch { sel.innerHTML = '<option value="">(Failed to load)</option>'; sel.disabled = false; }
+}
+
+function updateApprInfo(sel, infoId) {
+    const el  = document.getElementById(infoId);
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt?.value) { el.className = 'appr-info'; el.innerHTML = ''; return; }
+    el.className = 'appr-info loaded';
+    el.innerHTML = `<div class="dot"></div><span style="font-size:11.5px">${opt.dataset.email || ''}</span>`;
+}
+
+// ── Load My Manager (Dept Manager auto-assign) ────────────────────
+async function loadMyManager() {
+    try {
+        const res  = await fetch('/Ticket/GetMyManager');
+        const data = await res.json();
+        document.getElementById('mgr-loading').style.display = 'none';
+        if (data.found) {
+            document.getElementById('hid-deptmgr').value      = data.samAcc;
+            document.getElementById('mgr-name').textContent   = data.displayName;
+            document.getElementById('mgr-email').textContent  = data.email;
+            document.getElementById('mgr-display').style.display = 'block';
+        } else {
+            document.getElementById('mgr-notfound').style.display = 'block';
+        }
+    } catch {
+        document.getElementById('mgr-loading').style.display    = 'none';
+        document.getElementById('mgr-notfound').style.display   = 'block';
+    }
+}
+
+// ── Submit + Confirmation Modal ───────────────────────────────────
+document.getElementById('ticketForm').addEventListener('submit', function(e) {
+    if (formValidated) return;
+    e.preventDefault();
+
+    const checks = ['chk-computer','chk-email','chk-network','chk-programs','chk-vpn'];
+    if (!checks.some(id => document.getElementById(id).checked)) {
+        alert('Please select at least 1 requested item'); return;
+    }
+    const deptMgr = document.getElementById('hid-deptmgr')?.value;
+    if (!deptMgr) {
+        alert('Department Manager not found. Please contact HR or IT Admin.'); return;
+    }
+    const isVPN = document.getElementById('chk-vpn').checked;
+    if (isVPN && !document.getElementById('sel-mgdir').value) {
+        alert('VPN request requires Managing Director approval. Please select a Managing Director.'); return;
+    }
+
+    // Build summary
+    document.getElementById('cfm-name').textContent = document.getElementById('RequesterName')?.value || '—';
+    document.getElementById('cfm-dept').textContent = document.getElementById('Department')?.value    || '—';
+    const LABELS = {'chk-computer':'Computer','chk-email':'Email','chk-network':'Network Drive','chk-programs':'Programs','chk-vpn':'VPN'};
+    document.getElementById('cfm-items').innerHTML = checks
+        .filter(id => document.getElementById(id).checked)
+        .map(id => `<span style="display:inline-block;background:#fef0f0;color:#ed1c24;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin:2px">${LABELS[id]}</span>`)
+        .join('');
+    document.getElementById('cfm-mgr').textContent = document.getElementById('mgr-name')?.textContent || '—';
+    document.getElementById('cfm-vpn-warn').style.display = isVPN ? 'block' : 'none';
+
+    confirmModal.show();
+});
+
+document.getElementById('btn-confirm-submit').addEventListener('click', function() {
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+    formValidated = true;
+    confirmModal.hide();
+    document.getElementById('ticketForm').submit();
+});
+
+// ── Init ──────────────────────────────────────────────────────────
+loadMyManager();
+loadApprovers(7, 'sel-itmgr', 'info-itmgr');   // IT Manager
+</script>
+}

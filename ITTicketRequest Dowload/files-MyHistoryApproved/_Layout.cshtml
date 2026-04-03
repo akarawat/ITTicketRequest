@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — ITTicketRequest</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --brand:       #231f20;
+            --brand-red:   #ed1c24;
+            --brand-lt:    #fef0f0;
+            --border:      #e0d6d6;
+            --surface:     #f9f6f6;
+        }
+        body { background:var(--surface); font-family:'Sarabun','Segoe UI',sans-serif; font-size:14.5px; }
+
+        .navbar-bt {
+            background:var(--brand);
+            box-shadow:0 2px 8px rgba(35,31,32,.35);
+            padding:0; height:52px;
+            border-bottom:2px solid var(--brand-red);
+        }
+        .navbar-logo {
+            display:flex; align-items:center; background:#fff;
+            padding:0 18px; height:52px; flex-shrink:0;
+            text-decoration:none; transition:opacity .15s;
+        }
+        .navbar-logo:hover { opacity:.88; }
+        .navbar-links { padding-left:12px; }
+        .navbar-bt .nav-link { color:rgba(255,255,255,.8) !important; font-size:13.5px; padding:0 12px !important; transition:color .15s; }
+        .navbar-bt .nav-link:hover { color:#fff !important; }
+        .navbar-bt .nav-link.active {
+            color:#fff !important; font-weight:600;
+            border-bottom:2px solid var(--brand-red);
+            padding-bottom:2px !important;
+        }
+        .nav-divider { width:1px; height:20px; background:rgba(255,255,255,.2); margin:0 4px; }
+        .user-chip { display:flex; align-items:center; gap:8px; color:rgba(255,255,255,.9); font-size:13px; }
+        .user-chip .avatar {
+            width:30px; height:30px; border-radius:50%;
+            background:var(--brand-red); color:#fff;
+            display:flex; align-items:center; justify-content:center;
+            font-weight:700; font-size:12px;
+        }
+        .main-content { padding:28px 0 60px; }
+        .alert-float { position:fixed; top:64px; right:20px; z-index:9999; min-width:320px; box-shadow:0 4px 16px rgba(0,0,0,.15); }
+        .pending-badge {
+            display:inline-flex; align-items:center; justify-content:center;
+            min-width:18px; height:18px; padding:0 5px;
+            background:var(--brand-red); color:#fff;
+            border-radius:20px; font-size:10px; font-weight:700;
+            margin-left:4px; line-height:1; vertical-align:middle;
+            animation:pulse-badge 2s ease-in-out infinite;
+        }
+        @@keyframes pulse-badge {
+            0%,100% { transform:scale(1); opacity:1; }
+            50%      { transform:scale(1.15); opacity:.85; }
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+@{
+    var sessionJson = Context.Session.GetString("UserSession");
+    ITTicketRequest.Models.UserSessionModel? userSession = null;
+    if (!string.IsNullOrEmpty(sessionJson))
+        userSession = System.Text.Json.JsonSerializer.Deserialize<ITTicketRequest.Models.UserSessionModel>(sessionJson);
+    var initials = userSession != null && userSession.FullName.Length > 0
+        ? string.Concat(userSession.FullName.Split(' ').Take(2).Select(w => w[0])) : "?";
+    var ctrl   = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<nav class="navbar navbar-bt d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center navbar-links">
+        <!-- Bernina Logo flush left -->
+        <a class="navbar-logo me-2" href="/Dashboards/Index">
+            <svg width="130" viewBox="0 0 111 30" xmlns="http://www.w3.org/2000/svg" style="fill-rule:evenodd;clip-rule:evenodd;display:block">
+                <g><g><g><g>
+                <path d="M17.145,0.076l13.411,0l0,3.505l-8.154,0l0,2.896l7.62,0l0,3.505l-7.62,0l0,3.277l8.611,0l0,3.428l-13.868,0l0,-16.611Z" style="fill:#ed1c24;"/>
+                <path d="M49.834,0.076l5.334,0l6.324,9.144l0,-9.144l3.886,0l0,16.688l-5.334,0l-6.324,-8.992l0,8.915l-3.886,0l0,-16.611Z" style="fill:#ed1c24;"/>
+                <rect x="67.893" y="0.076" width="5.486" height="16.611" style="fill:#ed1c24;"/>
+                <path d="M75.894,0l5.334,0l6.324,9.144l0,-9.144l3.886,0l0,16.687l-5.41,0l-6.248,-8.991l0,8.915l-3.886,0l0,-16.611Z" style="fill:#ed1c24;"/>
+                <path d="M41.376,6.553l-3.048,0l0,-3.2l2.972,0c0,0 1.447,0.228 1.295,1.752c-0.152,1.524 -1.219,1.448 -1.219,1.448m6.324,9.144c-0.152,-0.457 -0.152,-0.152 -0.076,-2.743c0.076,-2.591 -0.457,-3.277 -0.457,-3.277c-0.686,-1.295 -1.676,-1.6 -1.676,-1.6c0,0 2.209,-0.914 2.209,-3.657c0,-3.963 -3.81,-4.268 -3.81,-4.268l-11.048,0l0,16.612l5.486,0l0,-6.706l1.829,0c0.228,0 0.99,0.076 1.295,0.229c0.533,0.228 0.61,0.533 0.686,0.609c0.152,0.305 0.076,2.591 0.076,2.591c0,0 0,1.905 0.229,2.515c0.228,0.609 0.685,0.762 0.685,0.762l5.182,0c0,-0.077 -0.534,-0.686 -0.61,-1.067" style="fill:#ed1c24;"/>
+                <path d="M98.068,9.449l1.904,-5.106l1.829,5.106l-3.733,0Zm6.095,-9.373l-6.857,0l-6.096,16.611l4.114,0l1.601,-3.733l5.943,0l1.6,3.733l5.791,0l-6.096,-16.611Z" style="fill:#ed1c24;"/>
+                <path d="M8.61,6.782l-3.048,0l0,-3.201l2.972,0c0,0 1.448,0.229 1.296,1.753c-0.153,1.524 -1.22,1.448 -1.22,1.448m0,6.477l-3.048,0l0,-3.201l2.972,0c0,0 1.448,0.229 1.296,1.753c-0.153,1.448 -1.22,1.448 -1.22,1.448m4.496,-5.411c0,0 1.981,-1.143 1.829,-3.505c-0.152,-3.962 -3.886,-4.267 -3.886,-4.267l-11.049,0l0,16.611c0,0 12.344,0 11.963,0c-0.381,0 1.372,0 2.134,-0.838c0.305,-0.304 1.524,-1.219 1.6,-3.429c0.152,-3.048 -2.591,-4.572 -2.591,-4.572" style="fill:#ed1c24;"/>
+                </g></g></g>
+                <g>
+                <path d="M0.9,22.399c-0.45,0.3 -0.15,0.45 -0.15,0.675c0,0.3 -0.075,1.2 -0.075,1.425c0,0.225 -0.15,2.025 -0.15,2.4c0,0.525 0.15,1.65 0.6,1.65c0.45,0 0.6,-0.75 0.675,-1.125c0.075,-0.3 0.825,-3.825 1.8,-3.9c0.075,0 0.3,0.75 0.225,1.35c-0.075,0.6 -0.3,2.4 0.225,2.475c0.6,0.075 0.825,-0.6 0.9,-0.75c0.075,-0.15 0.9,-2.325 1.05,-2.325c0.15,0 0.525,2.55 0.675,2.85c0.15,0.45 0.6,0.9 1.125,0.75c0.375,-0.075 0.45,-0.6 0.375,-0.75c-0.075,-0.075 -0.225,-0.075 -0.3,-0.075c-0.15,0 -0.375,0 -0.45,-0.45c-0.15,-0.15 -0.6,-3.525 -1.5,-3.525c-0.6,0 -1.275,2.25 -1.275,2.25c-0.075,0 0,-0.675 -0.15,-1.275c-0.15,-0.675 -0.45,-1.275 -0.825,-1.275c-0.6,0 -1.275,0.75 -1.65,1.5c-0.45,0.9 -0.675,1.8 -0.675,1.8c-0.075,0 0.225,-3 0.225,-3.225c-0.075,-0.225 -0.375,-0.6 -0.675,-0.45Z" style="fill:#231f20;"/>
+                </g></g>
+            </svg>
+        </a>
+
+        @if (userSession != null)
+        {
+            <a class="nav-link @(ctrl=="Dashboards" ? "active" : "")" href="/Dashboards/Index">
+                <i class="bi bi-house me-1"></i>Home
+            </a>
+            <a class="nav-link @(ctrl=="Ticket" && action=="Create" ? "active" : "")" href="/Ticket/Create">
+                <i class="bi bi-plus-circle me-1"></i>New Ticket
+            </a>
+            <a class="nav-link @(ctrl=="Ticket" && action=="MyTickets" ? "active" : "")" href="/Ticket/MyTickets">
+                <i class="bi bi-list-check me-1"></i>My Tickets
+            </a>
+            @if (userSession.IsAnyApprover)
+            {
+                <a class="nav-link @(ctrl=="Ticket" && action=="Pending" ? "active" : "")" href="/Ticket/Pending">
+                    <i class="bi bi-clock-history me-1"></i>Pending
+                    <span id="nav-pending-badge" class="pending-badge" style="display:none"></span>
+                </a>
+                <a class="nav-link @(ctrl=="Ticket" && action=="MyHistoryApproved" ? "active" : "")" href="/Ticket/MyHistoryApproved">
+                    <i class="bi bi-journal-check me-1"></i>My History
+                </a>
+            }
+            @if (userSession.IsAdmin)
+            {
+                <div class="nav-divider"></div>
+                <a class="nav-link @(ctrl=="Admin" ? "active" : "")" href="/Admin/UserRights"
+                   style="color:rgba(255,200,100,.9) !important">
+                    <i class="bi bi-people-fill me-1"></i>Manage Permissions
+                </a>
+            }
+        }
+    </div>
+
+    @if (userSession != null)
+    {
+        <div class="d-flex align-items-center gap-3" style="padding-right:24px">
+            <div class="user-chip">
+                <div class="avatar">@initials</div>
+                <div>
+                    <div style="font-weight:600;line-height:1.2">@userSession.FullName</div>
+                    <div style="font-size:11px;opacity:.75">
+                        @userSession.Department
+                        @if (userSession.IsAdmin) { <span style="color:#FFD54F"> · Admin</span> }
+                    </div>
+                </div>
+            </div>
+            <a href="/Dashboards/Logout" class="btn btn-sm"
+               style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:12px">
+                <i class="bi bi-box-arrow-right me-1"></i>Sign Out
+            </a>
+        </div>
+    }
+</nav>
+
+@if (TempData["SuccessMsg"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show alert-float" role="alert">
+        <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMsg"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="main-content">
+    <div class="container-lg">@RenderBody()</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+
+@if (userSession != null && userSession.IsAnyApprover)
+{
+<script>
+(async function() {
+    try {
+        const res   = await fetch('/Ticket/GetPendingCount');
+        const data  = await res.json();
+        const badge = document.getElementById('nav-pending-badge');
+        if (!badge) return;
+        badge.textContent   = data.count > 99 ? '99+' : data.count;
+        badge.style.display = data.count > 0 ? 'inline-flex' : 'none';
+    } catch {}
+})();
+</script>
+}
+</body>
+</html>

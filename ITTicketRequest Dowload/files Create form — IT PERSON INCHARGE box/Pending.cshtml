@@ -1,0 +1,314 @@
+@{
+    ViewData["Title"] = "Pending";
+    var sessionJson = Context.Session.GetString("UserSession");
+    ITTicketRequest.Models.UserSessionModel? user = null;
+    if (!string.IsNullOrEmpty(sessionJson))
+        user = System.Text.Json.JsonSerializer.Deserialize<ITTicketRequest.Models.UserSessionModel>(sessionJson);
+}
+@section Styles {
+<style>
+    .tbl-wrap { background:#fff; border:1px solid #e0d6d6; border-radius:10px; overflow:hidden; }
+    table.req-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+    table.req-table thead th { background:#231f20; color:#fff; font-weight:700; padding:11px 14px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; border-right:1px solid rgba(255,255,255,.1); }
+    table.req-table thead th:last-child { background:#231f20; border-right:none; }
+    table.req-table tbody tr { border-bottom:1px solid #f0f2f5; transition:background .1s; }
+    table.req-table tbody tr:hover { background:#fdf8f8; }
+    table.req-table tbody td { padding:11px 14px; vertical-align:middle; }
+    .doc-num { font-weight:700; color:#231f20; font-size:13px; }
+    .req-tag { font-size:11px; padding:2px 8px; border-radius:20px; font-weight:600; margin-right:4px; }
+    .tag-computer { background:#e3f2fd; color:#0d47a1; }
+    .tag-email    { background:#fce4ec; color:#c62828; }
+    .tag-network  { background:#e8f5e9; color:#2e7d32; }
+    .tag-programs { background:#fff8e1; color:#e65100; }
+    .tag-vpn      { background:#fef0f0; color:#ed1c24; }
+    .status-chip { font-size:11px; padding:3px 10px; border-radius:20px; font-weight:600; background:#fff8e1; color:#e65100; }
+    .btn-approve { background:#2e7d32; color:#fff; border:none; font-size:12px; padding:4px 14px; border-radius:6px; font-weight:600; }
+    .btn-reject  { background:#fff; color:#b71c1c; border:1px solid #ef9a9a; font-size:12px; padding:4px 14px; border-radius:6px; }
+    .btn-assign  { background:#231f20; color:#fff; border:none; font-size:12px; padding:4px 14px; border-radius:6px; font-weight:600; }
+    .btn-view    { font-size:12px; padding:4px 12px; border-radius:6px; border:1px solid #e0d6d6; color:#231f20; text-decoration:none; background:#fff; }
+    .btn-close-task { background:#2e7d32; color:#fff; border:none; font-size:12px; padding:4px 14px; border-radius:6px; font-weight:600; }
+    .empty-state { text-align:center; padding:60px 20px; color:#90a4ae; }
+</style>
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 style="font-weight:700;margin:0">
+        <i class="bi bi-bell me-2" style="color:#ed1c24"></i>Pending
+        <span id="pending-count-badge" class="badge ms-2" style="background:#ed1c24;font-size:11px"></span>
+    </h4>
+    <button class="btn btn-sm btn-outline-secondary" style="border-radius:8px" onclick="loadPending()">
+        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+    </button>
+</div>
+
+@if (user != null)
+{
+    <div class="mb-3 d-flex flex-wrap gap-2" style="font-size:13px;color:#607080">
+        <span>Your role:</span>
+        @if (user.IsDeptManager)     { <span class="status-chip">Dept Manager</span> }
+        @if (user.IsManagingDirector){ <span class="status-chip" style="background:#f3e5f5;color:#6a1b9a">Managing Director</span> }
+        @if (user.IsITManager)       { <span class="status-chip" style="background:#e3f2fd;color:#0d47a1">IT Manager</span> }
+        @if (user.IsITAdmin)         { <span class="status-chip" style="background:#e0f2f1;color:#00695c">IT Admin</span> }
+        @if (user.IsITPIC)           { <span class="status-chip" style="background:#e8f5e9;color:#2e7d32">IT PIC</span> }
+        @if (user.IsAdmin)           { <span class="status-chip" style="background:#e8eef9;color:#231f20">System Admin</span> }
+    </div>
+}
+
+<div class="tbl-wrap">
+    <table class="req-table">
+        <thead>
+            <tr>
+                <th style="width:120px">Doc No.</th>
+                <th>Requester</th>
+                <th>Requested Items</th>
+                <th style="width:110px">Submitted</th>
+                <th>Status</th>
+                <th style="width:220px">Action</th>
+            </tr>
+        </thead>
+        <tbody id="pending-tbody">
+            <tr><td colspan="6" class="text-center py-4">
+                <div class="spinner-border spinner-border-sm me-2" style="color:#ed1c24"></div>
+                <span style="color:#90a4ae;font-size:13px">Loading...</span>
+            </td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Approve/Reject Modal -->
+<div class="modal fade" id="actionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:12px;overflow:hidden">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h6 class="fw-bold" id="modal-title">Confirm</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <div id="modal-desc" style="font-size:13.5px;color:#607080;margin-bottom:14px"></div>
+                <label class="form-label fw-bold" style="font-size:13px">Remark (optional)</label>
+                <textarea id="modal-remark" class="form-control" rows="3" placeholder="Enter reason / comments..."></textarea>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="modal-confirm" class="btn btn-sm" style="border-radius:8px;font-weight:700;padding:8px 24px">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign PIC Modal (IT Admin only) -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:12px;overflow:hidden">
+            <div style="background:#231f20;padding:20px 24px;display:flex;align-items:center;gap:12px">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center">
+                    <i class="bi bi-person-badge" style="color:#fff;font-size:18px"></i>
+                </div>
+                <div>
+                    <div style="color:#fff;font-weight:700;font-size:15px">Assign IT Person Incharge</div>
+                    <div style="color:rgba(255,255,255,.7);font-size:12px">Select IT PIC for this ticket</div>
+                </div>
+            </div>
+            <div class="modal-body p-4">
+                <div id="assign-desc" style="font-size:13px;color:#607080;margin-bottom:16px;background:#f9f6f6;border-radius:8px;padding:10px 14px"></div>
+                <label class="form-label fw-bold" style="font-size:13px">Select IT Person Incharge <span class="text-danger">*</span></label>
+                <select id="sel-itpic" class="form-select" style="font-size:13px">
+                    <option value="">— Loading... —</option>
+                </select>
+                <div id="pic-info" class="mt-2" style="font-size:12px;color:#2e7d32"></div>
+                <label class="form-label fw-bold mt-3" style="font-size:13px">Remark (optional)</label>
+                <textarea id="assign-remark" class="form-control" rows="2" placeholder="Assignment notes..."></textarea>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="assign-confirm"
+                    style="background:#231f20;color:#fff;border:none;border-radius:8px;padding:8px 24px;font-size:13px;font-weight:700;cursor:pointer">
+                    <i class="bi bi-person-check me-2"></i>Assign & Proceed
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let pendingAction  = null;
+let pendingTicketId = null;
+const actionModal  = new bootstrap.Modal(document.getElementById('actionModal'));
+const assignModal  = new bootstrap.Modal(document.getElementById('assignModal'));
+
+const STATUS_LABEL = {
+    PendingDeptMgr:       'Pending Dept Manager',
+    PendingManagingDir:   'Pending Managing Director',
+    PendingITMgr:         'Pending IT Manager',
+    PendingITAdminAssign: 'Pending IT Admin (Assign PIC)',
+    PendingITPIC:         'Pending IT PIC',
+    PendingITAdminClose:  'Pending IT Admin (Close)',
+    Completed: 'Completed', Rejected: 'Rejected'
+};
+
+async function loadPending() {
+    document.getElementById('pending-tbody').innerHTML =
+        `<tr><td colspan="6" class="text-center py-4">
+        <div class="spinner-border spinner-border-sm me-2" style="color:#ed1c24"></div>
+        <span style="color:#90a4ae;font-size:13px">Loading...</span></td></tr>`;
+    try {
+        const res  = await fetch('/Ticket/GetPending');
+        const rows = await res.json();
+        renderTable(rows);
+    } catch {
+        document.getElementById('pending-tbody').innerHTML =
+            `<tr><td colspan="6" class="text-center py-4 text-danger">
+             <i class="bi bi-exclamation-triangle me-2"></i>Error loading data</td></tr>`;
+    }
+}
+
+function renderTable(rows) {
+    const badge = document.getElementById('pending-count-badge');
+    badge.textContent = rows.length > 0 ? rows.length : '';
+
+    if (!rows.length) {
+        document.getElementById('pending-tbody').innerHTML =
+            `<tr><td colspan="6"><div class="empty-state">
+             <i class="bi bi-check-circle" style="font-size:3rem;color:#2e7d32;opacity:.5;display:block;margin-bottom:10px"></i>
+             <div style="font-weight:600;color:#2e7d32">No Pending Tickets</div>
+             <div style="font-size:13px;margin-top:6px">All tickets have been processed</div>
+             </div></td></tr>`;
+        return;
+    }
+
+    document.getElementById('pending-tbody').innerHTML = rows.map(r => `
+        <tr>
+            <td><span class="doc-num">${r.docNumber}</span></td>
+            <td>
+                <div style="font-weight:600">${r.requesterName}</div>
+                <div style="font-size:12px;color:#90a4ae">${r.department}</div>
+            </td>
+            <td>
+                ${r.reqComputer ? '<span class="req-tag tag-computer"><i class="bi bi-laptop"></i> Computer</span>':''}
+                ${r.reqEmail    ? '<span class="req-tag tag-email"><i class="bi bi-envelope"></i> Email</span>':''}
+                ${r.reqNetwork  ? '<span class="req-tag tag-network"><i class="bi bi-hdd-network"></i> Network</span>':''}
+                ${r.reqPrograms ? '<span class="req-tag tag-programs"><i class="bi bi-grid-3x3-gap"></i> Programs</span>':''}
+                ${r.reqVPN      ? '<span class="req-tag tag-vpn"><i class="bi bi-shield-shaded"></i> VPN</span>':''}
+            </td>
+            <td style="color:#607080;font-size:12px">${formatDate(r.createdAt)}</td>
+            <td><span class="status-chip">${STATUS_LABEL[r.status] || r.status}</span></td>
+            <td>
+                <div class="d-flex gap-1 flex-wrap">
+                    <a href="/Ticket/Detail/${r.ticketId}" class="btn-view"><i class="bi bi-eye"></i></a>
+                    ${r.status === 'PendingITAdminAssign'
+                        ? `<button class="btn-assign" onclick="openAssignModal('${r.ticketId}','${r.docNumber}')">
+                           <i class="bi bi-person-badge me-1"></i>Assign PIC</button>`
+                        : r.status === 'PendingITPIC'
+                        ? `<button class="btn-close-task" onclick="openCloseTaskModal('${r.ticketId}','${r.docNumber}')">
+                           <i class="bi bi-check2-all me-1"></i>Close Task</button>
+                           <button class="btn-reject" onclick="openActionModal('Reject','${r.ticketId}','${r.docNumber}')">
+                           <i class="bi bi-x"></i> Reject</button>`
+                        : `<button class="btn-approve" onclick="openActionModal('Approve','${r.ticketId}','${r.docNumber}')">
+                           <i class="bi bi-check"></i> Approve</button>
+                           <button class="btn-reject" onclick="openActionModal('Reject','${r.ticketId}','${r.docNumber}')">
+                           <i class="bi bi-x"></i> Reject</button>`
+                    }
+                </div>
+            </td>
+        </tr>`).join('');
+}
+
+function openActionModal(action, ticketId, docNum) {
+    pendingAction   = action;
+    pendingTicketId = ticketId;
+    const isApprove = action === 'Approve';
+    document.getElementById('modal-title').textContent = isApprove ? 'Confirm Approval' : 'Confirm Rejection';
+    document.getElementById('modal-desc').textContent  = `${isApprove ? 'Approve' : 'Reject'} Ticket ${docNum}`;
+    const btn = document.getElementById('modal-confirm');
+    btn.style.background = isApprove ? '#2e7d32' : '#b71c1c';
+    btn.style.color = '#fff'; btn.style.border = 'none';
+    btn.textContent = isApprove ? 'Approve' : 'Reject';
+    document.getElementById('modal-remark').value = '';
+    actionModal.show();
+}
+
+async function openAssignModal(ticketId, docNum) {
+    pendingTicketId = ticketId;
+    document.getElementById('assign-desc').textContent = `Assign IT PIC for Ticket: ${docNum}`;
+    document.getElementById('assign-remark').value = '';
+    document.getElementById('sel-itpic').innerHTML = '<option value="">Loading...</option>';
+    document.getElementById('pic-info').textContent = '';
+    assignModal.show();
+
+    // โหลด IT PIC list (FUNCODE=6)
+    const res  = await fetch('/Ticket/GetApprovers?funCode=6');
+    const list = await res.json();
+    const sel  = document.getElementById('sel-itpic');
+    sel.innerHTML = '<option value="">— Select IT Person Incharge —</option>';
+    list.forEach(p => {
+        sel.innerHTML += `<option value="${p.samAcc}" data-email="${p.email}">${p.displayName} (${p.department})</option>`;
+    });
+    sel.onchange = () => {
+        const opt = sel.options[sel.selectedIndex];
+        document.getElementById('pic-info').textContent =
+            opt.value ? `✓ ${opt.dataset.email}` : '';
+    };
+}
+
+// ── Close Task Modal ─────────────────────────────────────────────
+function openCloseTaskModal(ticketId, docNum) {
+    pendingAction   = 'CloseTask';
+    pendingTicketId = ticketId;
+    document.getElementById('modal-title').textContent = 'Close Task';
+    document.getElementById('modal-desc').innerHTML =
+        `<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:10px 14px;margin-bottom:10px">
+            <i class="bi bi-check2-all me-2" style="color:#2e7d32"></i>
+            <b style="color:#2e7d32">Ticket: ${docNum}</b>
+        </div>
+        <span style="color:#607080">Confirm that you have completed all tasks for this ticket.<br>
+        IT Admin will be notified to close the ticket.</span>`;
+    const btn = document.getElementById('modal-confirm');
+    btn.style.background = '#2e7d32';
+    btn.style.color = '#fff';
+    btn.style.border = 'none';
+    btn.textContent = 'Confirm Close Task';
+    document.getElementById('modal-remark').value = '';
+    actionModal.show();
+}
+
+document.getElementById('modal-confirm').onclick = async () => {
+    const remark = document.getElementById('modal-remark').value;
+    try {
+        const res  = await fetch('/Ticket/Approve', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ requestId: pendingTicketId, action: pendingAction, remark })
+        });
+        const data = await res.json();
+        actionModal.hide();
+        if (data.ok) loadPending();
+        else alert('Error: ' + data.msg);
+    } catch { alert('Cannot connect to server'); }
+};
+
+document.getElementById('assign-confirm').onclick = async () => {
+    const assignTo = document.getElementById('sel-itpic').value;
+    const remark   = document.getElementById('assign-remark').value;
+    if (!assignTo) { alert('Please select IT Person Incharge'); return; }
+    try {
+        const res  = await fetch('/Ticket/Approve', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ requestId: pendingTicketId, action: 'Assign', assignTo, remark })
+        });
+        const data = await res.json();
+        assignModal.hide();
+        if (data.ok) loadPending();
+        else alert('Error: ' + data.msg);
+    } catch { alert('Cannot connect to server'); }
+};
+
+function formatDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-GB', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+loadPending();
+</script>
+}
