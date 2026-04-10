@@ -102,16 +102,45 @@ namespace ITTicketRequest.Controllers
             //fname = "Attapol Jingmak";
             //depart = "Planning, Project & IT";
 
+            //id = "123456789";
+            //user = "Chamaiporn.K";
+            //email = "Chamaiporn.K@berninathailand.com";
+            //fname = "Chamaiporn Kunto";
+            //depart = "HR";
+
             if (!string.IsNullOrEmpty(id))
             {
                 var samAcc = UserSessionModel.ParseSamAcc(user ?? "");
+                string ldapuser = "BERNINATHAILAND\\" + samAcc;
+                string samFname = "";
+                if (samAcc != null)
+                {
+                    try
+                    {
+                        var connStr = _config.GetConnectionString("BTITTicketConn");
+                        using var conn = new SqlConnection(connStr);
+                        conn.Open();
+
+                        // Cross-DB: TBUserFunction อยู่ใน BTITReq
+                        const string sql = @"SELECT DISPNAME, DEPART FROM BT_HR.dbo.onl_TBADUsers WHERE SAMACC = @sam";
+                        using var cmd = new SqlCommand(sql, conn);
+                        cmd.Parameters.AddWithValue("@sam", samAcc);
+                        using var reader = cmd.ExecuteReader();
+                        while (reader.Read())
+                        {
+                            samFname = reader.GetString(0);
+                            depart = reader.GetString(1);
+                        }
+                    }
+                    catch { }
+                }
                 var session = new UserSessionModel
                 {
                     Id = id,
-                    UserLogon = user ?? "",
+                    UserLogon = ldapuser ?? "",
                     SamAcc = samAcc,
                     Email = email ?? "",
-                    FullName = fname ?? "",
+                    FullName = samFname ?? "",
                     Department = depart ?? "",
                     IsUser = true
                 };

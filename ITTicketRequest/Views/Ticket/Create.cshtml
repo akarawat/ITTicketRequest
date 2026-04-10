@@ -797,9 +797,10 @@
             e.preventDefault();
 
             const checks = ['chk-computer','chk-email','chk-network','chk-programs','chk-vpn'];
-            if (!checks.some(id => document.getElementById(id).checked)) {
-                alert('Please select at least 1 requested item'); return;
-            }
+            // if (!checks.some(id => document.getElementById(id).checked)) {
+            //     alert('Please select at least 1 requested item'); return;
+            // }
+
             const deptMgr = document.getElementById('hid-deptmgr')?.value;
             if (!deptMgr) {
                 alert('Department Manager not found. Please contact HR or IT Admin.'); return;

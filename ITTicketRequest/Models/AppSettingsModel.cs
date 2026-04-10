@@ -41,7 +41,6 @@ namespace ITTicketRequest.Models
         // Convenience
         public bool IsAnyApprover => IsAdmin || IsDeptManager || IsManagingDirector
                                   || IsITManager || IsITPIC || IsITAdmin;
-
         public static string ParseSamAcc(string userLogon)
         {
             if (string.IsNullOrEmpty(userLogon)) return "";
