@@ -844,7 +844,7 @@
                     <button class="btn-reject-lg" onclick="openActionModal('Reject')">
                         <i class="bi bi-x me-1"></i>Reject
                     </button>`;
-            } else if (!isITPICStep) {
+            } else if (!isITPICStep || IS_IT_ADMIN) {
                 buttons.innerHTML = `
                     <button class="btn-approve-lg" onclick="openActionModal('Approve')">
                         <i class="bi bi-check me-1"></i>Approve

@@ -725,7 +725,8 @@ namespace ITTicketRequest.Controllers
         {
             var session = GetSession();
             if (session == null) return Json(new { ok = false, msg = "Please sign in again" });
-            if (!session.IsAnyApprover) return Json(new { ok = false, msg = "You do not have approval permission" });
+            //if (!session.IsAnyApprover) return Json(new { ok = false, msg = "You do not have approval permission" });
+            if (!session.IsAnyApprover && !session.IsAdmin) return Json(new { ok = false, msg = "You do not have approval permission" });
             try
             {
                 var connStr = _config.GetConnectionString("BTITTicketConn");
@@ -745,9 +746,12 @@ namespace ITTicketRequest.Controllers
                 cmd.Parameters.AddWithValue("@Action", body.Action);
                 cmd.Parameters.AddWithValue("@Remark", (object?)body.Remark ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@AssignTo", (object?)body.AssignTo ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@IsAdmin", session.IsAdmin ? 1 : 0);
                 using var result = cmd.ExecuteReader();
                 if (result.Read()) newStatus = result["NewStatus"]?.ToString() ?? "";
+                if (newStatus.StartsWith("Error:"))
                 _ = NotifyWorkflowAsync(body.RequestId, docNumber, requesterName, requesterEmail, newStatus, body.Action, session, apprITMgr, body.AssignTo);
+                
                 return Json(new { ok = true, msg = $"{body.Action} completed successfully", newStatus });
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
