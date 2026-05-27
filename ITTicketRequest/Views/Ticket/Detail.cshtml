@@ -831,8 +831,19 @@
                     actionLabel = `<span class="wf-action-done">✓ ${log.action} ${log.actionAt ? '· '+fmt(log.actionAt):''}</span>`;
                 else if (isRej)
                     actionLabel = `<span class="wf-action-rejected">✗ Rejected ${log.actionAt ? '· '+fmt(log.actionAt):''}</span>`;
-                else if (isCurrent && !isEnd)
-                    actionLabel = `<span class="wf-action-current">⏳ Awaiting</span>`;
+                else if (isCurrent && !isEnd) {
+                    // ⏳ Awaiting — เพิ่มปุ่ม Re-send ถ้าไม่มีชื่อผู้รับผิดชอบขึ้น
+                    const awaitResendBtn = IS_SYSTEM_ADMIN && !log?.approverName
+                        ? `<button class="btn-resend-sm" style="margin-left:6px"
+                                   onclick="openResendModal('','${step.role}',this)"
+                                   title="Re-send notification to ${step.role}">
+                               <i class="bi bi-envelope-arrow-up"></i>
+                           </button>`
+                        : '';
+                    actionLabel = `<span style="display:inline-flex;align-items:center;gap:4px">
+                        <span class="wf-action-current">⏳ Awaiting</span>${awaitResendBtn}
+                    </span>`;
+                }
 
                 // แสดง PIC names ใน IT PIC step
                 let picHtml = '';
