@@ -1,0 +1,14 @@
+﻿──────────────────────────────────────────────────
+[2026-05-27 14:32:24]  ✗ FAILED
+  Trigger  : ResendEmail-ITPIC
+  DocNo    : TKT-2026-0050
+  To       : Attapol.j@BerninaThailand.com
+  Subject  : [ITTicket] TKT-2026-0050 — You have been assigned as IT PIC [Resend]
+  Error    : MailDebug=1 (skipped, dev mode)
+──────────────────────────────────────────────────
+[2026-05-27 14:35:56]  ✗ FAILED
+  Trigger  : ResendEmail-ITPIC
+  DocNo    : TKT-2026-0050
+  To       : suthichai.n@berninathailand.com
+  Subject  : [ITTicket] TKT-2026-0050 — You have been assigned as IT PIC [Resend]
+  Error    : MailDebug=1 (skipped, dev mode)

@@ -810,6 +810,16 @@ namespace ITTicketRequest.Controllers
                 string emailBody = "";
                 string subject = "";
 
+                // ── ถ้า TargetSamAcc ระบุมา → resolve email แล้ว override recipients ──
+                string? overrideEmail = null;
+                if (!string.IsNullOrEmpty(body.TargetSamAcc))
+                {
+                    var em = GetEmailBySam(body.TargetSamAcc);
+                    if (!em.Any())
+                        return Json(new { ok = false, msg = $"ไม่พบอีเมล์ของ {body.TargetSamAcc} ในระบบ" });
+                    overrideEmail = em[0];
+                }
+
                 switch (status)
                 {
                     case "PendingDeptMgr":
@@ -817,13 +827,13 @@ namespace ITTicketRequest.Controllers
                             var emails = GetEmailsByFunCode(8);
                             if (!emails.Any())
                                 return Json(new { ok = false, msg = "ไม่พบอีเมล์ Department Manager ในระบบ" });
-                            sentTo = string.Join("; ", emails);
                             subject = $"[ITTicket] {docNumber} — Pending Department Manager Approval [Resend]";
                             emailBody = $"<p>Dear Department Manager,</p>" +
                                         $"<p>Ticket <b>{docNumber}</b> from <b>{requesterName}</b> is awaiting your approval.</p>" +
                                         $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to approve</a></p>" +
                                         signature;
-                            await SendMailAsync(string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-DeptMgr");
+                            sentTo = overrideEmail ?? string.Join("; ", emails);
+                            await SendMailAsync(overrideEmail ?? string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-DeptMgr");
                             break;
                         }
                     case "PendingManagingDir":
@@ -831,13 +841,13 @@ namespace ITTicketRequest.Controllers
                             var emails = GetEmailsByFunCode(4);
                             if (!emails.Any())
                                 return Json(new { ok = false, msg = "ไม่พบอีเมล์ Managing Director ในระบบ" });
-                            sentTo = string.Join("; ", emails);
                             subject = $"[ITTicket] {docNumber} — Pending Managing Director Approval [Resend]";
                             emailBody = $"<p>Dear Managing Director,</p>" +
                                         $"<p>Ticket <b>{docNumber}</b> from <b>{requesterName}</b> is awaiting your approval.</p>" +
                                         $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to approve</a></p>" +
                                         signature;
-                            await SendMailAsync(string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-ManagingDir");
+                            sentTo = overrideEmail ?? string.Join("; ", emails);
+                            await SendMailAsync(overrideEmail ?? string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-ManagingDir");
                             break;
                         }
                     case "PendingITMgr":
@@ -846,13 +856,13 @@ namespace ITTicketRequest.Controllers
                                 ? GetEmailBySam(apprITMgr) : GetEmailsByFunCode(7);
                             if (!emails.Any())
                                 return Json(new { ok = false, msg = "ไม่พบอีเมล์ IT Manager ในระบบ" });
-                            sentTo = string.Join("; ", emails);
                             subject = $"[ITTicket] {docNumber} — Pending IT Manager Approval [Resend]";
                             emailBody = $"<p>Dear IT Manager,</p>" +
                                         $"<p>Ticket <b>{docNumber}</b> from <b>{requesterName}</b> is awaiting your approval.</p>" +
                                         $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to approve</a></p>" +
                                         signature;
-                            await SendMailAsync(string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-ITMgr");
+                            sentTo = overrideEmail ?? string.Join("; ", emails);
+                            await SendMailAsync(overrideEmail ?? string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-ITMgr");
                             break;
                         }
                     case "PendingITAdminAssign":
@@ -860,13 +870,13 @@ namespace ITTicketRequest.Controllers
                             var emails = GetEmailsByFunCode(5);
                             if (!emails.Any())
                                 return Json(new { ok = false, msg = "ไม่พบอีเมล์ IT Admin ในระบบ" });
-                            sentTo = string.Join("; ", emails);
                             subject = $"[ITTicket] {docNumber} — Pending IT Admin (Assign PIC) [Resend]";
                             emailBody = $"<p>Dear IT Admin,</p>" +
                                         $"<p>Ticket <b>{docNumber}</b> from <b>{requesterName}</b> is awaiting IT PIC assignment.</p>" +
                                         $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to assign</a></p>" +
                                         signature;
-                            await SendMailAsync(string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-ITAdmin-Assign");
+                            sentTo = overrideEmail ?? string.Join("; ", emails);
+                            await SendMailAsync(overrideEmail ?? string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-ITAdmin-Assign");
                             break;
                         }
                     case "PendingITPIC":
@@ -893,8 +903,8 @@ namespace ITTicketRequest.Controllers
                             if (!picEmails.Any())
                                 return Json(new { ok = false, msg = "ไม่พบอีเมล์ IT PIC ที่ยัง Active ในระบบ" });
 
-                            sentTo = string.Join("; ", picEmails);
                             subject = $"[ITTicket] {docNumber} — You have been assigned as IT PIC [Resend]";
+                            sentTo = overrideEmail ?? string.Join("; ", picEmails);
                             var picListHtml = string.Join("", picNames.Select(n =>
                                 $"<li style='margin:4px 0'>{n}</li>"));
                             emailBody = $"<p>Dear IT Person Incharge,</p>" +
@@ -902,7 +912,7 @@ namespace ITTicketRequest.Controllers
                                         $"<p><b>Assigned IT PIC:</b></p><ul>{picListHtml}</ul>" +
                                         $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to view and close task</a></p>" +
                                         signature;
-                            await SendMailAsync(string.Join(";", picEmails), subject, emailBody, docNumber, "ResendEmail-ITPIC");
+                            await SendMailAsync(overrideEmail ?? string.Join(";", picEmails), subject, emailBody, docNumber, "ResendEmail-ITPIC");
                             break;
                         }
                     default:
@@ -1064,7 +1074,8 @@ namespace ITTicketRequest.Controllers
     // ── DTO ─────────────────────────────────────────────────────────────
     public class ResendEmailRequest
     {
-        public Guid TicketId { get; set; }
+        public Guid    TicketId     { get; set; }
+        public string? TargetSamAcc { get; set; }  // ถ้าระบุ → ส่งถึงคนนั้นคนเดียว
     }
 
     public class ApproveRequest

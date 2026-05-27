@@ -19,9 +19,9 @@ namespace ITTicketRequest.Controllers
         }
 
         // ── GET /Dashboards/Index ──────────────────────────────────────
-        public IActionResult Index(string? id, string? user,
-                                   string? email, string? fname,
-                                   string? depart)
+        public async Task<IActionResult> Index(string? id, string? user,
+                                               string? email, string? fname,
+                                               string? depart)
         {
             var existing = HttpContext.Session.GetString("UserSession");
             var authenUrl = _config["TBCorApiServices:AuthenUrl"] ?? "/";
@@ -168,6 +168,12 @@ namespace ITTicketRequest.Controllers
                 LoadUserRoles(session, samAcc);
                 HttpContext.Session.SetString("UserSession",
                     JsonSerializer.Serialize(session));
+
+                // ── PRG Pattern: Commit session แล้ว redirect ออกไป Clean URL ──
+                // ป้องกัน Session ไม่ถูกบันทึกเพราะ commit ใน same-request ไม่สมบูรณ์
+                // และป้องกัน URL มี ?id=...&user=... ที่ถ้า refresh จะ re-process ใหม่
+                await HttpContext.Session.CommitAsync();
+                return RedirectToAction("Index");
             }
             return View();
         }

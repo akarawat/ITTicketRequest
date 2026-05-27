@@ -63,7 +63,6 @@ C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\staticwebasse
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\staticwebassets.development.json
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\swae.build.ex.cache
-C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\ITTicket.8F370E90.Up2Date
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\ITTicketRequest.dll
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\refint\ITTicketRequest.dll

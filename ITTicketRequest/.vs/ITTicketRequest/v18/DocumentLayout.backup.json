@@ -91,10 +91,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|c:\\claude project\\itticketrequest\\itticketrequest\\sql\\07_sp_userrightsmanagement.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{E589D25E-8968-49CF-7321-7DBECC82FDFC}|ITTicketRequest.csproj|solutionrelative:sql\\07_sp_userrightsmanagement.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
     }
   ],
   "DocumentGroupContainers": [
@@ -130,8 +126,7 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-03-19T05:02:31.627Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -157,8 +152,7 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-03-19T03:46:52.22Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -184,8 +178,7 @@
               "ViewState": "AgIAAAwEAAAAAAAAAAAuwDYEAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-19T04:11:07.545Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -208,7 +201,7 @@
               "RelativeDocumentMoniker": "Views\\Ticket\\Detail.cshtml",
               "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\Views\\Ticket\\Detail.cshtml",
               "RelativeToolTip": "Views\\Ticket\\Detail.cshtml",
-              "ViewState": "AgIAAEUEAAAAAAAAAAAuwFUEAABKAAAAAAAAAA==",
+              "ViewState": "AgIAAEUEAAAAAAAAAAAuwF8EAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-03-23T08:05:36.339Z",
               "IsPinned": true,
@@ -225,8 +218,7 @@
               "ViewState": "AgIAAAYAAAAAAAAAAIA4wBYAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-23T02:19:50.157Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Bookmark",
@@ -235,14 +227,13 @@
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "07_sp_UserRightsManagement.sql ",
+              "Title": "07_sp_UserRightsManagement.sql",
               "DocumentMoniker": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\SQL\\07_sp_UserRightsManagement.sql",
               "RelativeDocumentMoniker": "SQL\\07_sp_UserRightsManagement.sql",
               "ToolTip": "C:\\CLAUDE PROJECT\\ITTicketRequest\\ITTicketRequest\\SQL\\07_sp_UserRightsManagement.sql",
               "RelativeToolTip": "SQL\\07_sp_UserRightsManagement.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-27T06:04:11.899Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-27T06:04:11.899Z"
             },
             {
               "$type": "Document",
@@ -290,8 +281,7 @@
               "RelativeToolTip": "Controllers\\DashboardsController.cs",
               "ViewState": "AgIAALMAAAAAAAAAAAAwwN0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-19T04:11:06.698Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-19T04:11:06.698Z"
             },
             {
               "$type": "Document",
@@ -328,8 +318,7 @@
               "RelativeToolTip": "Models\\TicketViewModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADQAAAAgAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-23T02:19:39.279Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-23T02:19:39.279Z"
             },
             {
               "$type": "Document",
@@ -341,8 +330,7 @@
               "RelativeToolTip": "Controllers\\Moni4Controller.cs",
               "ViewState": "AgIAAGMAAAAAAAAAAAArwJkAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-23T08:27:42.592Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-23T08:27:42.592Z"
             },
             {
               "$type": "Document",
