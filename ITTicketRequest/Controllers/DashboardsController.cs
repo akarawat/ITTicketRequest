@@ -117,6 +117,21 @@ namespace ITTicketRequest.Controllers
             if (!string.IsNullOrEmpty(id))
             {
                 var samAcc = UserSessionModel.ParseSamAcc(user ?? "");
+
+                // ── Guard: ถ้ามี Session อยู่แล้วและเป็น User คนเดียวกัน → ไม่ต้อง overwrite ──
+                // ป้องกัน Session ถูกสลับเมื่อ Authen redirect กลับมาพร้อม query params ของคนอื่น
+                if (!string.IsNullOrEmpty(existing))
+                {
+                    try
+                    {
+                        var existingSession = System.Text.Json.JsonSerializer
+                            .Deserialize<UserSessionModel>(existing);
+                        if (existingSession?.SamAcc?.ToLower() == samAcc?.ToLower())
+                            return View(); // ✓ Same user — ไม่ต้อง rebuild session
+                    }
+                    catch { /* ถ้า deserialize ไม่ได้ → สร้าง session ใหม่ตามปกติ */ }
+                }
+
                 string ldapuser = "BERNINATHAILAND\\" + samAcc;
                 string samFname = "";
                 if (samAcc != null)

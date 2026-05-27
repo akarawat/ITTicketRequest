@@ -761,6 +761,162 @@ namespace ITTicketRequest.Controllers
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
         }
 
+
+        // POST /Ticket/ResendEmail — System Admin เท่านั้น: ส่งอีเมล์ซ้ำตาม Status ปัจจุบัน
+        [HttpPost]
+        public async Task<IActionResult> ResendEmail([FromBody] ResendEmailRequest body)
+        {
+            var session = GetSession();
+            if (session == null) return Json(new { ok = false, msg = "Please sign in again" });
+            if (!session.IsAdmin)
+                return Json(new { ok = false, msg = "System Admin permission required" });
+
+            try
+            {
+                var connStr = _config.GetConnectionString("BTITTicketConn");
+                using var conn = new SqlConnection(connStr);
+                conn.Open();
+
+                // ดึงข้อมูล Ticket ที่จำเป็นสำหรับส่งเมล์
+                string docNumber = "", requesterName = "", requesterEmail = "",
+                       status = "", apprITMgr = "";
+                bool reqVPN = false;
+
+                using var cmdGet = new SqlCommand(
+                    @"SELECT DocNumber, RequesterName, RequesterEmail,
+                             ReqVPN, ApprITManager, Status
+                      FROM dbo.TBITTicket WHERE TicketId = @id", conn);
+                cmdGet.Parameters.AddWithValue("@id", body.TicketId);
+                using (var r = cmdGet.ExecuteReader())
+                {
+                    if (!r.Read())
+                        return Json(new { ok = false, msg = "Ticket not found" });
+                    docNumber = r["DocNumber"].ToString()!;
+                    requesterName = r["RequesterName"].ToString()!;
+                    requesterEmail = r["RequesterEmail"].ToString()!;
+                    reqVPN = (bool)r["ReqVPN"];
+                    status = r["Status"].ToString()!;
+                    apprITMgr = r["ApprITManager"] == DBNull.Value ? "" : r["ApprITManager"].ToString()!;
+                }
+
+                var link = $"{_settings.URLSITE}Ticket/Detail/{body.TicketId}";
+                var signature = @"<br/><p>Best regards,<br/>IT Ticket System<br/>
+                    <font color='red'>BERNINA Thailand</font> www.bernina.com<br/>
+                    79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>
+                    Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>
+                    Fax.: +66 (0) 53 581351<br/><hr/></p>";
+
+                string sentTo = "";
+                string emailBody = "";
+                string subject = "";
+
+                switch (status)
+                {
+                    case "PendingDeptMgr":
+                        {
+                            var emails = GetEmailsByFunCode(8);
+                            if (!emails.Any())
+                                return Json(new { ok = false, msg = "ไม่พบอีเมล์ Department Manager ในระบบ" });
+                            sentTo = string.Join("; ", emails);
+                            subject = $"[ITTicket] {docNumber} — Pending Department Manager Approval [Resend]";
+                            emailBody = $"<p>Dear Department Manager,</p>" +
+                                        $"<p>Ticket <b>{docNumber}</b> from <b>{requesterName}</b> is awaiting your approval.</p>" +
+                                        $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to approve</a></p>" +
+                                        signature;
+                            await SendMailAsync(string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-DeptMgr");
+                            break;
+                        }
+                    case "PendingManagingDir":
+                        {
+                            var emails = GetEmailsByFunCode(4);
+                            if (!emails.Any())
+                                return Json(new { ok = false, msg = "ไม่พบอีเมล์ Managing Director ในระบบ" });
+                            sentTo = string.Join("; ", emails);
+                            subject = $"[ITTicket] {docNumber} — Pending Managing Director Approval [Resend]";
+                            emailBody = $"<p>Dear Managing Director,</p>" +
+                                        $"<p>Ticket <b>{docNumber}</b> from <b>{requesterName}</b> is awaiting your approval.</p>" +
+                                        $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to approve</a></p>" +
+                                        signature;
+                            await SendMailAsync(string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-ManagingDir");
+                            break;
+                        }
+                    case "PendingITMgr":
+                        {
+                            var emails = !string.IsNullOrEmpty(apprITMgr)
+                                ? GetEmailBySam(apprITMgr) : GetEmailsByFunCode(7);
+                            if (!emails.Any())
+                                return Json(new { ok = false, msg = "ไม่พบอีเมล์ IT Manager ในระบบ" });
+                            sentTo = string.Join("; ", emails);
+                            subject = $"[ITTicket] {docNumber} — Pending IT Manager Approval [Resend]";
+                            emailBody = $"<p>Dear IT Manager,</p>" +
+                                        $"<p>Ticket <b>{docNumber}</b> from <b>{requesterName}</b> is awaiting your approval.</p>" +
+                                        $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to approve</a></p>" +
+                                        signature;
+                            await SendMailAsync(string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-ITMgr");
+                            break;
+                        }
+                    case "PendingITAdminAssign":
+                        {
+                            var emails = GetEmailsByFunCode(5);
+                            if (!emails.Any())
+                                return Json(new { ok = false, msg = "ไม่พบอีเมล์ IT Admin ในระบบ" });
+                            sentTo = string.Join("; ", emails);
+                            subject = $"[ITTicket] {docNumber} — Pending IT Admin (Assign PIC) [Resend]";
+                            emailBody = $"<p>Dear IT Admin,</p>" +
+                                        $"<p>Ticket <b>{docNumber}</b> from <b>{requesterName}</b> is awaiting IT PIC assignment.</p>" +
+                                        $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to assign</a></p>" +
+                                        signature;
+                            await SendMailAsync(string.Join(";", emails), subject, emailBody, docNumber, "ResendEmail-ITAdmin-Assign");
+                            break;
+                        }
+                    case "PendingITPIC":
+                    case "PendingITAdminClose":
+                        {
+                            // ดึง Active PIC emails จาก TBITTicketPIC
+                            var picEmails = new List<string>();
+                            var picNames = new List<string>();
+                            using var cmdPic = new SqlCommand(
+                                @"SELECT p.SamAcc, p.DisplayName, u.UEMAIL
+                              FROM dbo.TBITTicketPIC p
+                              JOIN [BT_HR].[dbo].[onl_TBADUsers] u
+                                ON u.SAMACC = p.SamAcc COLLATE THAI_CI_AS
+                              WHERE p.TicketId = @id AND p.Status = 'Active'
+                                AND u.UEMAIL IS NOT NULL AND u.UEMAIL <> ''", conn);
+                            cmdPic.Parameters.AddWithValue("@id", body.TicketId);
+                            using var rPic = cmdPic.ExecuteReader();
+                            while (rPic.Read())
+                            {
+                                picEmails.Add(rPic["UEMAIL"].ToString()!);
+                                picNames.Add(rPic["DisplayName"]?.ToString() ?? rPic["SamAcc"].ToString()!);
+                            }
+
+                            if (!picEmails.Any())
+                                return Json(new { ok = false, msg = "ไม่พบอีเมล์ IT PIC ที่ยัง Active ในระบบ" });
+
+                            sentTo = string.Join("; ", picEmails);
+                            subject = $"[ITTicket] {docNumber} — You have been assigned as IT PIC [Resend]";
+                            var picListHtml = string.Join("", picNames.Select(n =>
+                                $"<li style='margin:4px 0'>{n}</li>"));
+                            emailBody = $"<p>Dear IT Person Incharge,</p>" +
+                                        $"<p>You have been assigned to work on IT Ticket <b>{docNumber}</b> from {requesterName}.</p>" +
+                                        $"<p><b>Assigned IT PIC:</b></p><ul>{picListHtml}</ul>" +
+                                        $"<p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to view and close task</a></p>" +
+                                        signature;
+                            await SendMailAsync(string.Join(";", picEmails), subject, emailBody, docNumber, "ResendEmail-ITPIC");
+                            break;
+                        }
+                    default:
+                        return Json(new { ok = false, msg = $"ไม่สามารถ Re-send Email สำหรับ Status: {status}" });
+                }
+
+                return Json(new { ok = true, msg = $"Re-send Email เรียบร้อย", sentTo, status });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message });
+            }
+        }
+
         // ════════════════════════════════════════════════════════════
         //  HELPERS
         // ════════════════════════════════════════════════════════════
@@ -906,6 +1062,11 @@ namespace ITTicketRequest.Controllers
     }
 
     // ── DTO ─────────────────────────────────────────────────────────────
+    public class ResendEmailRequest
+    {
+        public Guid TicketId { get; set; }
+    }
+
     public class ApproveRequest
     {
         public Guid RequestId { get; set; }
