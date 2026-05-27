@@ -71,3 +71,4 @@ C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\ITTicketReque
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\ref\ITTicketRequest.dll
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\bin\Debug\net8.0\ExcelDataReader.dll
 C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\bin\Debug\net8.0\ExcelDataReader.DataSet.dll
+C:\CLAUDE PROJECT\ITTicketRequest\ITTicketRequest\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

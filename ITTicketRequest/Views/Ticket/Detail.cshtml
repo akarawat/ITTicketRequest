@@ -507,6 +507,14 @@
                     <i class="bi bi-person-badge me-2"></i>
                     <span id="resend-target-role"></span>
                 </div>
+                <div id="resend-email-box" style="margin-top:8px;padding:8px 12px;
+                     background:#f8f9fa;border-radius:8px;border:1px solid #e0d6d6;font-size:13px">
+                    <span style="color:#90a4ae;font-size:11px;font-weight:600;
+                                 text-transform:uppercase;letter-spacing:.5px">จะส่งถึงอีเมล์</span><br/>
+                    <span id="resend-target-email" style="color:#0d47a1;font-weight:600;word-break:break-all">
+                        <span class="spinner-border spinner-border-sm text-secondary"></span>
+                    </span>
+                </div>
                 <div style="font-size:12px;color:#90a4ae;margin-top:6px">
                     <i class="bi bi-info-circle me-1"></i>Log จะถูกบันทึกลงไฟล์ logs/email/ ทุกครั้ง
                 </div>
@@ -1126,12 +1134,32 @@
         let _resendSamAcc = '';
         let _resendBtnEl  = null;
 
-        function openResendModal(samAcc, displayName, btnEl) {
+        async function openResendModal(samAcc, displayName, btnEl) {
             _resendSamAcc = samAcc;
             _resendBtnEl  = btnEl || null;
             document.getElementById('resend-target-role').textContent = displayName || samAcc;
             document.getElementById('resend-result').innerHTML = '';
+            // แสดง loading ก่อน
+            document.getElementById('resend-target-email').innerHTML =
+                '<span class="spinner-border spinner-border-sm text-secondary"></span> กำลังโหลด...';
             resendModal.show();
+
+            // โหลดอีเมล์จริงจาก backend
+            try {
+                const url = `/Ticket/GetResendTarget?ticketId=${TICKET_ID}&targetSamAcc=${encodeURIComponent(samAcc)}`;
+                const res  = await fetch(url);
+                const data = await res.json();
+                if (data.found && data.email) {
+                    document.getElementById('resend-target-email').innerHTML =
+                        `<i class="bi bi-envelope me-1" style="color:#0d47a1"></i>${data.email}`;
+                } else {
+                    document.getElementById('resend-target-email').innerHTML =
+                        `<span style="color:#e65100"><i class="bi bi-exclamation-triangle me-1"></i>ไม่พบอีเมล์ในระบบ</span>`;
+                }
+            } catch {
+                document.getElementById('resend-target-email').innerHTML =
+                    '<span style="color:#90a4ae">ไม่สามารถโหลดข้อมูลได้</span>';
+            }
         }
 
         document.getElementById('resend-confirm').onclick = async () => {
