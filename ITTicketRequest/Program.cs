@@ -1,4 +1,5 @@
 using ITTicketRequest.Models;
+using ITTicketRequest.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpClient();
 builder.Services.Configure<AppSettingsModel>(
     builder.Configuration.GetSection("TBCorApiServices"));
+builder.Services.AddScoped<EmailLogService>();
 
 var app = builder.Build();
 

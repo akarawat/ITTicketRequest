@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ITTicketRequest.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.Data.SqlClient;
 using ITTicketRequest.Models;
@@ -12,12 +13,15 @@ namespace ITTicketRequest.Controllers
         private readonly IConfiguration _config;
         private readonly AppSettingsModel _settings;
         private readonly IHttpClientFactory _http;
+        private readonly EmailLogService _emailLog;
 
-        public TicketController(IConfiguration config, IOptions<AppSettingsModel> settings, IHttpClientFactory http)
+        public TicketController(IConfiguration config, IOptions<AppSettingsModel> settings,
+                                IHttpClientFactory http, EmailLogService emailLog)
         {
             _config = config;
             _settings = settings.Value;
             _http = http;
+            _emailLog = emailLog;
         }
 
         //private string LocalMailUrl => $"{_config["TBCorApiServices:URLSITE"]}SendMail/MailSenderMessage";
@@ -749,9 +753,9 @@ namespace ITTicketRequest.Controllers
                 cmd.Parameters.AddWithValue("@IsAdmin", session.IsAdmin ? 1 : 0);
                 using var result = cmd.ExecuteReader();
                 if (result.Read()) newStatus = result["NewStatus"]?.ToString() ?? "";
-                if (newStatus.StartsWith("Error:"))
-                _ = NotifyWorkflowAsync(body.RequestId, docNumber, requesterName, requesterEmail, newStatus, body.Action, session, apprITMgr, body.AssignTo);
-                
+                if (!newStatus.StartsWith("Error:"))
+                    _ = NotifyWorkflowAsync(body.RequestId, docNumber, requesterName, requesterEmail, newStatus, body.Action, session, apprITMgr, body.AssignTo);
+
                 return Json(new { ok = true, msg = $"{body.Action} completed successfully", newStatus });
             }
             catch (Exception ex) { return Json(new { ok = false, msg = ex.Message }); }
@@ -797,7 +801,7 @@ namespace ITTicketRequest.Controllers
                 if (!emails.Any()) return;
                 var link = $"{_settings.URLSITE}Ticket/Detail/{ticketId}";
                 var body = $"<p>Dear Department Manager,</p><p>New IT Ticket Request from <b>{vm.RequesterName}</b> ({vm.Department}) awaiting your approval.</p><p><a href='{link}' style='background:#ED1C24;color:#fff;padding:10px 24px;border-radius:6px;text-decoration:none;font-weight:bold'>Click here to approve</a></p> <br/><p>Best regards,<br/>IT Ticket System<font color='red'>BERNINA Thailand</font> www.bernina.com<br/>79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>Fax.: +66 (0) 53 581351<br/><hr/></p> ";
-                await SendMailAsync(string.Join(";", emails), $"[ITTicket] New Request from {vm.RequesterName} — Pending Approval", body);
+                await SendMailAsync(string.Join(";", emails), $"[ITTicket] New Request from {vm.RequesterName} — Pending Approval", body, vm.RequesterName, "NotifyDeptMgr");
             }
             catch { }
         }
@@ -873,12 +877,31 @@ namespace ITTicketRequest.Controllers
             return emails;
         }
 
-        private async Task SendMailAsync(string addresses, string subject, string body)
+        private async Task SendMailAsync(string addresses, string subject, string body,
+                                          string docNumber = "", string trigger = "")
         {
-            if (MailDebug == "1") return; // ถ้าเปิด MailDebug จะไม่ส่งเมล์จริง (ใช้สำหรับ dev/test)
-            if (string.IsNullOrEmpty(addresses)) return;
-            try { await _http.CreateClient().PostAsJsonAsync(LocalMailUrl, new { Addresses = addresses, Form = _settings.MailForm, Subject = subject, Body = body, Priority = 1 }); }
-            catch { }
+            if (MailDebug == "1")
+            {
+                _emailLog.Write(addresses, subject, docNumber, success: false,
+                                trigger: trigger, errorMsg: "MailDebug=1 (skipped, dev mode)");
+                return;
+            }
+            if (string.IsNullOrEmpty(addresses))
+            {
+                _emailLog.WriteNoRecipient(docNumber, trigger);
+                return;
+            }
+            try
+            {
+                await _http.CreateClient().PostAsJsonAsync(LocalMailUrl,
+                    new { Addresses = addresses, Form = _settings.MailForm, Subject = subject, Body = body, Priority = 1 });
+                _emailLog.Write(addresses, subject, docNumber, success: true, trigger: trigger);
+            }
+            catch (Exception ex)
+            {
+                _emailLog.Write(addresses, subject, docNumber, success: false,
+                                trigger: trigger, errorMsg: ex.Message);
+            }
         }
     }
 
