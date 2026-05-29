@@ -1,0 +1,369 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Test Send Mail";
+    var user = ViewBag.User as ITTicketRequest.Models.UserSessionModel;
+}
+
+<style>
+    body {
+        background: #f0f4f8;
+    }
+
+    .test-mail-wrap {
+        max-width: 680px;
+        margin: 40px auto;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .card-header-bar {
+        background: linear-gradient(135deg, #0d47a1, #1565c0);
+        border-radius: 14px 14px 0 0;
+        padding: 20px 28px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+        .card-header-bar .icon-wrap {
+            width: 42px;
+            height: 42px;
+            background: rgba(255,255,255,.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    .card-body-wrap {
+        background: #fff;
+        border-radius: 0 0 14px 14px;
+        padding: 28px;
+        box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    }
+
+    .form-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #607080;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 5px;
+    }
+
+    .form-control-it {
+        width: 100%;
+        border: 1.5px solid #dde3ea;
+        border-radius: 8px;
+        padding: 9px 14px;
+        font-size: 13.5px;
+        color: #263238;
+        transition: border .15s;
+        outline: none;
+    }
+
+        .form-control-it:focus {
+            border-color: #0d47a1;
+            box-shadow: 0 0 0 3px rgba(13,71,161,.08);
+        }
+
+    .btn-send-test {
+        background: #0d47a1;
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        padding: 11px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .15s;
+        width: 100%;
+        margin-top: 6px;
+    }
+
+        .btn-send-test:hover {
+            background: #1565c0;
+        }
+
+        .btn-send-test:disabled {
+            background: #90a4ae;
+            cursor: not-allowed;
+        }
+
+    .divider {
+        border: none;
+        border-top: 1.5px solid #ecf0f5;
+        margin: 22px 0;
+    }
+
+    .result-box {
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-size: 13px;
+        margin-top: 16px;
+        display: none;
+    }
+
+        .result-box.success {
+            background: #e8f5e9;
+            border: 1.5px solid #a5d6a7;
+            color: #1b5e20;
+        }
+
+        .result-box.error {
+            background: #ffebee;
+            border: 1.5px solid #ef9a9a;
+            color: #b71c1c;
+        }
+
+        .result-box.warning {
+            background: #fff8e1;
+            border: 1.5px solid #ffe082;
+            color: #7c5200;
+        }
+
+    .log-box {
+        background: #1a237e;
+        border-radius: 10px;
+        padding: 16px 18px;
+        font-family: 'Consolas', monospace;
+        font-size: 12.5px;
+        color: #e8eaf6;
+        max-height: 320px;
+        overflow-y: auto;
+        display: none;
+        margin-top: 16px;
+        line-height: 1.8;
+    }
+
+        .log-box .log-sent {
+            color: #69f0ae;
+        }
+
+        .log-box .log-failed {
+            color: #ff5252;
+        }
+
+        .log-box .log-skipped {
+            color: #ffd740;
+        }
+
+        .log-box .log-label {
+            color: #90caf9;
+            font-weight: 700;
+        }
+
+    .hint-tag {
+        display: inline-block;
+        background: #e3f2fd;
+        color: #0d47a1;
+        border-radius: 5px;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        margin: 3px 3px 0 0;
+    }
+
+        .hint-tag:hover {
+            background: #bbdefb;
+        }
+
+    .debug-info {
+        background: #f5f7fa;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 12px;
+        color: #607080;
+        margin-top: 10px;
+        border: 1px solid #e0e7ef;
+    }
+
+        .debug-info b {
+            color: #263238;
+        }
+</style>
+
+<div class="test-mail-wrap">
+
+    <!-- Header -->
+    <div class="card-header-bar">
+        <div class="icon-wrap">
+            <i class="bi bi-envelope-check" style="color:#fff;font-size:18px"></i>
+        </div>
+        <div>
+            <div style="color:#fff;font-weight:800;font-size:16px">Test Send Mail</div>
+            <div style="color:rgba(255,255,255,.65);font-size:11.5px">System Admin Debug Tool · ส่งอีเมล์ทดสอบทีละคน</div>
+        </div>
+        <a href="/Dashboards/Index" class="ms-auto btn btn-sm"
+           style="background:rgba(255,255,255,.15);color:#fff;border:none;font-size:12px;border-radius:7px">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+
+    <!-- Body -->
+    <div class="card-body-wrap">
+
+        <!-- MailDebug Warning -->
+        <div id="maildebug-warn" class="result-box warning" style="display:none">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <b>MailDebug = 1</b> — อีเมล์จะ<u>ไม่ถูกส่งจริง</u> ในโหมดนี้
+            กรุณาเปลี่ยน <code>MailDebug</code> เป็น <b>0</b> ใน appsettings.json ก่อนทดสอบจริง
+        </div>
+
+        <!-- Form -->
+        <div style="margin-top:4px">
+            <div class="mb-3">
+                <div class="form-label">อีเมล์ผู้รับ (To)</div>
+                <input type="email" id="inp-to" class="form-control-it"
+                       placeholder="keatisak.l@berninathailand.com">
+                <div style="margin-top:7px">
+                    <span class="hint-tag" onclick="fillTo('keatisak.l@berninathailand.com')">keatisak.l</span>
+                    <span class="hint-tag" onclick="fillToFromSession()">ตัวเอง (@@Me)</span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-label">Subject</div>
+                <input type="text" id="inp-subject" class="form-control-it"
+                       value="[ITTicket] Test Email from System Admin">
+            </div>
+
+            <div class="mb-3">
+                <div class="form-label">Body</div>
+                <textarea id="inp-body" class="form-control-it" rows="4"
+                          style="resize:vertical">This is a test email sent from ITTicketRequest System.
+If you receive this, the mail service is working correctly.
+
+Sent by: System Admin Debug Tool
+Time: </textarea>
+            </div>
+
+            <hr class="divider">
+
+            <button class="btn-send-test" id="btn-send" onclick="sendTestMail()">
+                <i class="bi bi-send me-2"></i>Send Test Email
+            </button>
+        </div>
+
+        <!-- Result -->
+        <div id="result-box" class="result-box"></div>
+
+        <!-- Log output -->
+        <div id="log-box" class="log-box"></div>
+
+        <!-- Mail Config Info -->
+        <hr class="divider">
+        <div class="form-label">Mail Config (appsettings.json)</div>
+        <div class="debug-info" id="mail-config">
+            <span style="color:#90a4ae">กำลังโหลด...</span>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ── โหลด config และ session ─────────────────────────────────────────
+        async function loadConfig() {
+            try {
+                const res  = await fetch('/Ticket/GetMailConfig');
+                const data = await res.json();
+
+                // แสดง config
+                document.getElementById('mail-config').innerHTML = `
+                    <b>From (MailForm):</b> ${data.mailForm}<br/>
+                    <b>EmailSender URL:</b> ${data.emailSender}<br/>
+                    <b>MailDebug:</b> <span style="color:${data.mailDebug==='1'?'#e65100':'#2e7d32'};font-weight:700">
+                        ${data.mailDebug === '1' ? '1 (ไม่ส่งจริง)' : '0 (ส่งจริง)'}
+                    </span>`;
+
+                if (data.mailDebug === '1')
+                    document.getElementById('maildebug-warn').style.display = 'block';
+
+                // ใส่ timestamp ใน body
+                const now = new Date().toLocaleString('th-TH');
+                document.getElementById('inp-body').value =
+                    document.getElementById('inp-body').value + now;
+
+                // ใส่อีเมล์ตัวเองเป็น hint
+                if (data.myEmail)
+                    document.querySelector('.hint-tag:last-child').onclick =
+                        () => fillTo(data.myEmail);
+
+            } catch { }
+        }
+
+        function fillTo(email) {
+            document.getElementById('inp-to').value = email;
+            document.getElementById('inp-to').focus();
+        }
+
+        function fillToFromSession() {
+            fetch('/Ticket/GetMailConfig').then(r=>r.json()).then(d => fillTo(d.myEmail || ''));
+        }
+
+        // ── ส่งเมล์ทดสอบ ────────────────────────────────────────────────────
+        async function sendTestMail() {
+            const to      = document.getElementById('inp-to').value.trim();
+            const subject = document.getElementById('inp-subject').value.trim();
+            const body    = document.getElementById('inp-body').value.trim();
+
+            if (!to) { alert('กรุณาระบุอีเมล์ผู้รับ'); return; }
+
+            const btn = document.getElementById('btn-send');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+
+            const resultBox = document.getElementById('result-box');
+            const logBox    = document.getElementById('log-box');
+            resultBox.style.display = 'none';
+            logBox.style.display    = 'none';
+
+            try {
+                const res  = await fetch('/Ticket/TestSendMail', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to, subject, body })
+                });
+                const data = await res.json();
+
+                // แสดงผลลัพธ์
+                if (data.ok) {
+                    resultBox.className = 'result-box success';
+                    resultBox.innerHTML = `<i class="bi bi-check-circle me-2"></i>
+                        <b>ส่งเรียบร้อย</b><br/>
+                        <span style="font-size:12px">ส่งถึง: <b>${to}</b><br/>
+                        ตรวจสอบ Log ที่ <code>logs/email/email_${new Date().toISOString().slice(0,10)}.log</code></span>`;
+                } else {
+                    resultBox.className = 'result-box error';
+                    resultBox.innerHTML = `<i class="bi bi-x-circle me-2"></i>
+                        <b>ส่งไม่สำเร็จ</b><br/>
+                        <span style="font-size:12px">${data.msg}</span>`;
+                }
+                resultBox.style.display = 'block';
+
+                // แสดง Log
+                if (data.log) {
+                    logBox.style.display = 'block';
+                    const colored = data.log
+                        .replace(/✓ SENT/g,    '<span class="log-sent">✓ SENT</span>')
+                        .replace(/✗ FAILED/g,  '<span class="log-failed">✗ FAILED</span>')
+                        .replace(/⚠ SKIPPED/g, '<span class="log-skipped">⚠ SKIPPED</span>')
+                        .replace(/(Trigger|DocNo|To|Subject|Error)\s+:/g,
+                                 m => `<span class="log-label">${m}</span>`);
+                    logBox.innerHTML = colored;
+                }
+
+            } catch (err) {
+                resultBox.className = 'result-box error';
+                resultBox.innerHTML = `<i class="bi bi-x-circle me-2"></i>Network error: ${err.message}`;
+                resultBox.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send me-2"></i>Send Test Email';
+            }
+        }
+
+        loadConfig();
+    </script>
+}

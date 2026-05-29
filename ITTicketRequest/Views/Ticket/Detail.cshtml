@@ -272,8 +272,19 @@
             vertical-align: middle;
             transition: all .15s;
         }
-        .btn-resend-sm:hover { background:#e3f2fd; border-color:#0d47a1; color:#0d47a1; }
-        .btn-resend-sm.sent  { background:#e8f5e9; border-color:#2e7d32; color:#2e7d32; }
+
+            .btn-resend-sm:hover {
+                background: #e3f2fd;
+                border-color: #0d47a1;
+                color: #0d47a1;
+            }
+
+            .btn-resend-sm.sent {
+                background: #e8f5e9;
+                border-color: #2e7d32;
+                color: #2e7d32;
+            }
+
         .btn-return-lg {
             background: #e65100;
             color: #fff;
@@ -508,9 +519,9 @@
                     <span id="resend-target-role"></span>
                 </div>
                 <div id="resend-email-box" style="margin-top:8px;padding:8px 12px;
-                     background:#f8f9fa;border-radius:8px;border:1px solid #e0d6d6;font-size:13px">
+                    background:#f8f9fa;border-radius:8px;border:1px solid #e0d6d6;font-size:13px">
                     <span style="color:#90a4ae;font-size:11px;font-weight:600;
-                                 text-transform:uppercase;letter-spacing:.5px">จะส่งถึงอีเมล์</span><br/>
+                    text-transform:uppercase;letter-spacing:.5px">จะส่งถึงอีเมล์</span><br />
                     <span id="resend-target-email" style="color:#0d47a1;font-weight:600;word-break:break-all">
                         <span class="spinner-border spinner-border-sm text-secondary"></span>
                     </span>
@@ -840,10 +851,15 @@
                 else if (isRej)
                     actionLabel = `<span class="wf-action-rejected">✗ Rejected ${log.actionAt ? '· '+fmt(log.actionAt):''}</span>`;
                 else if (isCurrent && !isEnd) {
-                    // ⏳ Awaiting — เพิ่มปุ่ม Re-send ถ้าไม่มีชื่อผู้รับผิดชอบขึ้น
-                    const awaitResendBtn = IS_SYSTEM_ADMIN && !log?.approverName
+                    // ⏳ Awaiting — เพิ่มปุ่ม Re-send
+                    // ดึง samAcc ของ Approver ที่ระบุในตั๋วตาม funCode
+                    const awaitSam = step.funCode === 8 ? (t.apprDeptManager  || '')
+                                   : step.funCode === 4 ? (t.apprManagingDir  || '')
+                                   : step.funCode === 7 ? (t.apprITManager    || '')
+                                   : '';  // FunCode อื่น (5,6,9) ไม่มี designated approver → ส่งทั้ง role
+                    const awaitResendBtn = IS_SYSTEM_ADMIN
                         ? `<button class="btn-resend-sm" style="margin-left:6px"
-                                   onclick="openResendModal('','${step.role}',this)"
+                                   onclick="openResendModal('${awaitSam}','${step.role}',this)"
                                    title="Re-send notification to ${step.role}">
                                <i class="bi bi-envelope-arrow-up"></i>
                            </button>`
@@ -885,7 +901,7 @@
                             ? `<div class="wf-name">
                                 ${log.approverName}
                                 ${IS_SYSTEM_ADMIN
-                                    ? `<button class="btn-resend-sm" title="Re-send Email"
+                                    ? `<button class="btn-resend-sm" title="Re-send Email" style="display:none"
                                                onclick="openResendModal('${log.approverSam}','${log.approverName}',this)">
                                            <i class="bi bi-envelope-arrow-up"></i>
                                        </button>`

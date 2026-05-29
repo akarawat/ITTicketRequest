@@ -427,6 +427,9 @@ namespace ITTicketRequest.Controllers
                         status = reader["Status"].ToString(),
                         apprITPIC = reader["ApprITPIC"] == DBNull.Value ? null : reader["ApprITPIC"].ToString(),
                         itpicName = reader["ITPICName"] == DBNull.Value ? null : reader["ITPICName"].ToString(),
+                        apprDeptManager  = reader["ApprDeptManager"]  == DBNull.Value ? null : reader["ApprDeptManager"].ToString(),
+                        apprManagingDir  = reader["ApprManagingDir"]  == DBNull.Value ? null : reader["ApprManagingDir"].ToString(),
+                        apprITManager    = reader["ApprITManager"]    == DBNull.Value ? null : reader["ApprITManager"].ToString(),
                         createdAt = reader["CreatedAt"],
                         completedAt = reader["CompletedAt"] == DBNull.Value ? null : reader["CompletedAt"].ToString()
                     };
@@ -1032,6 +1035,70 @@ namespace ITTicketRequest.Controllers
             }
         }
 
+
+        // GET /Ticket/TestSendMail — หน้า Debug ส่งเมล์ (System Admin only)
+        public IActionResult TestSendMail()
+        {
+            var session = GetSession();
+            if (session == null || !session.IsAdmin) return Redirect("/Dashboards/Index");
+            ViewBag.User = session;
+            return View();
+        }
+
+        // GET /Ticket/GetMailConfig — คืน mail config สำหรับ TestSendMail page
+        public IActionResult GetMailConfig()
+        {
+            var session = GetSession();
+            if (session == null || !session.IsAdmin) return Unauthorized();
+            return Json(new {
+                mailForm    = _settings.MailForm,
+                emailSender = _settings.EmailSender,
+                mailDebug   = _settings.MailDebug,
+                myEmail     = session.Email
+            });
+        }
+
+        // POST /Ticket/TestSendMail — ส่งเมล์ทดสอบ แล้วคืน log
+        [HttpPost]
+        public async Task<IActionResult> TestSendMail([FromBody] TestMailRequest body)
+        {
+            var session = GetSession();
+            if (session == null || !session.IsAdmin)
+                return Json(new { ok = false, msg = "System Admin permission required" });
+
+            if (string.IsNullOrWhiteSpace(body.To))
+                return Json(new { ok = false, msg = "กรุณาระบุอีเมล์ผู้รับ" });
+
+            var trigger = $"TestSendMail by {session.SamAcc}";
+            var docNo   = $"TEST-{DateTime.Now:HHmmss}";
+
+            // บันทึก Log และส่งเมล์จริงผ่าน SendMailAsync (มี MailDebug guard อยู่แล้ว)
+            await SendMailAsync(body.To, body.Subject ?? "[ITTicket] Test Email", body.Body ?? "(no body)", docNo, trigger);
+
+            // อ่าน Log ล่าสุดกลับมาแสดงผล
+            string logContent = "";
+            try
+            {
+                var logPath = Path.Combine(
+                    HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>().ContentRootPath,
+                    "logs", "email", $"email_{DateTime.Now:yyyy-MM-dd}.log");
+                if (System.IO.File.Exists(logPath))
+                {
+                    var allLines = await System.IO.File.ReadAllLinesAsync(logPath);
+                    // เอาแค่ 30 บรรทัดล่าสุด
+                    logContent = string.Join("", allLines.TakeLast(30));
+                }
+            }
+            catch { }
+
+            bool sent = _settings.MailDebug != "1";
+            return Json(new {
+                ok  = true,
+                msg = sent ? "ส่งเรียบร้อย" : "MailDebug=1 (skipped — ไม่ส่งจริง)",
+                log = logContent
+            });
+        }
+
         // ════════════════════════════════════════════════════════════
         //  HELPERS
         // ════════════════════════════════════════════════════════════
@@ -1177,6 +1244,13 @@ namespace ITTicketRequest.Controllers
     }
 
     // ── DTO ─────────────────────────────────────────────────────────────
+    public class TestMailRequest
+    {
+        public string? To      { get; set; }
+        public string? Subject { get; set; }
+        public string? Body    { get; set; }
+    }
+
     public class ResendEmailRequest
     {
         public Guid TicketId { get; set; }
