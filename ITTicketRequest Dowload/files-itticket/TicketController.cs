@@ -27,8 +27,6 @@ namespace ITTicketRequest.Controllers
         //private string LocalMailUrl => $"{_config["TBCorApiServices:URLSITE"]}SendMail/MailSenderMessage";
         private string LocalMailUrl => $"{_config["TBCorApiServices:EmailSender"]}";
         private string MailDebug => $"{_config["TBCorApiServices:MailDebug"]}";
-        // ── ปิด/เปิด Re-send Email feature (false = ปิดชั่วคราว) ────
-        private const bool RESEND_ENABLED = false;
         private UserSessionModel? GetSession()
         {
             var json = HttpContext.Session.GetString("UserSession");
@@ -118,8 +116,6 @@ namespace ITTicketRequest.Controllers
             var session = GetSession();
             if (session == null) return Redirect(_config["TBCorApiServices:AuthenUrl"] ?? "/");
             ViewBag.TicketId = id;
-            ViewBag.User = session;
-            ViewBag.ResendEnabled = RESEND_ENABLED;
             return View();
         }
 
@@ -431,9 +427,9 @@ namespace ITTicketRequest.Controllers
                         status = reader["Status"].ToString(),
                         apprITPIC = reader["ApprITPIC"] == DBNull.Value ? null : reader["ApprITPIC"].ToString(),
                         itpicName = reader["ITPICName"] == DBNull.Value ? null : reader["ITPICName"].ToString(),
-                        apprDeptManager = reader["ApprDeptManager"] == DBNull.Value ? null : reader["ApprDeptManager"].ToString(),
-                        apprManagingDir = reader["ApprManagingDir"] == DBNull.Value ? null : reader["ApprManagingDir"].ToString(),
-                        apprITManager = reader["ApprITManager"] == DBNull.Value ? null : reader["ApprITManager"].ToString(),
+                        apprDeptManager  = reader["ApprDeptManager"]  == DBNull.Value ? null : reader["ApprDeptManager"].ToString(),
+                        apprManagingDir  = reader["ApprManagingDir"]  == DBNull.Value ? null : reader["ApprManagingDir"].ToString(),
+                        apprITManager    = reader["ApprITManager"]    == DBNull.Value ? null : reader["ApprITManager"].ToString(),
                         createdAt = reader["CreatedAt"],
                         completedAt = reader["CompletedAt"] == DBNull.Value ? null : reader["CompletedAt"].ToString()
                     };
@@ -777,8 +773,6 @@ namespace ITTicketRequest.Controllers
             if (session == null) return Json(new { ok = false, msg = "Please sign in again" });
             if (!session.IsAdmin)
                 return Json(new { ok = false, msg = "System Admin permission required" });
-            if (!RESEND_ENABLED)
-                return Json(new { ok = false, msg = "ระบบ Re-send Email ถูกปิดชั่วคราว กรุณาติดต่อ System Admin" });
 
             try
             {
@@ -950,8 +944,6 @@ namespace ITTicketRequest.Controllers
         {
             var session = GetSession();
             if (session == null || !session.IsAdmin) return Unauthorized();
-            if (!RESEND_ENABLED)
-                return Json(new { found = false, email = "", displayName = "Re-send Email ถูกปิดชั่วคราว" });
 
             try
             {
@@ -1058,14 +1050,11 @@ namespace ITTicketRequest.Controllers
         {
             var session = GetSession();
             if (session == null || !session.IsAdmin) return Unauthorized();
-            if (!RESEND_ENABLED)
-                return Json(new { found = false, email = "", displayName = "Re-send Email ถูกปิดชั่วคราว" });
-            return Json(new
-            {
-                mailForm = _settings.MailForm,
+            return Json(new {
+                mailForm    = _settings.MailForm,
                 emailSender = _settings.EmailSender,
-                mailDebug = _settings.MailDebug,
-                myEmail = session.Email
+                mailDebug   = _settings.MailDebug,
+                myEmail     = session.Email
             });
         }
 
@@ -1081,7 +1070,7 @@ namespace ITTicketRequest.Controllers
                 return Json(new { ok = false, msg = "กรุณาระบุอีเมล์ผู้รับ" });
 
             var trigger = $"TestSendMail by {session.SamAcc}";
-            var docNo = $"TEST-{DateTime.Now:HHmmss}";
+            var docNo   = $"TEST-{DateTime.Now:HHmmss}";
 
             // บันทึก Log และส่งเมล์จริงผ่าน SendMailAsync (มี MailDebug guard อยู่แล้ว)
             await SendMailAsync(body.To, body.Subject ?? "[ITTicket] Test Email", body.Body ?? "(no body)", docNo, trigger);
@@ -1097,15 +1086,15 @@ namespace ITTicketRequest.Controllers
                 {
                     var allLines = await System.IO.File.ReadAllLinesAsync(logPath);
                     // เอาแค่ 30 บรรทัดล่าสุด
-                    logContent = string.Join(" ", allLines.TakeLast(30));
+                    logContent = string.Join("
+", allLines.TakeLast(30));
                 }
             }
             catch { }
 
             bool sent = _settings.MailDebug != "1";
-            return Json(new
-            {
-                ok = true,
+            return Json(new {
+                ok  = true,
                 msg = sent ? "ส่งเรียบร้อย" : "MailDebug=1 (skipped — ไม่ส่งจริง)",
                 log = logContent
             });
@@ -1258,9 +1247,9 @@ namespace ITTicketRequest.Controllers
     // ── DTO ─────────────────────────────────────────────────────────────
     public class TestMailRequest
     {
-        public string? To { get; set; }
+        public string? To      { get; set; }
         public string? Subject { get; set; }
-        public string? Body { get; set; }
+        public string? Body    { get; set; }
     }
 
     public class ResendEmailRequest

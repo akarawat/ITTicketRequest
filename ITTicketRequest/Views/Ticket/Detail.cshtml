@@ -550,6 +550,7 @@
         const IS_IT_ADMIN     = @(isITAdmin ? "true" : "false");
         const IS_IT_PIC       = @(isITPIC ? "true" : "false");
         const IS_SYSTEM_ADMIN = @(isSystemAdmin ? "true" : "false");
+        const RESEND_ENABLED  = @(ViewBag.ResendEnabled == true ? "true" : "false");
 
         const actionModal = new bootstrap.Modal(document.getElementById('actionModal'));
         const assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
@@ -857,7 +858,7 @@
                                    : step.funCode === 4 ? (t.apprManagingDir  || '')
                                    : step.funCode === 7 ? (t.apprITManager    || '')
                                    : '';  // FunCode อื่น (5,6,9) ไม่มี designated approver → ส่งทั้ง role
-                    const awaitResendBtn = IS_SYSTEM_ADMIN
+                    const awaitResendBtn = IS_SYSTEM_ADMIN && RESEND_ENABLED
                         ? `<button class="btn-resend-sm" style="margin-left:6px"
                                    onclick="openResendModal('${awaitSam}','${step.role}',this)"
                                    title="Re-send notification to ${step.role}">
@@ -875,7 +876,7 @@
                     picHtml = picList.map(p => {
                         const color  = p.status === 'Closed' ? '#2e7d32' : '#e65100';
                         const prefix = p.status === 'Closed' ? '✓' : '⏳';
-                        const rBtn   = IS_SYSTEM_ADMIN
+                        const rBtn   = IS_SYSTEM_ADMIN && RESEND_ENABLED
                             ? `<button class="btn-resend-sm" title="Re-send Email to ${p.displayName}"
                                        onclick="openResendModal('${p.samAcc}','${p.displayName}',this)">
                                    <i class="bi bi-envelope-arrow-up"></i>
@@ -900,7 +901,7 @@
                         ${log?.approverName && step.funCode !== 6
                             ? `<div class="wf-name">
                                 ${log.approverName}
-                                ${IS_SYSTEM_ADMIN
+                                ${IS_SYSTEM_ADMIN && RESEND_ENABLED
                                     ? `<button class="btn-resend-sm" title="Re-send Email" style="display:none"
                                                onclick="openResendModal('${log.approverSam}','${log.approverName}',this)">
                                            <i class="bi bi-envelope-arrow-up"></i>
