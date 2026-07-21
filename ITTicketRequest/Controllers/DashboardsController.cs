@@ -25,11 +25,11 @@ namespace ITTicketRequest.Controllers
         {
             var existing = HttpContext.Session.GetString("UserSession");
             var authenUrl = _config["TBCorApiServices:AuthenUrl"] ?? "/";
-            /*
+            
             // If no session and no query params, redirect to authen URL
             if (string.IsNullOrEmpty(id) && string.IsNullOrEmpty(existing))
                 return Redirect(authenUrl);
-            */
+            
 
             /* Sample Data for Debugging */
             /*
@@ -78,11 +78,11 @@ namespace ITTicketRequest.Controllers
             //depart = "Planning, Project & IT";
             //----
 
-            id = "123456789";
-            user = "pannee.j";
-            email = "pannee.j@berninathailand.com";
-            fname = "Pannee Jaiklangduk";
-            depart = "Planning, Project & IT";
+            //id = "123456789";
+            //user = "pannee.j";
+            //email = "pannee.j@berninathailand.com";
+            //fname = "Pannee Jaiklangduk";
+            //depart = "Planning, Project & IT";
 
             //id = "123456789";
             //user = "Saowanee.s";
