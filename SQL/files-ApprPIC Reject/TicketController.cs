@@ -1138,9 +1138,9 @@ namespace ITTicketRequest.Controllers
                 using (var r = cmdGet.ExecuteReader())
                     if (r.Read())
                     {
-                        docNumber = r["DocNumber"].ToString()!;
+                        docNumber     = r["DocNumber"].ToString()!;
                         requesterName = r["RequesterName"].ToString()!;
-                        apprITMgr = r["ApprITManager"] == DBNull.Value ? "" : r["ApprITManager"].ToString()!;
+                        apprITMgr     = r["ApprITManager"] == DBNull.Value ? "" : r["ApprITManager"].ToString()!;
                     }
 
                 var newStatusParam = new SqlParameter("@NewStatus", SqlDbType.NVarChar, 50)

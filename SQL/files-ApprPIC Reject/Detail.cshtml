@@ -299,11 +299,7 @@
             vertical-align: middle;
             transition: all .15s;
         }
-
-            .btn-cancel-sm:hover {
-                background: #ffebee;
-                border-color: #c62828;
-            }
+        .btn-cancel-sm:hover { background:#ffebee; border-color:#c62828; }
 
         .btn-return-lg {
             background: #e65100;
@@ -569,7 +565,7 @@
         <div class="modal-content" style="border-radius:12px;overflow:hidden">
             <div style="background:#c62828;padding:18px 24px;display:flex;align-items:center;gap:12px">
                 <div style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:50%;
-                    display:flex;align-items:center;justify-content:center">
+                            display:flex;align-items:center;justify-content:center">
                     <i class="bi bi-x-circle" style="color:#fff;font-size:17px"></i>
                 </div>
                 <div>
@@ -587,19 +583,19 @@
                     <li>แจ้งอีเมล์ IT Manager ให้ทราบ</li>
                 </ul>
                 <div class="form-label" style="font-size:12px;font-weight:700;color:#607080;
-                    text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">
+                     text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">
                     เหตุผลการยกเลิก (บังคับ)
                 </div>
                 <textarea id="cancel-remark" rows="3" placeholder="ระบุเหตุผล เช่น มอบหมายผิดคน, PIC ไม่ว่าง ฯลฯ"
-                          style="width:100%;border:1.5px solid #dde3ea;border-radius:8px;padding:9px 14px;
-                font-size:13.5px;color:#263238;outline:none;resize:vertical"></textarea>
+                    style="width:100%;border:1.5px solid #dde3ea;border-radius:8px;padding:9px 14px;
+                           font-size:13.5px;color:#263238;outline:none;resize:vertical"></textarea>
                 <div id="cancel-result"></div>
             </div>
             <div class="modal-footer border-0 px-4 pb-4 pt-0">
                 <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
                 <button type="button" id="cancel-confirm"
-                        style="background:#c62828;color:#fff;border:none;border-radius:8px;
-                    padding:8px 24px;font-size:13px;font-weight:700;cursor:pointer">
+                    style="background:#c62828;color:#fff;border:none;border-radius:8px;
+                           padding:8px 24px;font-size:13px;font-weight:700;cursor:pointer">
                     <i class="bi bi-x-circle me-2"></i>Confirm Cancel Assignment
                 </button>
             </div>
@@ -609,45 +605,45 @@
 
 @section Scripts {
     <script>
-        const TICKET_ID = '@ViewBag.TicketId';
-        const CURRENT_SAM = '@currentSam';
-        const IS_IT_ADMIN = @(isITAdmin ? "true" : "false");
-        const IS_IT_PIC = @(isITPIC ? "true" : "false");
+        const TICKET_ID    = '@ViewBag.TicketId';
+        const CURRENT_SAM  = '@currentSam';
+        const IS_IT_ADMIN     = @(isITAdmin ? "true" : "false");
+        const IS_IT_PIC       = @(isITPIC ? "true" : "false");
         const IS_SYSTEM_ADMIN = @(isSystemAdmin ? "true" : "false");
-        const RESEND_ENABLED = @(ViewBag.ResendEnabled == true ? "true" : "false");
+        const RESEND_ENABLED  = @(ViewBag.ResendEnabled == true ? "true" : "false");
 
         const actionModal = new bootstrap.Modal(document.getElementById('actionModal'));
         const assignModal = new bootstrap.Modal(document.getElementById('assignModal'));
-        let pendingAction = null;
+        let   pendingAction = null;
 
         const STATUS_COLOR = {
-            PendingDeptMgr: '#e65100', PendingManagingDir: '#6a1b9a',
-            PendingITMgr: '#0d47a1', PendingITAdminAssign: '#00695c',
-            PendingITPIC: '#2e7d32', PendingITAdminClose: '#37474f',
-            Completed: '#2e7d32', Rejected: '#b71c1c'
+            PendingDeptMgr:'#e65100', PendingManagingDir:'#6a1b9a',
+            PendingITMgr:'#0d47a1',  PendingITAdminAssign:'#00695c',
+            PendingITPIC:'#2e7d32',  PendingITAdminClose:'#37474f',
+            Completed:'#2e7d32',     Rejected:'#b71c1c'
         };
         const STATUS_LABEL = {
-            PendingDeptMgr: 'Pending Dept Manager', PendingManagingDir: 'Pending Managing Director',
-            PendingITMgr: 'Pending IT Manager', PendingITAdminAssign: 'Pending IT Admin (Assign PIC)',
-            PendingITPIC: 'In Progress — IT PIC', PendingITAdminClose: 'Pending IT Admin (Close)',
-            Completed: 'Completed', Rejected: 'Rejected'
+            PendingDeptMgr:'Pending Dept Manager', PendingManagingDir:'Pending Managing Director',
+            PendingITMgr:'Pending IT Manager',     PendingITAdminAssign:'Pending IT Admin (Assign PIC)',
+            PendingITPIC:'In Progress — IT PIC',   PendingITAdminClose:'Pending IT Admin (Close)',
+            Completed:'Completed', Rejected:'Rejected'
         };
 
         const FLOW_STEPS = (reqVPN) => {
-            const steps = [{ status: 'PendingDeptMgr', role: 'Department Manager', funCode: 8 }];
-            if (reqVPN) steps.push({ status: 'PendingManagingDir', role: 'Managing Director', funCode: 4 });
+            const steps = [{ status:'PendingDeptMgr', role:'Department Manager', funCode:8 }];
+            if (reqVPN) steps.push({ status:'PendingManagingDir', role:'Managing Director', funCode:4 });
             steps.push(
-                { status: 'PendingITMgr', role: 'IT Manager', funCode: 7 },
-                { status: 'PendingITAdminAssign', role: 'IT Admin (Assign PIC)', funCode: 5 },
-                { status: 'PendingITPIC', role: 'IT Person Incharge (IT PIC)', funCode: 6 },
-                { status: 'PendingITAdminClose', role: 'IT Admin (Close Ticket)', funCode: 9 },
-                { status: 'Completed', role: 'Completed', funCode: 0 }
+                { status:'PendingITMgr',         role:'IT Manager',              funCode:7 },
+                { status:'PendingITAdminAssign', role:'IT Admin (Assign PIC)',    funCode:5 },
+                { status:'PendingITPIC',         role:'IT Person Incharge (IT PIC)', funCode:6 },
+                { status:'PendingITAdminClose',  role:'IT Admin (Close Ticket)', funCode:9 },
+                { status:'Completed',            role:'Completed',                funCode:0 }
             );
             return steps;
         };
 
-        const STATUS_ORDER = ['PendingDeptMgr', 'PendingManagingDir', 'PendingITMgr',
-            'PendingITAdminAssign', 'PendingITPIC', 'PendingITAdminClose', 'Completed', 'Rejected'];
+        const STATUS_ORDER = ['PendingDeptMgr','PendingManagingDir','PendingITMgr',
+            'PendingITAdminAssign','PendingITPIC','PendingITAdminClose','Completed','Rejected'];
 
         // ── Render Item Details ─────────────────────────────────────────────
         function renderItems(t, drives, programs) {
@@ -655,170 +651,168 @@
 
             // ── New Computer ────────────────────────────────────────────────
             if (t.reqComputer) html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-laptop" style="color:#0d47a1"></i>
-                                <span style="color:#0d47a1">New Computer</span>
+                <div class="item-block">
+                    <div class="item-block-hdr">
+                        <i class="bi bi-laptop" style="color:#0d47a1"></i>
+                        <span style="color:#0d47a1">New Computer</span>
+                    </div>
+                    <div class="item-block-body">
+                        <div class="d-flex gap-4 flex-wrap">
+                            <div>
+                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Type</div>
+                                <div style="font-weight:600;margin-top:2px">${t.computerType || '—'}</div>
                             </div>
-                            <div class="item-block-body">
-                                <div class="d-flex gap-4 flex-wrap">
-                                    <div>
-                                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Type</div>
-                                        <div style="font-weight:600;margin-top:2px">${t.computerType || '—'}</div>
-                                    </div>
-                                    <div style="flex:1">
-                                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Special Requirements</div>
-                                        <div style="margin-top:2px;color:#607080">${t.computerNote || '—'}</div>
-                                    </div>
-                                </div>
+                            <div style="flex:1">
+                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Special Requirements</div>
+                                <div style="margin-top:2px;color:#607080">${t.computerNote || '—'}</div>
                             </div>
-                        </div>`;
+                        </div>
+                    </div>
+                </div>`;
 
             // ── Email Account ───────────────────────────────────────────────
             if (t.reqEmail) html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-envelope-at" style="color:#c62828"></i>
-                                <span style="color:#c62828">Email Account</span>
-                            </div>
-                            <div class="item-block-body">
-                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Requested Email</div>
-                                <div style="font-weight:600;margin-top:4px">
-                                    <i class="bi bi-at me-1" style="color:#c62828"></i>
-                                    ${t.emailRequest ? t.emailRequest + '@@berninathailand.com' : '—'}
-                                </div>
-                            </div>
-                        </div>`;
+                <div class="item-block">
+                    <div class="item-block-hdr">
+                        <i class="bi bi-envelope-at" style="color:#c62828"></i>
+                        <span style="color:#c62828">Email Account</span>
+                    </div>
+                    <div class="item-block-body">
+                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Requested Email</div>
+                        <div style="font-weight:600;margin-top:4px">
+                            <i class="bi bi-at me-1" style="color:#c62828"></i>
+                            ${t.emailRequest ? t.emailRequest + '@@berninathailand.com' : '—'}
+                        </div>
+                    </div>
+                </div>`;
 
             // ── Network Drive ───────────────────────────────────────────────
             if (t.reqNetwork) {
                 const activeDrives = (drives || []).filter(d =>
                     d.driveRead || d.driveWrite || d.customPath);
                 html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-hdd-network" style="color:#2e7d32"></i>
-                                <span style="color:#2e7d32">Network Drive</span>
-                            </div>
-                            <div class="item-block-body">
-                                ${activeDrives.length ? `
-                                <div class="table-responsive">
-                                    <table class="drive-tbl">
-                                        <thead><tr>
-                                            <th style="text-align:left;width:80px">Drive</th>
-                                            <th style="text-align:left">Description / Path</th>
-                                            <th style="width:70px">Read</th>
-                                            <th style="width:70px">Write</th>
-                                        </tr></thead>
-                                        <tbody>
-                                            ${activeDrives.map(d => `
-                                            <tr>
-                                                <td><span style="font-weight:700;color:#ed1c24">${d.drive}:</span></td>
-                                                <td style="text-align:left;color:#607080">${d.customPath || driveDesc(d.drive)}</td>
-                                                <td>${d.driveRead ? '<i class="bi bi-check-circle-fill" style="color:#2e7d32"></i>' : '<i class="bi bi-dash" style="color:#cfd8dc"></i>'}</td>
-                                                <td>${d.driveWrite ? '<i class="bi bi-check-circle-fill" style="color:#2e7d32"></i>' : '<i class="bi bi-dash" style="color:#cfd8dc"></i>'}</td>
-                                            </tr>`).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>` : '<span style="color:#90a4ae;font-size:13px">No drives selected</span>'}
-                            </div>
-                        </div>`;
+                <div class="item-block">
+                    <div class="item-block-hdr">
+                        <i class="bi bi-hdd-network" style="color:#2e7d32"></i>
+                        <span style="color:#2e7d32">Network Drive</span>
+                    </div>
+                    <div class="item-block-body">
+                        ${activeDrives.length ? `
+                        <div class="table-responsive">
+                            <table class="drive-tbl">
+                                <thead><tr>
+                                    <th style="text-align:left;width:80px">Drive</th>
+                                    <th style="text-align:left">Description / Path</th>
+                                    <th style="width:70px">Read</th>
+                                    <th style="width:70px">Write</th>
+                                </tr></thead>
+                                <tbody>
+                                    ${activeDrives.map(d => `
+                                    <tr>
+                                        <td><span style="font-weight:700;color:#ed1c24">${d.drive}:</span></td>
+                                        <td style="text-align:left;color:#607080">${d.customPath || driveDesc(d.drive)}</td>
+                                        <td>${d.driveRead ? '<i class="bi bi-check-circle-fill" style="color:#2e7d32"></i>' : '<i class="bi bi-dash" style="color:#cfd8dc"></i>'}</td>
+                                        <td>${d.driveWrite ? '<i class="bi bi-check-circle-fill" style="color:#2e7d32"></i>' : '<i class="bi bi-dash" style="color:#cfd8dc"></i>'}</td>
+                                    </tr>`).join('')}
+                                </tbody>
+                            </table>
+                        </div>` : '<span style="color:#90a4ae;font-size:13px">No drives selected</span>'}
+                    </div>
+                </div>`;
             }
 
             // ── Programs ────────────────────────────────────────────────────
             if (t.reqPrograms) {
-                const stdProgs = ['Microsoft Windows', 'Cortex XDR', 'Driver Printer'];
+                const stdProgs = ['Microsoft Windows','Cortex XDR','Driver Printer'];
                 const allProgs = (programs || []).map(p => p.programName);
                 html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-grid-3x3-gap" style="color:#e65100"></i>
-                                <span style="color:#e65100">Programs</span>
-                                <span style="font-size:11px;font-weight:400;color:#90a4ae">${allProgs.length} items</span>
-                            </div>
-                            <div class="item-block-body">
-                                <div style="font-size:13px;color:#231f20;line-height:1.8">
-                                    ${[...allProgs.map(p =>
-                    `<span class="${stdProgs.includes(p) ? 'prog-chip std' : 'prog-chip'}">
-                                            ${stdProgs.includes(p) ? '<i class="bi bi-lock me-1 text-danger" style="font-size:10px"></i>' : ''}${p}
-                                         </span>`),
-                    ...(t.programOther ? [`<span class="prog-chip" style="background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8">
-                                           <i class="bi bi-plus me-1"></i>${t.programOther}</span>`] : [])
-                    ].join('<span style="color:#cfd8dc;margin:0 2px">,</span> ')}
-                                </div>
-                            </div>
-                        </div>`;
+                <div class="item-block">
+                    <div class="item-block-hdr">
+                        <i class="bi bi-grid-3x3-gap" style="color:#e65100"></i>
+                        <span style="color:#e65100">Programs</span>
+                        <span style="font-size:11px;font-weight:400;color:#90a4ae">${allProgs.length} items</span>
+                    </div>
+                    <div class="item-block-body">
+                        <div style="font-size:13px;color:#231f20;line-height:1.8">
+                            ${[...allProgs.map(p =>
+                                `<span class="${stdProgs.includes(p) ? 'prog-chip std' : 'prog-chip'}">
+                                    ${stdProgs.includes(p) ? '<i class="bi bi-lock me-1 text-danger" style="font-size:10px"></i>' : ''}${p}
+                                 </span>`),
+                               ...(t.programOther ? [`<span class="prog-chip" style="background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8">
+                                   <i class="bi bi-plus me-1"></i>${t.programOther}</span>`] : [])
+                            ].join('<span style="color:#cfd8dc;margin:0 2px">,</span> ')}
+                        </div>
+                    </div>
+                </div>`;
             }
 
             // ── VPN ─────────────────────────────────────────────────────────
             if (t.reqVPN) html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-shield-shaded" style="color:#ed1c24"></i>
-                                <span style="color:#ed1c24">VPN — FortiClient</span>
-                            </div>
-                            <div class="item-block-body">
-                                <div class="d-flex gap-4 flex-wrap">
-                                    <div>
-                                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Access Type</div>
-                                        <div style="font-weight:600;margin-top:2px">
-                                            <span style="background:${t.vpnType === 'Permanent' ? '#e3f2fd' : '#fce4ec'};
-                                                         color:${t.vpnType === 'Permanent' ? '#0d47a1' : '#c62828'};
-                                                         font-size:12px;padding:2px 10px;border-radius:20px">
-                                                ${t.vpnType || '—'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    ${t.vpnType === 'Temporary' ? `
-                                    <div>
-                                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Period</div>
-                                        <div style="font-weight:600;margin-top:2px;color:#607080">
-                                            <i class="bi bi-calendar3 me-1"></i>
-                                            ${t.vpnFrom ? fmtDate(t.vpnFrom) : '—'} → ${t.vpnTo ? fmtDate(t.vpnTo) : '—'}
-                                        </div>
-                                    </div>` : ''}
+                <div class="item-block">
+                    <div class="item-block-hdr">
+                        <i class="bi bi-shield-shaded" style="color:#ed1c24"></i>
+                        <span style="color:#ed1c24">VPN — FortiClient</span>
+                    </div>
+                    <div class="item-block-body">
+                        <div class="d-flex gap-4 flex-wrap">
+                            <div>
+                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Access Type</div>
+                                <div style="font-weight:600;margin-top:2px">
+                                    <span style="background:${t.vpnType==='Permanent'?'#e3f2fd':'#fce4ec'};
+                                                 color:${t.vpnType==='Permanent'?'#0d47a1':'#c62828'};
+                                                 font-size:12px;padding:2px 10px;border-radius:20px">
+                                        ${t.vpnType || '—'}
+                                    </span>
                                 </div>
                             </div>
-                        </div>`;
+                            ${t.vpnType === 'Temporary' ? `
+                            <div>
+                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Period</div>
+                                <div style="font-weight:600;margin-top:2px;color:#607080">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    ${t.vpnFrom ? fmtDate(t.vpnFrom) : '—'} → ${t.vpnTo ? fmtDate(t.vpnTo) : '—'}
+                                </div>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                </div>`;
 
             return html || '<span style="color:#90a4ae;font-size:13px">No items requested</span>';
         }
 
         function driveDesc(code) {
-            const map = {
-                S: 'Share (Common)', V: 'Department Directory', T: 'BTMS',
-                X: 'Company Info (Standard)', W: 'BT - Structure', U: 'Own Directory', K: 'Drawing'
-            };
+            const map = {S:'Share (Common)',V:'Department Directory',T:'BTMS',
+                         X:'Company Info (Standard)',W:'BT - Structure',U:'Own Directory',K:'Drawing'};
             return map[code] || code;
         }
 
         function fmtDate(iso) {
             if (!iso) return '—';
-            return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            return new Date(iso).toLocaleDateString('en-GB', {day:'2-digit',month:'2-digit',year:'numeric'});
         }
 
         async function loadDetail() {
             try {
-                const res = await fetch(`/Ticket/GetDetail/${TICKET_ID}`);
+                const res  = await fetch(`/Ticket/GetDetail/${TICKET_ID}`);
                 const data = await res.json();
-                const t = data.ticket;
+                const t    = data.ticket;
 
-                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('loading-state').style.display  = 'none';
                 document.getElementById('detail-content').style.display = 'block';
 
                 // Header
                 document.getElementById('hdr-docnum').textContent = t.docNumber;
                 const hdrStatus = document.getElementById('hdr-status');
-                hdrStatus.textContent = STATUS_LABEL[t.status] || t.status;
-                hdrStatus.style.background = STATUS_COLOR[t.status] + '22';
-                hdrStatus.style.color = STATUS_COLOR[t.status] || '#607080';
+                hdrStatus.textContent          = STATUS_LABEL[t.status] || t.status;
+                hdrStatus.style.background     = STATUS_COLOR[t.status] + '22';
+                hdrStatus.style.color          = STATUS_COLOR[t.status] || '#607080';
 
                 // Info
-                document.getElementById('d-name').textContent = t.requesterName;
-                document.getElementById('d-dept').textContent = t.department;
-                document.getElementById('d-email').textContent = t.requesterEmail;
+                document.getElementById('d-name').textContent   = t.requesterName;
+                document.getElementById('d-dept').textContent   = t.department;
+                document.getElementById('d-email').textContent  = t.requesterEmail;
                 document.getElementById('d-reason').textContent = t.reason || '—';
-                document.getElementById('d-date').textContent = fmt(t.createdAt);
+                document.getElementById('d-date').textContent   = fmt(t.createdAt);
 
                 // Items — แสดงรายละเอียดแต่ละ Item
                 document.getElementById('d-items').innerHTML = renderItems(t, data.drives, data.programs);
@@ -848,109 +842,109 @@
             const closedCount = picList.filter(p => p.status === 'Closed').length;
 
             el.innerHTML = `
-                        <div style="font-size:12px;color:#607080;margin-bottom:12px">
-                            Total: <b>${picList.length}</b> PIC &nbsp;·&nbsp;
-                            <span style="color:#2e7d32">✓ Closed: ${closedCount}</span> &nbsp;·&nbsp;
-                            <span style="color:#e65100">⏳ Active: ${activeCount}</span>
-                        </div>
-                        ${picList.map(p => {
-                const isClosed = p.status === 'Closed';
-                const isReturned = p.status === 'Returned';
-                const initials = p.displayName.split(' ').slice(0, 2).map(w => w[0]).join('');
-                const isMine = p.samAcc.toLowerCase() === CURRENT_SAM.toLowerCase();
-                // แสดงปุ่มถ้า: เป็นตัวเอง + ยัง Active + Status เป็น PendingITPIC หรือ PendingITAdminClose
-                const canClose = isMine && !isClosed && !isReturned
-                    && (status === 'PendingITPIC' || status === 'PendingITAdminClose');
-                return `
-                            <div class="pic-row ${isClosed ? 'closed' : 'active'}">
-                                <div class="d-flex align-items-center gap-10" style="gap:10px">
-                                    <div class="pic-avatar ${isClosed || isReturned ? 'closed' : ''}">${initials}</div>
-                                    <div>
-                                        <div style="font-weight:600;font-size:13px">${p.displayName}</div>
-                                        <div style="font-size:11px;color:#607080">${p.email}</div>
-                                        ${p.status === 'Closed'
-                        ? `<div style="font-size:11px;color:#2e7d32;margin-top:2px">
-                                        <i class="bi bi-check-circle me-1"></i>Closed ${fmt(p.closedAt)}
-                                        ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
-                                       </div>`
-                        : p.status === 'Returned'
+                <div style="font-size:12px;color:#607080;margin-bottom:12px">
+                    Total: <b>${picList.length}</b> PIC &nbsp;·&nbsp;
+                    <span style="color:#2e7d32">✓ Closed: ${closedCount}</span> &nbsp;·&nbsp;
+                    <span style="color:#e65100">⏳ Active: ${activeCount}</span>
+                </div>
+                ${picList.map(p => {
+                    const isClosed   = p.status === 'Closed';
+                    const isReturned = p.status === 'Returned';
+                    const initials = p.displayName.split(' ').slice(0,2).map(w => w[0]).join('');
+                    const isMine   = p.samAcc.toLowerCase() === CURRENT_SAM.toLowerCase();
+                    // แสดงปุ่มถ้า: เป็นตัวเอง + ยัง Active + Status เป็น PendingITPIC หรือ PendingITAdminClose
+                    const canClose = isMine && !isClosed && !isReturned
+                                  && (status === 'PendingITPIC' || status === 'PendingITAdminClose');
+                    return `
+                    <div class="pic-row ${isClosed ? 'closed' : 'active'}">
+                        <div class="d-flex align-items-center gap-10" style="gap:10px">
+                            <div class="pic-avatar ${isClosed || isReturned ? 'closed' : ''}">${initials}</div>
+                            <div>
+                                <div style="font-weight:600;font-size:13px">${p.displayName}</div>
+                                <div style="font-size:11px;color:#607080">${p.email}</div>
+                                ${p.status === 'Closed'
+                            ? `<div style="font-size:11px;color:#2e7d32;margin-top:2px">
+                                <i class="bi bi-check-circle me-1"></i>Closed ${fmt(p.closedAt)}
+                                ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
+                               </div>`
+                            : p.status === 'Returned'
                             ? `<div style="font-size:11px;color:#e65100;margin-top:2px">
-                                        <i class="bi bi-arrow-return-left me-1"></i>Returned ${fmt(p.closedAt)}
-                                        ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
-                                       </div>`
+                                <i class="bi bi-arrow-return-left me-1"></i>Returned ${fmt(p.closedAt)}
+                                ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
+                               </div>`
                             : `<div style="font-size:11px;color:#0d47a1;margin-top:2px">
-                                        <i class="bi bi-clock me-1"></i>In Progress</div>`}
-                                    </div>
-                                </div>
-                                ${canClose ? `
-                                <button class="btn-close-lg" style="font-size:12px;padding:5px 14px"
-                                        onclick="openCloseTaskModal()">
-                                    <i class="bi bi-check2-all me-1"></i>Close Task
-                                </button>` : ''}
-                            </div>`;
-            }).join('')}`;
+                                <i class="bi bi-clock me-1"></i>In Progress</div>`}
+                            </div>
+                        </div>
+                        ${canClose ? `
+                        <button class="btn-close-lg" style="font-size:12px;padding:5px 14px"
+                                onclick="openCloseTaskModal()">
+                            <i class="bi bi-check2-all me-1"></i>Close Task
+                        </button>` : ''}
+                    </div>`;
+                }).join('')}`;
         }
 
         // ── Workflow Timeline ───────────────────────────────────────────────
         function renderWorkflow(t, logs, picList) {
-            const steps = FLOW_STEPS(t.reqVPN);
+            const steps  = FLOW_STEPS(t.reqVPN);
             const logMap = {};
             logs.forEach(l => { logMap[l.funCode] = logMap[l.funCode] || l; });
 
             document.getElementById('workflow-steps').innerHTML = steps.map(step => {
-                const log = logMap[step.funCode];
-                const isDone = log && (log.action === 'Approve' || log.action === 'Assign');
+                const log       = logMap[step.funCode];
+                const isDone    = log && (log.action === 'Approve' || log.action === 'Assign');
                 const isCurrent = step.status === t.status;
-                const isRej = log && log.action === 'Reject';
-                const isEnd = step.status === 'Completed';
+                const isRej     = log && log.action === 'Reject';
+                const isEnd     = step.status === 'Completed';
 
                 let dotClass = 'waiting', icon = 'bi-circle';
-                if (isEnd && t.status === 'Completed') { dotClass = 'done'; icon = 'bi-check-lg'; }
-                else if (isRej) { dotClass = 'rejected'; icon = 'bi-x-lg'; }
-                else if (isDone) { dotClass = 'done'; icon = 'bi-check-lg'; }
-                else if (isCurrent) { dotClass = 'current'; icon = 'bi-clock'; }
+                if (isEnd && t.status === 'Completed') { dotClass='done'; icon='bi-check-lg'; }
+                else if (isRej)     { dotClass='rejected'; icon='bi-x-lg'; }
+                else if (isDone)    { dotClass='done';     icon='bi-check-lg'; }
+                else if (isCurrent) { dotClass='current';  icon='bi-clock'; }
 
                 let actionLabel = '';
                 if (isEnd && t.status === 'Completed')
                     actionLabel = `<span class="wf-action-done">✓ Completed</span>`;
                 else if (isDone)
-                    actionLabel = `<span class="wf-action-done">✓ ${log.action} ${log.actionAt ? '· ' + fmt(log.actionAt) : ''}</span>`;
+                    actionLabel = `<span class="wf-action-done">✓ ${log.action} ${log.actionAt ? '· '+fmt(log.actionAt):''}</span>`;
                 else if (isRej)
-                    actionLabel = `<span class="wf-action-rejected">✗ Rejected ${log.actionAt ? '· ' + fmt(log.actionAt) : ''}</span>`;
+                    actionLabel = `<span class="wf-action-rejected">✗ Rejected ${log.actionAt ? '· '+fmt(log.actionAt):''}</span>`;
                 else if (isCurrent && !isEnd) {
                     // ⏳ Awaiting — เพิ่มปุ่ม Re-send
                     // ดึง samAcc ของ Approver ที่ระบุในตั๋วตาม funCode
-                    const awaitSam = step.funCode === 8 ? (t.apprDeptManager || '')
-                        : step.funCode === 4 ? (t.apprManagingDir || '')
-                            : step.funCode === 7 ? (t.apprITManager || '')
-                                : '';  // FunCode อื่น (5,6,9) ไม่มี designated approver → ส่งทั้ง role
+                    const awaitSam = step.funCode === 8 ? (t.apprDeptManager  || '')
+                                   : step.funCode === 4 ? (t.apprManagingDir  || '')
+                                   : step.funCode === 7 ? (t.apprITManager    || '')
+                                   : '';  // FunCode อื่น (5,6,9) ไม่มี designated approver → ส่งทั้ง role
                     const awaitResendBtn = IS_SYSTEM_ADMIN && RESEND_ENABLED
                         ? `<button class="btn-resend-sm" style="margin-left:6px"
-                                           onclick="openResendModal('${awaitSam}','${step.role}',this)"
-                                           title="Re-send notification to ${step.role}">
-                                       <i class="bi bi-envelope-arrow-up"></i>
-                                   </button>`
+                                   onclick="openResendModal('${awaitSam}','${step.role}',this)"
+                                   title="Re-send notification to ${step.role}">
+                               <i class="bi bi-envelope-arrow-up"></i>
+                           </button>`
                         : '';
                     actionLabel = `<span style="display:inline-flex;align-items:center;gap:4px">
-                                <span class="wf-action-current">⏳ Awaiting</span>${awaitResendBtn}
-                            </span>`;
+                        <span class="wf-action-current">⏳ Awaiting</span>${awaitResendBtn}
+                    </span>`;
                 }
 
                 // แสดง PIC names ใน IT PIC step
                 let picHtml = '';
                 if (step.funCode === 6 && picList.length) {
                     picHtml = picList.map(p => {
-                        const color = p.status === 'Closed' ? '#2e7d32' : '#e65100';
+                        const color  = p.status === 'Closed' ? '#2e7d32' : '#e65100';
                         const prefix = p.status === 'Closed' ? '✓' : '⏳';
-                        const rBtn = IS_SYSTEM_ADMIN && RESEND_ENABLED
+                        const rBtn   = IS_SYSTEM_ADMIN && RESEND_ENABLED
                             ? `<button class="btn-resend-sm" title="Re-send Email to ${p.displayName}"
-                                               onclick="openResendModal('${p.samAcc}','${p.displayName}',this)">
-                                           <i class="bi bi-envelope-arrow-up"></i>
-                                       </button>`
+                                       onclick="openResendModal('${p.samAcc}','${p.displayName}',this)">
+                                   <i class="bi bi-envelope-arrow-up"></i>
+                               </button>`
                             : '';
                         return `<div class="wf-name" style="color:${color}">
-                                            ${prefix} ${p.displayName}${rBtn}
-                                        </div>`;
+                                    ${prefix} ${p.displayName}${rBtn}
+                                </div>`;
                     }).join('');
                 } else if (log?.assignedTo) {
                     picHtml = `<div class="wf-name" style="color:#2e7d32">→ ${log.assignedTo}</div>`;
@@ -960,63 +954,63 @@
                     ? `<div class="wf-remark"><i class="bi bi-chat-text me-1"></i>${log.remark}</div>` : '';
 
                 return `
-                        <div class="wf-step">
-                            <div class="wf-dot ${dotClass}"><i class="bi ${icon}"></i></div>
-                            <div class="wf-body">
-                                <div class="wf-role">${step.role}</div>
-                                ${log?.approverName && step.funCode !== 6
-                        ? `<div class="wf-name">
-                                        ${log.approverName}
-                                        ${IS_SYSTEM_ADMIN && RESEND_ENABLED
-                            ? `<button class="btn-resend-sm" title="Re-send Email" style="display:none"
-                                                       onclick="openResendModal('${log.approverSam}','${log.approverName}',this)">
-                                                   <i class="bi bi-envelope-arrow-up"></i>
-                                               </button>`
+                <div class="wf-step">
+                    <div class="wf-dot ${dotClass}"><i class="bi ${icon}"></i></div>
+                    <div class="wf-body">
+                        <div class="wf-role">${step.role}</div>
+                        ${log?.approverName && step.funCode !== 6
+                            ? `<div class="wf-name">
+                                ${log.approverName}
+                                ${IS_SYSTEM_ADMIN && RESEND_ENABLED
+                                    ? `<button class="btn-resend-sm" title="Re-send Email" style="display:none"
+                                               onclick="openResendModal('${log.approverSam}','${log.approverName}',this)">
+                                           <i class="bi bi-envelope-arrow-up"></i>
+                                       </button>`
+                                    : ''}
+                                ${step.funCode === 5 && IS_IT_ADMIN && t.status === 'PendingITPIC'
+                                    ? `<button class="btn-cancel-sm" title="Cancel PIC Assignment"
+                                               onclick="openCancelAssignModal()">
+                                           <i class="bi bi-x-circle"></i> Cancel Assignment
+                                       </button>`
+                                    : ''}
+                               </div>`
                             : ''}
-                                        ${step.funCode === 5 && IS_IT_ADMIN && t.status === 'PendingITPIC'
-                            ? `<button class="btn-cancel-sm" title="Cancel PIC Assignment"
-                                                       onclick="openCancelAssignModal()">
-                                                   <i class="bi bi-x-circle"></i> Cancel Assignment
-                                               </button>`
-                            : ''}
-                                       </div>`
-                        : ''}
-                                ${picHtml}
-                                ${actionLabel}
-                                ${remarkHtml}
-                            </div>
-                        </div>`;
+                        ${picHtml}
+                        ${actionLabel}
+                        ${remarkHtml}
+                    </div>
+                </div>`;
             }).join('');
         }
 
         // ── Action Panel ────────────────────────────────────────────────────
         function renderActionPanel(t, picList) {
-            const panel = document.getElementById('action-panel');
+            const panel   = document.getElementById('action-panel');
             const buttons = document.getElementById('action-buttons');
-            if (['Completed', 'Rejected'].includes(t.status)) return;
+            if (['Completed','Rejected'].includes(t.status)) return;
 
             // ── ซ่อนปุ่ม Action ถ้า User เป็นคนสร้าง Ticket นั้นเอง ────────
             const isOwnTicket = t.samAcc?.toLowerCase() === CURRENT_SAM.toLowerCase();
             if (isOwnTicket && !IS_IT_ADMIN) return;
 
-            const isAssignStep = t.status === 'PendingITAdminAssign';
+            const isAssignStep    = t.status === 'PendingITAdminAssign';
             // IT PIC ยัง Active ได้แม้ Status = PendingITAdminClose (SP อาจเปลี่ยน Status เร็วเกินไป)
             const isITPICStep = t.status === 'PendingITPIC' || t.status === 'PendingITAdminClose';
-            const isCloseStep = t.status === 'PendingITAdminClose';
+            const isCloseStep     = t.status === 'PendingITAdminClose';
 
             // IT PIC — เช็คจาก picList โดยตรง (ไม่เช็ค IS_IT_PIC เพราะ user อาจไม่มี FUNCODE=6)
             if (isITPICStep) {
                 const myPIC = picList.find(p => p.samAcc.toLowerCase() === CURRENT_SAM.toLowerCase()
-                    && p.status === 'Active');
+                                             && p.status === 'Active');
                 if (myPIC) {
                     panel.style.display = 'block';
                     buttons.innerHTML = `
-                                <button class="btn-close-lg" onclick="openCloseTaskModal()">
-                                    <i class="bi bi-check2-all me-1"></i>Close Task
-                                </button>
-                                <button class="btn-return-lg" onclick="openReturnTaskModal()">
-                                    <i class="bi bi-arrow-return-left me-1"></i>Return Task
-                                </button>`;
+                        <button class="btn-close-lg" onclick="openCloseTaskModal()">
+                            <i class="bi bi-check2-all me-1"></i>Close Task
+                        </button>
+                        <button class="btn-return-lg" onclick="openReturnTaskModal()">
+                            <i class="bi bi-arrow-return-left me-1"></i>Return Task
+                        </button>`;
                     return;
                 }
             }
@@ -1027,28 +1021,28 @@
 
             if (isAssignStep && IS_IT_ADMIN) {
                 buttons.innerHTML = `
-                            <button class="btn-assign-lg" onclick="openAssignModal()">
-                                <i class="bi bi-people me-2"></i>Assign IT PIC
-                            </button>
-                            <button class="btn-reject-lg" onclick="openActionModal('Reject')">
-                                <i class="bi bi-x me-1"></i>Reject
-                            </button>`;
+                    <button class="btn-assign-lg" onclick="openAssignModal()">
+                        <i class="bi bi-people me-2"></i>Assign IT PIC
+                    </button>
+                    <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                        <i class="bi bi-x me-1"></i>Reject
+                    </button>`;
             } else if (isCloseStep) {
                 buttons.innerHTML = `
-                            <button class="btn-approve-lg" onclick="openActionModal('Approve')">
-                                <i class="bi bi-check2-all me-1"></i>Close Ticket
-                            </button>
-                            <button class="btn-reject-lg" onclick="openActionModal('Reject')">
-                                <i class="bi bi-x me-1"></i>Reject
-                            </button>`;
+                    <button class="btn-approve-lg" onclick="openActionModal('Approve')">
+                        <i class="bi bi-check2-all me-1"></i>Close Ticket
+                    </button>
+                    <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                        <i class="bi bi-x me-1"></i>Reject
+                    </button>`;
             } else if (!isITPICStep) {
                 buttons.innerHTML = `
-                            <button class="btn-approve-lg" onclick="openActionModal('Approve')">
-                                <i class="bi bi-check me-1"></i>Approve
-                            </button>
-                            <button class="btn-reject-lg" onclick="openActionModal('Reject')">
-                                <i class="bi bi-x me-1"></i>Reject
-                            </button>`;
+                    <button class="btn-approve-lg" onclick="openActionModal('Approve')">
+                        <i class="bi bi-check me-1"></i>Approve
+                    </button>
+                    <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                        <i class="bi bi-x me-1"></i>Reject
+                    </button>`;
             }
 
         }
@@ -1056,9 +1050,9 @@
         // ── Modals ──────────────────────────────────────────────────────────
         function openActionModal(action) {
             pendingAction = action;
-            const labels = { Approve: 'Confirm Approval', Reject: 'Confirm Rejection', CloseTask: 'Close Task' };
+            const labels = { Approve:'Confirm Approval', Reject:'Confirm Rejection', CloseTask:'Close Task' };
             document.getElementById('modal-title').textContent = labels[action] || action;
-            document.getElementById('modal-desc').textContent = `${action} this ticket?`;
+            document.getElementById('modal-desc').textContent  = `${action} this ticket?`;
             const btn = document.getElementById('modal-confirm');
             btn.style.background = action === 'Reject' ? '#b71c1c' : '#2e7d32';
             btn.style.color = '#fff'; btn.style.border = 'none';
@@ -1075,14 +1069,14 @@
             pendingAction = 'ReturnTask';
             document.getElementById('modal-title').textContent = 'Return Task';
             document.getElementById('modal-desc').innerHTML = `
-                        <div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;
-                                    padding:10px 14px;margin-bottom:10px;font-size:13px;color:#e65100">
-                            <i class="bi bi-arrow-return-left me-2"></i>
-                            <b>Return task to IT Admin for reassignment</b>
-                        </div>
-                        <span style="color:#607080;font-size:13px">
-                            Please provide a reason so IT Admin can reassign appropriately.
-                        </span>`;
+                <div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;
+                            padding:10px 14px;margin-bottom:10px;font-size:13px;color:#e65100">
+                    <i class="bi bi-arrow-return-left me-2"></i>
+                    <b>Return task to IT Admin for reassignment</b>
+                </div>
+                <span style="color:#607080;font-size:13px">
+                    Please provide a reason so IT Admin can reassign appropriately.
+                </span>`;
             const btn = document.getElementById('modal-confirm');
             btn.style.background = '#e65100';
             btn.style.color = '#fff';
@@ -1096,15 +1090,15 @@
         async function openAssignModal() {
             document.getElementById('pic-checkbox-list').innerHTML =
                 `<div class="text-center py-3" style="color:#90a4ae">
-                         <div class="spinner-border spinner-border-sm me-2"></div>Loading...</div>`;
+                 <div class="spinner-border spinner-border-sm me-2"></div>Loading...</div>`;
             document.getElementById('assign-remark').value = '';
             document.getElementById('assign-count').textContent = '';
             document.getElementById('assign-warn').style.display = 'none';
             assignModal.show();
 
-            const res = await fetch('/Ticket/GetApprovers?funCode=6');
+            const res  = await fetch('/Ticket/GetApprovers?funCode=6');
             const list = await res.json();
-            const el = document.getElementById('pic-checkbox-list');
+            const el   = document.getElementById('pic-checkbox-list');
 
             if (!list.length) {
                 el.innerHTML = `<div style="color:#e65100;font-size:13px;padding:8px">No IT PIC available</div>`;
@@ -1112,20 +1106,20 @@
             }
 
             el.innerHTML = list.map((p, i) => `
-                        <div class="pic-check-item" id="pic-item-${i}" onclick="togglePICCheck(${i}, '${p.samAcc}')">
-                            <input type="checkbox" id="pic-chk-${i}" value="${p.samAcc}"
-                                   onchange="updateCheckCount()" onclick="event.stopPropagation()" />
-                            <div>
-                                <div style="font-weight:600;font-size:13px;color:#1a2332">${p.displayName}</div>
-                                <div style="font-size:11px;color:#607080">${p.email}</div>
-                            </div>
-                        </div>`).join('');
+                <div class="pic-check-item" id="pic-item-${i}" onclick="togglePICCheck(${i}, '${p.samAcc}')">
+                    <input type="checkbox" id="pic-chk-${i}" value="${p.samAcc}"
+                           onchange="updateCheckCount()" onclick="event.stopPropagation()" />
+                    <div>
+                        <div style="font-weight:600;font-size:13px;color:#1a2332">${p.displayName}</div>
+                        <div style="font-size:11px;color:#607080">${p.email}</div>
+                    </div>
+                </div>`).join('');
 
             updateCheckCount();
         }
 
         function togglePICCheck(i, samAcc) {
-            const chk = document.getElementById(`pic-chk-${i}`);
+            const chk  = document.getElementById(`pic-chk-${i}`);
             const item = document.getElementById(`pic-item-${i}`);
             chk.checked = !chk.checked;
             item.classList.toggle('selected', chk.checked);
@@ -1142,8 +1136,8 @@
             const remark = document.getElementById('modal-remark').value;
 
             if (pendingAction === 'CloseTask') {
-                const res = await fetch('/Ticket/CloseITPICTask', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                const res  = await fetch('/Ticket/CloseITPICTask', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
                     body: JSON.stringify({ requestId: TICKET_ID, remark })
                 });
                 const data = await res.json();
@@ -1158,8 +1152,8 @@
                     alert('Please provide a reason for returning the task.');
                     return;
                 }
-                const res = await fetch('/Ticket/ReturnITPICTask', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                const res  = await fetch('/Ticket/ReturnITPICTask', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
                     body: JSON.stringify({ requestId: TICKET_ID, remark })
                 });
                 const data = await res.json();
@@ -1169,8 +1163,8 @@
                 return;
             }
 
-            const res = await fetch('/Ticket/Approve', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+            const res  = await fetch('/Ticket/Approve', {
+                method:'POST', headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({ requestId: TICKET_ID, action: pendingAction, remark })
             });
             const data = await res.json();
@@ -1181,18 +1175,18 @@
 
         document.getElementById('assign-confirm').onclick = async () => {
             const checked = [...document.querySelectorAll('#pic-checkbox-list input[type=checkbox]:checked')]
-                .map(c => c.value);
+                            .map(c => c.value);
             if (!checked.length) {
                 document.getElementById('assign-warn').style.display = 'block';
                 return;
             }
             const remark = document.getElementById('assign-remark').value;
-            const btn = document.getElementById('assign-confirm');
+            const btn    = document.getElementById('assign-confirm');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Assigning...';
 
-            const res = await fetch('/Ticket/AssignITPIC', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
+            const res  = await fetch('/Ticket/AssignITPIC', {
+                method:'POST', headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({ requestId: TICKET_ID, action: 'Assign', assignToList: checked, remark })
             });
             const data = await res.json();
@@ -1205,27 +1199,27 @@
 
         function fmt(iso) {
             if (!iso) return '—';
-            return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
         }
 
         // ── Re-send Email ────────────────────────────────────────────────────
         const resendModal = new bootstrap.Modal(document.getElementById('resendModal'));
 
         const RESEND_ROLE_LABEL = {
-            PendingDeptMgr: 'Department Manager',
-            PendingManagingDir: 'Managing Director',
-            PendingITMgr: 'IT Manager',
+            PendingDeptMgr:       'Department Manager',
+            PendingManagingDir:   'Managing Director',
+            PendingITMgr:         'IT Manager',
             PendingITAdminAssign: 'IT Admin (Assign PIC)',
-            PendingITPIC: 'IT Person Incharge (IT PIC)',
-            PendingITAdminClose: 'IT Person Incharge (Active)',
+            PendingITPIC:         'IT Person Incharge (IT PIC)',
+            PendingITAdminClose:  'IT Person Incharge (Active)',
         };
 
         let _resendSamAcc = '';
-        let _resendBtnEl = null;
+        let _resendBtnEl  = null;
 
         async function openResendModal(samAcc, displayName, btnEl) {
             _resendSamAcc = samAcc;
-            _resendBtnEl = btnEl || null;
+            _resendBtnEl  = btnEl || null;
             document.getElementById('resend-target-role').textContent = displayName || samAcc;
             document.getElementById('resend-result').innerHTML = '';
             // แสดง loading ก่อน
@@ -1236,7 +1230,7 @@
             // โหลดอีเมล์จริงจาก backend
             try {
                 const url = `/Ticket/GetResendTarget?ticketId=${TICKET_ID}&targetSamAcc=${encodeURIComponent(samAcc)}`;
-                const res = await fetch(url);
+                const res  = await fetch(url);
                 const data = await res.json();
                 if (data.found && data.email) {
                     document.getElementById('resend-target-email').innerHTML =
@@ -1257,7 +1251,7 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
             document.getElementById('resend-result').innerHTML = '';
             try {
-                const res = await fetch('/Ticket/ResendEmail', {
+                const res  = await fetch('/Ticket/ResendEmail', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ticketId: TICKET_ID, targetSamAcc: _resendSamAcc })
@@ -1265,23 +1259,23 @@
                 const data = await res.json();
                 if (data.ok) {
                     document.getElementById('resend-result').innerHTML = `
-                                <div class="alert alert-success py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                    <i class="bi bi-check-circle me-2"></i><b>ส่งเรียบร้อย</b><br/>
-                                    <span style="font-size:12px;color:#607080">ส่งถึง: ${data.sentTo}</span>
-                                </div>`;
+                        <div class="alert alert-success py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                            <i class="bi bi-check-circle me-2"></i><b>ส่งเรียบร้อย</b><br/>
+                            <span style="font-size:12px;color:#607080">ส่งถึง: ${data.sentTo}</span>
+                        </div>`;
                     if (_resendBtnEl) _resendBtnEl.classList.add('sent');
                     setTimeout(() => resendModal.hide(), 2000);
                 } else {
                     document.getElementById('resend-result').innerHTML = `
-                                <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>${data.msg}
-                                </div>`;
+                        <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                            <i class="bi bi-exclamation-triangle me-2"></i>${data.msg}
+                        </div>`;
                 }
             } catch (err) {
                 document.getElementById('resend-result').innerHTML = `
-                            <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                <i class="bi bi-exclamation-triangle me-2"></i>Network error: ${err.message}
-                            </div>`;
+                    <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Network error: ${err.message}
+                    </div>`;
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-send me-2"></i>Confirm Send';
@@ -1304,9 +1298,9 @@
 
             if (!remark) {
                 resultBox.innerHTML = `
-                            <div class="alert alert-warning py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                <i class="bi bi-exclamation-triangle me-2"></i>กรุณาระบุเหตุผลก่อนยืนยัน
-                            </div>`;
+                    <div class="alert alert-warning py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                        <i class="bi bi-exclamation-triangle me-2"></i>กรุณาระบุเหตุผลก่อนยืนยัน
+                    </div>`;
                 return;
             }
 
@@ -1315,7 +1309,7 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cancelling...';
 
             try {
-                const res = await fetch('/Ticket/CancelITPICAssignment', {
+                const res  = await fetch('/Ticket/CancelITPICAssignment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ requestId: TICKET_ID, remark })
@@ -1323,21 +1317,21 @@
                 const data = await res.json();
                 if (data.ok) {
                     resultBox.innerHTML = `
-                                <div class="alert alert-success py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                    <i class="bi bi-check-circle me-2"></i>${data.msg}
-                                </div>`;
+                        <div class="alert alert-success py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                            <i class="bi bi-check-circle me-2"></i>${data.msg}
+                        </div>`;
                     setTimeout(() => { cancelAssignModal.hide(); loadDetail(); }, 1200);
                 } else {
                     resultBox.innerHTML = `
-                                <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                    <i class="bi bi-x-circle me-2"></i>${data.msg}
-                                </div>`;
+                        <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                            <i class="bi bi-x-circle me-2"></i>${data.msg}
+                        </div>`;
                 }
             } catch (err) {
                 resultBox.innerHTML = `
-                            <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                <i class="bi bi-x-circle me-2"></i>Network error: ${err.message}
-                            </div>`;
+                    <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                        <i class="bi bi-x-circle me-2"></i>Network error: ${err.message}
+                    </div>`;
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Confirm Cancel Assignment';
