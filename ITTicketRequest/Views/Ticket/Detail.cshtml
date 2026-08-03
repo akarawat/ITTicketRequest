@@ -413,7 +413,14 @@
             </a>
             <h4 id="hdr-docnum" style="font-weight:700;margin:8px 0 0;color:#231f20"></h4>
         </div>
-        <span id="hdr-status" class="badge" style="font-size:13px;padding:8px 16px"></span>
+        <div class="d-flex align-items-center gap-2">
+            <span id="hdr-status" class="badge" style="font-size:13px;padding:8px 16px"></span>
+            <button id="btn-cancel-request" onclick="openCancelRequestModal()"
+                    style="display:none;background:#fff5f5;border:1.5px solid #ef9a9a;color:#c62828;
+                border-radius:8px;padding:7px 16px;font-size:12.5px;font-weight:700;cursor:pointer">
+                <i class="bi bi-x-circle me-1"></i>Cancel Request
+            </button>
+        </div>
     </div>
 
     <div class="row g-4">
@@ -607,6 +614,50 @@
     </div>
 </div>
 
+<!-- Cancel Ticket Request Modal — Requester (Own Ticket) Only -->
+<div class="modal fade" id="cancelRequestModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:460px">
+        <div class="modal-content" style="border-radius:12px;overflow:hidden">
+            <div style="background:#c62828;padding:18px 24px;display:flex;align-items:center;gap:12px">
+                <div style="width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:50%;
+                    display:flex;align-items:center;justify-content:center">
+                    <i class="bi bi-x-circle" style="color:#fff;font-size:17px"></i>
+                </div>
+                <div>
+                    <div style="color:#fff;font-weight:700;font-size:14px">Cancel Your Request</div>
+                    <div style="color:rgba(255,255,255,.7);font-size:11px">This action cannot be undone</div>
+                </div>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <div style="font-size:13.5px;color:#607080;margin-bottom:10px">
+                    การยกเลิกนี้จะ:
+                </div>
+                <ul style="font-size:12.5px;color:#607080;padding-left:20px;margin-bottom:12px">
+                    <li>ยกเลิก Ticket นี้ทั้งหมด (Status → Rejected)</li>
+                    <li>ยกเลิก IT PIC ที่กำลังทำงานอยู่ (ถ้ามี)</li>
+                    <li>แจ้งอีเมล์ผู้ที่กำลังพิจารณาตั๋วนี้อยู่ให้ทราบ</li>
+                </ul>
+                <div style="font-size:12px;font-weight:700;color:#607080;
+                    text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">
+                    เหตุผลการยกเลิก (บังคับ)
+                </div>
+                <textarea id="cancelreq-remark" rows="3" placeholder="ระบุเหตุผล เช่น ไม่ต้องการแล้ว, ขอผิดรายการ ฯลฯ"
+                          style="width:100%;border:1.5px solid #dde3ea;border-radius:8px;padding:9px 14px;
+                font-size:13.5px;color:#263238;outline:none;resize:vertical"></textarea>
+                <div id="cancelreq-result"></div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                <button type="button" id="cancelreq-confirm"
+                        style="background:#c62828;color:#fff;border:none;border-radius:8px;
+                    padding:8px 24px;font-size:13px;font-weight:700;cursor:pointer">
+                    <i class="bi bi-x-circle me-2"></i>Confirm Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         const TICKET_ID = '@ViewBag.TicketId';
@@ -655,74 +706,74 @@
 
             // ── New Computer ────────────────────────────────────────────────
             if (t.reqComputer) html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-laptop" style="color:#0d47a1"></i>
-                                <span style="color:#0d47a1">New Computer</span>
-                            </div>
-                            <div class="item-block-body">
-                                <div class="d-flex gap-4 flex-wrap">
-                                    <div>
-                                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Type</div>
-                                        <div style="font-weight:600;margin-top:2px">${t.computerType || '—'}</div>
+                                <div class="item-block">
+                                    <div class="item-block-hdr">
+                                        <i class="bi bi-laptop" style="color:#0d47a1"></i>
+                                        <span style="color:#0d47a1">New Computer</span>
                                     </div>
-                                    <div style="flex:1">
-                                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Special Requirements</div>
-                                        <div style="margin-top:2px;color:#607080">${t.computerNote || '—'}</div>
+                                    <div class="item-block-body">
+                                        <div class="d-flex gap-4 flex-wrap">
+                                            <div>
+                                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Type</div>
+                                                <div style="font-weight:600;margin-top:2px">${t.computerType || '—'}</div>
+                                            </div>
+                                            <div style="flex:1">
+                                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Special Requirements</div>
+                                                <div style="margin-top:2px;color:#607080">${t.computerNote || '—'}</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>`;
+                                </div>`;
 
             // ── Email Account ───────────────────────────────────────────────
             if (t.reqEmail) html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-envelope-at" style="color:#c62828"></i>
-                                <span style="color:#c62828">Email Account</span>
-                            </div>
-                            <div class="item-block-body">
-                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Requested Email</div>
-                                <div style="font-weight:600;margin-top:4px">
-                                    <i class="bi bi-at me-1" style="color:#c62828"></i>
-                                    ${t.emailRequest ? t.emailRequest + '@@berninathailand.com' : '—'}
-                                </div>
-                            </div>
-                        </div>`;
+                                <div class="item-block">
+                                    <div class="item-block-hdr">
+                                        <i class="bi bi-envelope-at" style="color:#c62828"></i>
+                                        <span style="color:#c62828">Email Account</span>
+                                    </div>
+                                    <div class="item-block-body">
+                                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Requested Email</div>
+                                        <div style="font-weight:600;margin-top:4px">
+                                            <i class="bi bi-at me-1" style="color:#c62828"></i>
+                                            ${t.emailRequest ? t.emailRequest + '@@berninathailand.com' : '—'}
+                                        </div>
+                                    </div>
+                                </div>`;
 
             // ── Network Drive ───────────────────────────────────────────────
             if (t.reqNetwork) {
                 const activeDrives = (drives || []).filter(d =>
                     d.driveRead || d.driveWrite || d.customPath);
                 html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-hdd-network" style="color:#2e7d32"></i>
-                                <span style="color:#2e7d32">Network Drive</span>
-                            </div>
-                            <div class="item-block-body">
-                                ${activeDrives.length ? `
-                                <div class="table-responsive">
-                                    <table class="drive-tbl">
-                                        <thead><tr>
-                                            <th style="text-align:left;width:80px">Drive</th>
-                                            <th style="text-align:left">Description / Path</th>
-                                            <th style="width:70px">Read</th>
-                                            <th style="width:70px">Write</th>
-                                        </tr></thead>
-                                        <tbody>
-                                            ${activeDrives.map(d => `
-                                            <tr>
-                                                <td><span style="font-weight:700;color:#ed1c24">${d.drive}:</span></td>
-                                                <td style="text-align:left;color:#607080">${d.customPath || driveDesc(d.drive)}</td>
-                                                <td>${d.driveRead ? '<i class="bi bi-check-circle-fill" style="color:#2e7d32"></i>' : '<i class="bi bi-dash" style="color:#cfd8dc"></i>'}</td>
-                                                <td>${d.driveWrite ? '<i class="bi bi-check-circle-fill" style="color:#2e7d32"></i>' : '<i class="bi bi-dash" style="color:#cfd8dc"></i>'}</td>
-                                            </tr>`).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>` : '<span style="color:#90a4ae;font-size:13px">No drives selected</span>'}
-                            </div>
-                        </div>`;
+                                <div class="item-block">
+                                    <div class="item-block-hdr">
+                                        <i class="bi bi-hdd-network" style="color:#2e7d32"></i>
+                                        <span style="color:#2e7d32">Network Drive</span>
+                                    </div>
+                                    <div class="item-block-body">
+                                        ${activeDrives.length ? `
+                                        <div class="table-responsive">
+                                            <table class="drive-tbl">
+                                                <thead><tr>
+                                                    <th style="text-align:left;width:80px">Drive</th>
+                                                    <th style="text-align:left">Description / Path</th>
+                                                    <th style="width:70px">Read</th>
+                                                    <th style="width:70px">Write</th>
+                                                </tr></thead>
+                                                <tbody>
+                                                    ${activeDrives.map(d => `
+                                                    <tr>
+                                                        <td><span style="font-weight:700;color:#ed1c24">${d.drive}:</span></td>
+                                                        <td style="text-align:left;color:#607080">${d.customPath || driveDesc(d.drive)}</td>
+                                                        <td>${d.driveRead ? '<i class="bi bi-check-circle-fill" style="color:#2e7d32"></i>' : '<i class="bi bi-dash" style="color:#cfd8dc"></i>'}</td>
+                                                        <td>${d.driveWrite ? '<i class="bi bi-check-circle-fill" style="color:#2e7d32"></i>' : '<i class="bi bi-dash" style="color:#cfd8dc"></i>'}</td>
+                                                    </tr>`).join('')}
+                                                </tbody>
+                                            </table>
+                                        </div>` : '<span style="color:#90a4ae;font-size:13px">No drives selected</span>'}
+                                    </div>
+                                </div>`;
             }
 
             // ── Programs ────────────────────────────────────────────────────
@@ -730,56 +781,56 @@
                 const stdProgs = ['Microsoft Windows', 'Cortex XDR', 'Driver Printer'];
                 const allProgs = (programs || []).map(p => p.programName);
                 html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-grid-3x3-gap" style="color:#e65100"></i>
-                                <span style="color:#e65100">Programs</span>
-                                <span style="font-size:11px;font-weight:400;color:#90a4ae">${allProgs.length} items</span>
-                            </div>
-                            <div class="item-block-body">
-                                <div style="font-size:13px;color:#231f20;line-height:1.8">
-                                    ${[...allProgs.map(p =>
+                                <div class="item-block">
+                                    <div class="item-block-hdr">
+                                        <i class="bi bi-grid-3x3-gap" style="color:#e65100"></i>
+                                        <span style="color:#e65100">Programs</span>
+                                        <span style="font-size:11px;font-weight:400;color:#90a4ae">${allProgs.length} items</span>
+                                    </div>
+                                    <div class="item-block-body">
+                                        <div style="font-size:13px;color:#231f20;line-height:1.8">
+                                            ${[...allProgs.map(p =>
                     `<span class="${stdProgs.includes(p) ? 'prog-chip std' : 'prog-chip'}">
-                                            ${stdProgs.includes(p) ? '<i class="bi bi-lock me-1 text-danger" style="font-size:10px"></i>' : ''}${p}
-                                         </span>`),
+                                                    ${stdProgs.includes(p) ? '<i class="bi bi-lock me-1 text-danger" style="font-size:10px"></i>' : ''}${p}
+                                                 </span>`),
                     ...(t.programOther ? [`<span class="prog-chip" style="background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8">
-                                           <i class="bi bi-plus me-1"></i>${t.programOther}</span>`] : [])
+                                                   <i class="bi bi-plus me-1"></i>${t.programOther}</span>`] : [])
                     ].join('<span style="color:#cfd8dc;margin:0 2px">,</span> ')}
-                                </div>
-                            </div>
-                        </div>`;
+                                        </div>
+                                    </div>
+                                </div>`;
             }
 
             // ── VPN ─────────────────────────────────────────────────────────
             if (t.reqVPN) html += `
-                        <div class="item-block">
-                            <div class="item-block-hdr">
-                                <i class="bi bi-shield-shaded" style="color:#ed1c24"></i>
-                                <span style="color:#ed1c24">VPN — FortiClient</span>
-                            </div>
-                            <div class="item-block-body">
-                                <div class="d-flex gap-4 flex-wrap">
-                                    <div>
-                                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Access Type</div>
-                                        <div style="font-weight:600;margin-top:2px">
-                                            <span style="background:${t.vpnType === 'Permanent' ? '#e3f2fd' : '#fce4ec'};
-                                                         color:${t.vpnType === 'Permanent' ? '#0d47a1' : '#c62828'};
-                                                         font-size:12px;padding:2px 10px;border-radius:20px">
-                                                ${t.vpnType || '—'}
-                                            </span>
+                                <div class="item-block">
+                                    <div class="item-block-hdr">
+                                        <i class="bi bi-shield-shaded" style="color:#ed1c24"></i>
+                                        <span style="color:#ed1c24">VPN — FortiClient</span>
+                                    </div>
+                                    <div class="item-block-body">
+                                        <div class="d-flex gap-4 flex-wrap">
+                                            <div>
+                                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Access Type</div>
+                                                <div style="font-weight:600;margin-top:2px">
+                                                    <span style="background:${t.vpnType === 'Permanent' ? '#e3f2fd' : '#fce4ec'};
+                                                                 color:${t.vpnType === 'Permanent' ? '#0d47a1' : '#c62828'};
+                                                                 font-size:12px;padding:2px 10px;border-radius:20px">
+                                                        ${t.vpnType || '—'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            ${t.vpnType === 'Temporary' ? `
+                                            <div>
+                                                <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Period</div>
+                                                <div style="font-weight:600;margin-top:2px;color:#607080">
+                                                    <i class="bi bi-calendar3 me-1"></i>
+                                                    ${t.vpnFrom ? fmtDate(t.vpnFrom) : '—'} → ${t.vpnTo ? fmtDate(t.vpnTo) : '—'}
+                                                </div>
+                                            </div>` : ''}
                                         </div>
                                     </div>
-                                    ${t.vpnType === 'Temporary' ? `
-                                    <div>
-                                        <div style="font-size:11px;color:#90a4ae;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Period</div>
-                                        <div style="font-weight:600;margin-top:2px;color:#607080">
-                                            <i class="bi bi-calendar3 me-1"></i>
-                                            ${t.vpnFrom ? fmtDate(t.vpnFrom) : '—'} → ${t.vpnTo ? fmtDate(t.vpnTo) : '—'}
-                                        </div>
-                                    </div>` : ''}
-                                </div>
-                            </div>
-                        </div>`;
+                                </div>`;
 
             return html || '<span style="color:#90a4ae;font-size:13px">No items requested</span>';
         }
@@ -812,6 +863,12 @@
                 hdrStatus.textContent = STATUS_LABEL[t.status] || t.status;
                 hdrStatus.style.background = STATUS_COLOR[t.status] + '22';
                 hdrStatus.style.color = STATUS_COLOR[t.status] || '#607080';
+
+                // Cancel Request button — เห็นเฉพาะเจ้าของตั๋ว และยังไม่ Completed/Rejected
+                const isMyOwnTicket = t.samAcc?.toLowerCase() === CURRENT_SAM.toLowerCase();
+                const canCancelReq = isMyOwnTicket && !['Completed', 'Rejected'].includes(t.status);
+                document.getElementById('btn-cancel-request').style.display = canCancelReq ? 'inline-block' : 'none';
+                window.__currentTicketId = t.ticketId;
 
                 // Info
                 document.getElementById('d-name').textContent = t.requesterName;
@@ -848,12 +905,12 @@
             const closedCount = picList.filter(p => p.status === 'Closed').length;
 
             el.innerHTML = `
-                        <div style="font-size:12px;color:#607080;margin-bottom:12px">
-                            Total: <b>${picList.length}</b> PIC &nbsp;·&nbsp;
-                            <span style="color:#2e7d32">✓ Closed: ${closedCount}</span> &nbsp;·&nbsp;
-                            <span style="color:#e65100">⏳ Active: ${activeCount}</span>
-                        </div>
-                        ${picList.map(p => {
+                                <div style="font-size:12px;color:#607080;margin-bottom:12px">
+                                    Total: <b>${picList.length}</b> PIC &nbsp;·&nbsp;
+                                    <span style="color:#2e7d32">✓ Closed: ${closedCount}</span> &nbsp;·&nbsp;
+                                    <span style="color:#e65100">⏳ Active: ${activeCount}</span>
+                                </div>
+                                ${picList.map(p => {
                 const isClosed = p.status === 'Closed';
                 const isReturned = p.status === 'Returned';
                 const initials = p.displayName.split(' ').slice(0, 2).map(w => w[0]).join('');
@@ -862,32 +919,32 @@
                 const canClose = isMine && !isClosed && !isReturned
                     && (status === 'PendingITPIC' || status === 'PendingITAdminClose');
                 return `
-                            <div class="pic-row ${isClosed ? 'closed' : 'active'}">
-                                <div class="d-flex align-items-center gap-10" style="gap:10px">
-                                    <div class="pic-avatar ${isClosed || isReturned ? 'closed' : ''}">${initials}</div>
-                                    <div>
-                                        <div style="font-weight:600;font-size:13px">${p.displayName}</div>
-                                        <div style="font-size:11px;color:#607080">${p.email}</div>
-                                        ${p.status === 'Closed'
+                                    <div class="pic-row ${isClosed ? 'closed' : 'active'}">
+                                        <div class="d-flex align-items-center gap-10" style="gap:10px">
+                                            <div class="pic-avatar ${isClosed || isReturned ? 'closed' : ''}">${initials}</div>
+                                            <div>
+                                                <div style="font-weight:600;font-size:13px">${p.displayName}</div>
+                                                <div style="font-size:11px;color:#607080">${p.email}</div>
+                                                ${p.status === 'Closed'
                         ? `<div style="font-size:11px;color:#2e7d32;margin-top:2px">
-                                        <i class="bi bi-check-circle me-1"></i>Closed ${fmt(p.closedAt)}
-                                        ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
-                                       </div>`
+                                                <i class="bi bi-check-circle me-1"></i>Closed ${fmt(p.closedAt)}
+                                                ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
+                                               </div>`
                         : p.status === 'Returned'
                             ? `<div style="font-size:11px;color:#e65100;margin-top:2px">
-                                        <i class="bi bi-arrow-return-left me-1"></i>Returned ${fmt(p.closedAt)}
-                                        ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
-                                       </div>`
+                                                <i class="bi bi-arrow-return-left me-1"></i>Returned ${fmt(p.closedAt)}
+                                                ${p.closeRemark ? `· <i>${p.closeRemark}</i>` : ''}
+                                               </div>`
                             : `<div style="font-size:11px;color:#0d47a1;margin-top:2px">
-                                        <i class="bi bi-clock me-1"></i>In Progress</div>`}
-                                    </div>
-                                </div>
-                                ${canClose ? `
-                                <button class="btn-close-lg" style="font-size:12px;padding:5px 14px"
-                                        onclick="openCloseTaskModal()">
-                                    <i class="bi bi-check2-all me-1"></i>Close Task
-                                </button>` : ''}
-                            </div>`;
+                                                <i class="bi bi-clock me-1"></i>In Progress</div>`}
+                                            </div>
+                                        </div>
+                                        ${canClose ? `
+                                        <button class="btn-close-lg" style="font-size:12px;padding:5px 14px"
+                                                onclick="openCloseTaskModal()">
+                                            <i class="bi bi-check2-all me-1"></i>Close Task
+                                        </button>` : ''}
+                                    </div>`;
             }).join('')}`;
         }
 
@@ -901,7 +958,8 @@
                 const log = logMap[step.funCode];
                 const isDone = log && (log.action === 'Approve' || log.action === 'Assign');
                 const isCurrent = step.status === t.status;
-                const isRej = log && log.action === 'Reject';
+                const isRej = log && (log.action === 'Reject' || log.action === 'CancelByRequester');
+                const isCancelledByRequester = log && log.action === 'CancelByRequester';
                 const isEnd = step.status === 'Completed';
 
                 let dotClass = 'waiting', icon = 'bi-circle';
@@ -916,7 +974,9 @@
                 else if (isDone)
                     actionLabel = `<span class="wf-action-done">✓ ${log.action} ${log.actionAt ? '· ' + fmt(log.actionAt) : ''}</span>`;
                 else if (isRej)
-                    actionLabel = `<span class="wf-action-rejected">✗ Rejected ${log.actionAt ? '· ' + fmt(log.actionAt) : ''}</span>`;
+                    actionLabel = isCancelledByRequester
+                        ? `<span class="wf-action-rejected">🚫 Cancelled by Requester ${log.actionAt ? '· ' + fmt(log.actionAt) : ''}</span>`
+                        : `<span class="wf-action-rejected">✗ Rejected ${log.actionAt ? '· ' + fmt(log.actionAt) : ''}</span>`;
                 else if (isCurrent && !isEnd) {
                     // ⏳ Awaiting — เพิ่มปุ่ม Re-send
                     // ดึง samAcc ของ Approver ที่ระบุในตั๋วตาม funCode
@@ -926,14 +986,14 @@
                                 : '';  // FunCode อื่น (5,6,9) ไม่มี designated approver → ส่งทั้ง role
                     const awaitResendBtn = IS_SYSTEM_ADMIN && RESEND_ENABLED
                         ? `<button class="btn-resend-sm" style="margin-left:6px"
-                                           onclick="openResendModal('${awaitSam}','${step.role}',this)"
-                                           title="Re-send notification to ${step.role}">
-                                       <i class="bi bi-envelope-arrow-up"></i>
-                                   </button>`
+                                                   onclick="openResendModal('${awaitSam}','${step.role}',this)"
+                                                   title="Re-send notification to ${step.role}">
+                                               <i class="bi bi-envelope-arrow-up"></i>
+                                           </button>`
                         : '';
                     actionLabel = `<span style="display:inline-flex;align-items:center;gap:4px">
-                                <span class="wf-action-current">⏳ Awaiting</span>${awaitResendBtn}
-                            </span>`;
+                                        <span class="wf-action-current">⏳ Awaiting</span>${awaitResendBtn}
+                                    </span>`;
                 }
 
                 // แสดง PIC names ใน IT PIC step
@@ -944,13 +1004,13 @@
                         const prefix = p.status === 'Closed' ? '✓' : '⏳';
                         const rBtn = IS_SYSTEM_ADMIN && RESEND_ENABLED
                             ? `<button class="btn-resend-sm" title="Re-send Email to ${p.displayName}"
-                                               onclick="openResendModal('${p.samAcc}','${p.displayName}',this)">
-                                           <i class="bi bi-envelope-arrow-up"></i>
-                                       </button>`
+                                                       onclick="openResendModal('${p.samAcc}','${p.displayName}',this)">
+                                                   <i class="bi bi-envelope-arrow-up"></i>
+                                               </button>`
                             : '';
                         return `<div class="wf-name" style="color:${color}">
-                                            ${prefix} ${p.displayName}${rBtn}
-                                        </div>`;
+                                                    ${prefix} ${p.displayName}${rBtn}
+                                                </div>`;
                     }).join('');
                 } else if (log?.assignedTo) {
                     picHtml = `<div class="wf-name" style="color:#2e7d32">→ ${log.assignedTo}</div>`;
@@ -960,32 +1020,32 @@
                     ? `<div class="wf-remark"><i class="bi bi-chat-text me-1"></i>${log.remark}</div>` : '';
 
                 return `
-                        <div class="wf-step">
-                            <div class="wf-dot ${dotClass}"><i class="bi ${icon}"></i></div>
-                            <div class="wf-body">
-                                <div class="wf-role">${step.role}</div>
-                                ${log?.approverName && step.funCode !== 6
+                                <div class="wf-step">
+                                    <div class="wf-dot ${dotClass}"><i class="bi ${icon}"></i></div>
+                                    <div class="wf-body">
+                                        <div class="wf-role">${step.role}</div>
+                                        ${log?.approverName && step.funCode !== 6
                         ? `<div class="wf-name">
-                                        ${log.approverName}
-                                        ${IS_SYSTEM_ADMIN && RESEND_ENABLED
+                                                ${log.approverName}
+                                                ${IS_SYSTEM_ADMIN && RESEND_ENABLED
                             ? `<button class="btn-resend-sm" title="Re-send Email" style="display:none"
-                                                       onclick="openResendModal('${log.approverSam}','${log.approverName}',this)">
-                                                   <i class="bi bi-envelope-arrow-up"></i>
-                                               </button>`
+                                                               onclick="openResendModal('${log.approverSam}','${log.approverName}',this)">
+                                                           <i class="bi bi-envelope-arrow-up"></i>
+                                                       </button>`
                             : ''}
-                                        ${step.funCode === 5 && IS_IT_ADMIN && t.status === 'PendingITPIC'
+                                                ${step.funCode === 5 && IS_IT_ADMIN && t.status === 'PendingITPIC'
                             ? `<button class="btn-cancel-sm" title="Cancel PIC Assignment"
-                                                       onclick="openCancelAssignModal()">
-                                                   <i class="bi bi-x-circle"></i> Cancel Assignment
-                                               </button>`
+                                                               onclick="openCancelAssignModal()">
+                                                           <i class="bi bi-x-circle"></i> Cancel Assignment
+                                                       </button>`
                             : ''}
-                                       </div>`
+                                               </div>`
                         : ''}
-                                ${picHtml}
-                                ${actionLabel}
-                                ${remarkHtml}
-                            </div>
-                        </div>`;
+                                        ${picHtml}
+                                        ${actionLabel}
+                                        ${remarkHtml}
+                                    </div>
+                                </div>`;
             }).join('');
         }
 
@@ -1011,12 +1071,12 @@
                 if (myPIC) {
                     panel.style.display = 'block';
                     buttons.innerHTML = `
-                                <button class="btn-close-lg" onclick="openCloseTaskModal()">
-                                    <i class="bi bi-check2-all me-1"></i>Close Task
-                                </button>
-                                <button class="btn-return-lg" onclick="openReturnTaskModal()">
-                                    <i class="bi bi-arrow-return-left me-1"></i>Return Task
-                                </button>`;
+                                        <button class="btn-close-lg" onclick="openCloseTaskModal()">
+                                            <i class="bi bi-check2-all me-1"></i>Close Task
+                                        </button>
+                                        <button class="btn-return-lg" onclick="openReturnTaskModal()">
+                                            <i class="bi bi-arrow-return-left me-1"></i>Return Task
+                                        </button>`;
                     return;
                 }
             }
@@ -1027,28 +1087,28 @@
 
             if (isAssignStep && IS_IT_ADMIN) {
                 buttons.innerHTML = `
-                            <button class="btn-assign-lg" onclick="openAssignModal()">
-                                <i class="bi bi-people me-2"></i>Assign IT PIC
-                            </button>
-                            <button class="btn-reject-lg" onclick="openActionModal('Reject')">
-                                <i class="bi bi-x me-1"></i>Reject
-                            </button>`;
+                                    <button class="btn-assign-lg" onclick="openAssignModal()">
+                                        <i class="bi bi-people me-2"></i>Assign IT PIC
+                                    </button>
+                                    <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                                        <i class="bi bi-x me-1"></i>Reject
+                                    </button>`;
             } else if (isCloseStep) {
                 buttons.innerHTML = `
-                            <button class="btn-approve-lg" onclick="openActionModal('Approve')">
-                                <i class="bi bi-check2-all me-1"></i>Close Ticket
-                            </button>
-                            <button class="btn-reject-lg" onclick="openActionModal('Reject')">
-                                <i class="bi bi-x me-1"></i>Reject
-                            </button>`;
+                                    <button class="btn-approve-lg" onclick="openActionModal('Approve')">
+                                        <i class="bi bi-check2-all me-1"></i>Close Ticket
+                                    </button>
+                                    <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                                        <i class="bi bi-x me-1"></i>Reject
+                                    </button>`;
             } else if (!isITPICStep) {
                 buttons.innerHTML = `
-                            <button class="btn-approve-lg" onclick="openActionModal('Approve')">
-                                <i class="bi bi-check me-1"></i>Approve
-                            </button>
-                            <button class="btn-reject-lg" onclick="openActionModal('Reject')">
-                                <i class="bi bi-x me-1"></i>Reject
-                            </button>`;
+                                    <button class="btn-approve-lg" onclick="openActionModal('Approve')">
+                                        <i class="bi bi-check me-1"></i>Approve
+                                    </button>
+                                    <button class="btn-reject-lg" onclick="openActionModal('Reject')">
+                                        <i class="bi bi-x me-1"></i>Reject
+                                    </button>`;
             }
 
         }
@@ -1075,14 +1135,14 @@
             pendingAction = 'ReturnTask';
             document.getElementById('modal-title').textContent = 'Return Task';
             document.getElementById('modal-desc').innerHTML = `
-                        <div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;
-                                    padding:10px 14px;margin-bottom:10px;font-size:13px;color:#e65100">
-                            <i class="bi bi-arrow-return-left me-2"></i>
-                            <b>Return task to IT Admin for reassignment</b>
-                        </div>
-                        <span style="color:#607080;font-size:13px">
-                            Please provide a reason so IT Admin can reassign appropriately.
-                        </span>`;
+                                <div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:8px;
+                                            padding:10px 14px;margin-bottom:10px;font-size:13px;color:#e65100">
+                                    <i class="bi bi-arrow-return-left me-2"></i>
+                                    <b>Return task to IT Admin for reassignment</b>
+                                </div>
+                                <span style="color:#607080;font-size:13px">
+                                    Please provide a reason so IT Admin can reassign appropriately.
+                                </span>`;
             const btn = document.getElementById('modal-confirm');
             btn.style.background = '#e65100';
             btn.style.color = '#fff';
@@ -1096,7 +1156,7 @@
         async function openAssignModal() {
             document.getElementById('pic-checkbox-list').innerHTML =
                 `<div class="text-center py-3" style="color:#90a4ae">
-                         <div class="spinner-border spinner-border-sm me-2"></div>Loading...</div>`;
+                                 <div class="spinner-border spinner-border-sm me-2"></div>Loading...</div>`;
             document.getElementById('assign-remark').value = '';
             document.getElementById('assign-count').textContent = '';
             document.getElementById('assign-warn').style.display = 'none';
@@ -1112,14 +1172,14 @@
             }
 
             el.innerHTML = list.map((p, i) => `
-                        <div class="pic-check-item" id="pic-item-${i}" onclick="togglePICCheck(${i}, '${p.samAcc}')">
-                            <input type="checkbox" id="pic-chk-${i}" value="${p.samAcc}"
-                                   onchange="updateCheckCount()" onclick="event.stopPropagation()" />
-                            <div>
-                                <div style="font-weight:600;font-size:13px;color:#1a2332">${p.displayName}</div>
-                                <div style="font-size:11px;color:#607080">${p.email}</div>
-                            </div>
-                        </div>`).join('');
+                                <div class="pic-check-item" id="pic-item-${i}" onclick="togglePICCheck(${i}, '${p.samAcc}')">
+                                    <input type="checkbox" id="pic-chk-${i}" value="${p.samAcc}"
+                                           onchange="updateCheckCount()" onclick="event.stopPropagation()" />
+                                    <div>
+                                        <div style="font-weight:600;font-size:13px;color:#1a2332">${p.displayName}</div>
+                                        <div style="font-size:11px;color:#607080">${p.email}</div>
+                                    </div>
+                                </div>`).join('');
 
             updateCheckCount();
         }
@@ -1265,23 +1325,23 @@
                 const data = await res.json();
                 if (data.ok) {
                     document.getElementById('resend-result').innerHTML = `
-                                <div class="alert alert-success py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                    <i class="bi bi-check-circle me-2"></i><b>ส่งเรียบร้อย</b><br/>
-                                    <span style="font-size:12px;color:#607080">ส่งถึง: ${data.sentTo}</span>
-                                </div>`;
+                                        <div class="alert alert-success py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                                            <i class="bi bi-check-circle me-2"></i><b>ส่งเรียบร้อย</b><br/>
+                                            <span style="font-size:12px;color:#607080">ส่งถึง: ${data.sentTo}</span>
+                                        </div>`;
                     if (_resendBtnEl) _resendBtnEl.classList.add('sent');
                     setTimeout(() => resendModal.hide(), 2000);
                 } else {
                     document.getElementById('resend-result').innerHTML = `
-                                <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>${data.msg}
-                                </div>`;
+                                        <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                                            <i class="bi bi-exclamation-triangle me-2"></i>${data.msg}
+                                        </div>`;
                 }
             } catch (err) {
                 document.getElementById('resend-result').innerHTML = `
-                            <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                <i class="bi bi-exclamation-triangle me-2"></i>Network error: ${err.message}
-                            </div>`;
+                                    <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>Network error: ${err.message}
+                                    </div>`;
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-send me-2"></i>Confirm Send';
@@ -1304,9 +1364,9 @@
 
             if (!remark) {
                 resultBox.innerHTML = `
-                            <div class="alert alert-warning py-2 px-3 mb-0 mt-3" style="font-size:13px">
-                                <i class="bi bi-exclamation-triangle me-2"></i>กรุณาระบุเหตุผลก่อนยืนยัน
-                            </div>`;
+                                    <div class="alert alert-warning py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>กรุณาระบุเหตุผลก่อนยืนยัน
+                                    </div>`;
                 return;
             }
 
@@ -1323,10 +1383,66 @@
                 const data = await res.json();
                 if (data.ok) {
                     resultBox.innerHTML = `
+                                        <div class="alert alert-success py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                                            <i class="bi bi-check-circle me-2"></i>${data.msg}
+                                        </div>`;
+                    setTimeout(() => { cancelAssignModal.hide(); loadDetail(); }, 1200);
+                } else {
+                    resultBox.innerHTML = `
+                                        <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                                            <i class="bi bi-x-circle me-2"></i>${data.msg}
+                                        </div>`;
+                }
+            } catch (err) {
+                resultBox.innerHTML = `
+                                    <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                                        <i class="bi bi-x-circle me-2"></i>Network error: ${err.message}
+                                    </div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Confirm Cancel Assignment';
+            }
+        };
+
+        // ── Cancel Ticket Request (Requester) ───────────────────────────────
+        const cancelRequestModal = new bootstrap.Modal(document.getElementById('cancelRequestModal'));
+
+        function openCancelRequestModal() {
+            document.getElementById('cancelreq-remark').value = '';
+            document.getElementById('cancelreq-result').innerHTML = '';
+            cancelRequestModal.show();
+        }
+
+        document.getElementById('cancelreq-confirm').onclick = async () => {
+            const remark = document.getElementById('cancelreq-remark').value.trim();
+            const resultBox = document.getElementById('cancelreq-result');
+            resultBox.innerHTML = '';
+
+            if (!remark) {
+                resultBox.innerHTML = `
+                            <div class="alert alert-warning py-2 px-3 mb-0 mt-3" style="font-size:13px">
+                                <i class="bi bi-exclamation-triangle me-2"></i>กรุณาระบุเหตุผลก่อนยืนยัน
+                            </div>`;
+                return;
+            }
+
+            const btn = document.getElementById('cancelreq-confirm');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cancelling...';
+
+            try {
+                const res = await fetch('/Ticket/CancelTicketByRequester', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ requestId: window.__currentTicketId || TICKET_ID, remark })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    resultBox.innerHTML = `
                                 <div class="alert alert-success py-2 px-3 mb-0 mt-3" style="font-size:13px">
                                     <i class="bi bi-check-circle me-2"></i>${data.msg}
                                 </div>`;
-                    setTimeout(() => { cancelAssignModal.hide(); loadDetail(); }, 1200);
+                    setTimeout(() => { cancelRequestModal.hide(); loadDetail(); }, 1200);
                 } else {
                     resultBox.innerHTML = `
                                 <div class="alert alert-danger py-2 px-3 mb-0 mt-3" style="font-size:13px">
@@ -1340,7 +1456,7 @@
                             </div>`;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Confirm Cancel Assignment';
+                btn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Confirm Cancel';
             }
         };
 

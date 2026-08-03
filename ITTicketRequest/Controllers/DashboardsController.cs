@@ -31,6 +31,12 @@ namespace ITTicketRequest.Controllers
                 return Redirect(authenUrl);
             
 
+            //id = "123456789";
+            //user = "kornkanok.s";
+            //email = "kornkanok.s@berninathailand.com";
+            //fname = "kornkanok.s";
+            //depart = "QC & QA & Safety";
+
             /* Sample Data for Debugging */
             /*
             id = "123456789";

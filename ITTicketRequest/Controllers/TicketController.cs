@@ -1187,6 +1187,103 @@ namespace ITTicketRequest.Controllers
             }
         }
 
+
+        // POST /Ticket/CancelTicketByRequester — Requester ยกเลิกตั๋วของตัวเอง
+        // อนุญาตทุก Status ก่อน Completed/Rejected — Status ใหม่ = Rejected
+        [HttpPost]
+        public async Task<IActionResult> CancelTicketByRequester([FromBody] ApproveRequest body)
+        {
+            var session = GetSession();
+            if (session == null) return Json(new { ok = false, msg = "Please sign in again" });
+            if (string.IsNullOrWhiteSpace(body.Remark))
+                return Json(new { ok = false, msg = "กรุณาระบุเหตุผลในการยกเลิก (Remark)" });
+
+            try
+            {
+                var connStr = _config.GetConnectionString("BTITTicketConn");
+                using var conn = new SqlConnection(connStr);
+                conn.Open();
+
+                // ดึงข้อมูล Ticket ก่อน Cancel — ใช้ตรวจสิทธิ์ + หา Email ผู้ Pending ปัจจุบัน
+                string docNumber = "", requesterName = "", samAcc = "", status = "",
+                       apprDeptMgr = "", apprManagingDir = "", apprITMgr = "";
+                using var cmdGet = new SqlCommand(
+                    @"SELECT DocNumber, RequesterName, SamAcc, Status,
+                             ApprDeptManager, ApprManagingDir, ApprITManager
+                      FROM dbo.TBITTicket WHERE TicketId=@id", conn);
+                cmdGet.Parameters.AddWithValue("@id", body.RequestId);
+                using (var r = cmdGet.ExecuteReader())
+                {
+                    if (!r.Read())
+                        return Json(new { ok = false, msg = "Ticket not found" });
+                    docNumber = r["DocNumber"].ToString()!;
+                    requesterName = r["RequesterName"].ToString()!;
+                    samAcc = r["SamAcc"].ToString()!;
+                    status = r["Status"].ToString()!;
+                    apprDeptMgr = r["ApprDeptManager"] == DBNull.Value ? "" : r["ApprDeptManager"].ToString()!;
+                    apprManagingDir = r["ApprManagingDir"] == DBNull.Value ? "" : r["ApprManagingDir"].ToString()!;
+                    apprITMgr = r["ApprITManager"] == DBNull.Value ? "" : r["ApprITManager"].ToString()!;
+                }
+
+                // ── Permission: เฉพาะเจ้าของตั๋วเท่านั้น ──────────────────────
+                if (!string.Equals(samAcc, session.SamAcc, StringComparison.OrdinalIgnoreCase))
+                    return Json(new { ok = false, msg = "คุณไม่มีสิทธิ์ยกเลิกตั๋วนี้ (ไม่ใช่เจ้าของตั๋ว)" });
+
+                if (status == "Completed" || status == "Rejected")
+                    return Json(new { ok = false, msg = $"ไม่สามารถยกเลิกได้ ตั๋วนี้อยู่ในสถานะ {status} แล้ว" });
+
+                var newStatusParam = new SqlParameter("@NewStatus", SqlDbType.NVarChar, 50)
+                { Direction = ParameterDirection.Output };
+                using var cmd = new SqlCommand("sp_CancelTicketByRequester", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@TicketId", body.RequestId);
+                cmd.Parameters.AddWithValue("@SamAcc", session.SamAcc);
+                cmd.Parameters.AddWithValue("@Remark", body.Remark);
+                cmd.Parameters.Add(newStatusParam);
+                cmd.ExecuteNonQuery();
+
+                var newStatus = newStatusParam.Value?.ToString() ?? "Rejected";
+
+                // ── แจ้งอีเมล์ Approver ที่กำลัง Pending อยู่ ณ ขณะนั้น ──────────
+                List<string> notifyEmails = status switch
+                {
+                    "PendingDeptMgr" => !string.IsNullOrEmpty(apprDeptMgr) ? GetEmailBySam(apprDeptMgr) : GetEmailsByFunCode(8),
+                    "PendingManagingDir" => !string.IsNullOrEmpty(apprManagingDir) ? GetEmailBySam(apprManagingDir) : GetEmailsByFunCode(4),
+                    "PendingITMgr" => !string.IsNullOrEmpty(apprITMgr) ? GetEmailBySam(apprITMgr) : GetEmailsByFunCode(7),
+                    "PendingITAdminAssign" => GetEmailsByFunCode(5),
+                    "PendingITPIC" => GetEmailsByFunCode(5),  // แจ้ง IT Admin เพราะ PIC ถูกยกเลิกไปแล้ว
+                    "PendingITAdminClose" => GetEmailsByFunCode(9),
+                    _ => new List<string>()
+                };
+
+                if (notifyEmails.Any())
+                {
+                    var link = $"{_settings.URLSITE}Ticket/Detail/{body.RequestId}";
+                    await SendMailAsync(string.Join(";", notifyEmails),
+                        $"[ITTicket] {docNumber} — Cancelled by Requester",
+                        $@"<p>Dear Team,</p>
+                        <p>Ticket <b>{docNumber}</b> from <b>{requesterName}</b> has been
+                        <b style='color:#c62828'>cancelled by the requester</b>. No further action is needed.</p>
+                        <p><b>Reason:</b> {body.Remark}</p>
+                        <p><a href='{link}' style='background:#607080;color:#fff;padding:10px 24px;
+                        border-radius:6px;text-decoration:none;font-weight:bold'>Click here to view</a></p>
+                        <br/>
+                        <p>Best regards,<br/>IT Ticket System
+                        <font color='red'>BERNINA Thailand</font> www.bernina.com<br/>
+                        79/1 Moo 4 T.Ban Klang A. Muang Lamphun 51000 Thailand<br/>
+                        Tel.: +66 (0) 53 581 343 – 49 , ext. 152<br/>
+                        Fax.: +66 (0) 53 581351<br/><hr/></p>",
+                        docNumber, "CancelByRequester");
+                }
+
+                return Json(new { ok = true, msg = "ยกเลิกตั๋วเรียบร้อยแล้ว", newStatus });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { ok = false, msg = ex.Message });
+            }
+        }
+
         // ════════════════════════════════════════════════════════════
         //  HELPERS
         // ════════════════════════════════════════════════════════════
